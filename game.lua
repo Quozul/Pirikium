@@ -354,7 +354,7 @@ function G:draw()
 
     local percentage =  ply.cooldown.attack / ply:getWeapon().cooldown * 100
 
-    love.graphics.line(mx - 20, my + 18, (mx - 20) + percentage / 100 * 40, my + 18)
+    love.graphics.line(mx - 20, my + 24, (mx - 20) + percentage / 100 * 40, my + 24)
 end
 
 function G:exit()
