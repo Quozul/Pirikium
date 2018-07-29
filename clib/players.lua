@@ -20,7 +20,9 @@ function newPlayer(x, y, id) -- creates a new player
     p.bod = love.physics.newBody( world, x * 64, y * 64, "dynamic" ) -- creates a body for the player
     p.bod:setLinearDamping(16)
     p.bod:setAngularDamping(16)
-	p.shape = love.physics.newRectangleShape(20, 20)
+
+    p.shape = love.physics.newRectangleShape(20, 20)
+    
     p.fixture = love.physics.newFixture(p.bod, p.shape)
     p.fixture:setRestitution(.2)
     p.fixture:setUserData({"Player", id = id})
@@ -28,8 +30,10 @@ function newPlayer(x, y, id) -- creates a new player
     --p.lightBody = Body:new(lightWorld)
     --p.lightBody:TrackPhysics(p.bod)
 
+    p.defaultMass = p.bod:getMass()
+
     p.health = maxHealth
-    p.inventory = { defaultWeapon, "gun", "shotgun" }
+    p.inventory = { defaultWeapon, "gun", "shotgun", "sniper" }
     p.selectedSlot = 1
     p.cooldown = {
         attack = 0,
@@ -54,4 +58,8 @@ function player:addHealth(healthPoints) self.health = self.health + healthPoints
 function player:remHealth(healthPoints) self.health = self.health - healthPoints end    -- remove health points from the player
 
 function player:getWeapon() return weapons[self.inventory[self.selectedSlot]] end
-function player:setSlot(slot) self.selectedSlot = slot end
+function player:setSlot(slot)
+    self.selectedSlot = slot
+    local weightToAdd = self:getWeapon().weight or 0
+    self.bod:setMass( self.defaultMass + weightToAdd )
+end

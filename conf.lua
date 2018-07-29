@@ -1,5 +1,5 @@
 function love.conf(t)
-    t.identity = ".pirikium"            -- The name of the save directory (string)
+    t.identity = "Pirikium"            -- The name of the save directory (string)
     t.appendidentity = true             -- Search files in source directory before save directory (boolean)
     t.version = "11.1"                  -- The LÖVE version this game was made for (string)
     t.console = true                    -- Attach a console (boolean, Windows only)

@@ -166,13 +166,14 @@ function G:enter()
             ent.cooldown.attack = math.max(ent.cooldown.attack - dt, 0) -- cooldown for primary attack
             ent.cooldown.special = math.max(ent.cooldown.special - dt, 0) -- cooldown for special attack
             ent.cooldown.dodge = math.max(ent.cooldown.dodge - dt, 0) -- cooldown for rolling
+            if not ent.sprinting then ent.cooldown.sprint = math.max(ent.cooldown.sprint - dt, 0) end -- cooldown for sprinting
 
             if id == playerUUID then
                 local pa = math.atan2(cmy - py, cmx - px) -- angle of the player
                 ent.bod:setAngle( pa )
                 cam:lockPosition( px + math.cos(pa) * 20, py + math.sin(pa) * 20, smoother )
             else
-                --ai.update(ent, self.entities[playerUUID], id)
+                if not config.ai.disable then ai.update(ent, self.entities[playerUUID], id) end
 
                 if ent:getHealth() <= 0 then
                     self.entities[id] = nil
@@ -207,14 +208,15 @@ function G:enter()
             love.graphics.line(x, y, x + math.cos(a) * 20, y + math.sin(a) * 20)
 
             if id ~= playerUUID then
-                --ai.draw(ent, self.entities[playerUUID]) -- show the brain of the ai (debug)
+                if config.ai.debug then ai.draw(ent, self.entities[playerUUID]) end -- show the brain of the ai (debug)
             end
         end
 
         for id, bullet in pairs(bullets) do
             if not bullet.bod:isDestroyed() then
                 local bx, by = bullet.bod:getPosition()
-                love.graphics.circle("fill", bx, by, 2)
+                local radius = bullet.fixture:getUserData().weapon.bullet.radius
+                love.graphics.circle("fill", bx, by, radius)
             end
         end
     end
@@ -233,11 +235,22 @@ function G:mousepressed(x, y, button, istouch, presses)
     attack(entities.entities[playerUUID], playerUUID)
 end
 
+function G:keypressed(key, scancode, isrepeat)
+    if isIn(key, {"1", "2", "3", "4", "5", "6", "7", "8", "9"}) then
+        local slot = tonumber(key)
+        if slot <= #ply.inventory then
+            ply:setSlot(slot)
+        end
+    end
+end
+
 function G:wheelmoved(x, y)
     local ply = entities.entities[playerUUID]
-    ply:setSlot(ply.selectedSlot - y)
-    if ply.selectedSlot <= 0 then ply:setSlot(#ply.inventory)
-    elseif ply.selectedSlot > #ply.inventory then ply:setSlot(1) end
+    local newSlot = ply.selectedSlot - y
+
+    if newSlot < 1 then ply:setSlot(#ply.inventory)
+    elseif newSlot > #ply.inventory then ply:setSlot(1)
+    else ply:setSlot(newSlot) end
 end
 
 function controls(dt)
@@ -248,26 +261,27 @@ function controls(dt)
 
     local speed = love.physics.getMeter() * 4
 
-    if key("lshift") and cooldown.sprint ~= 2 then
+    if key(config.controls.sprint) and cooldown.sprint ~= 2 then
         speed = speed * 2
         cooldown.sprint = math.min(cooldown.sprint + dt, 2)
-    elseif not key("lshift") then
-        cooldown.sprint = math.max(cooldown.sprint - dt, 0) -- cooldown for sprinting
+        ply.sprinting = true
+    elseif not key(config.controls.sprint) then
+        ply.sprinting = false
     end
 
-    if key("z") then
+    if key(config.controls.forward) then
         ply.bod:applyForce(speed * math.cos(pa), speed * math.sin(pa))
-    elseif key("s") then
+    elseif key(config.controls.backward) then
         ply.bod:applyForce(-speed / 2 * math.cos(pa), -speed / 2 * math.sin(pa))
     end
 
-    if key("q") then
+    if key(config.controls.left) then
         ply.bod:applyForce(-speed * math.cos(pa + (math.pi / 2)), -speed * math.sin(pa + (math.pi / 2)))
-    elseif key("d") then
+    elseif key(config.controls.right) then
         ply.bod:applyForce(speed * math.cos(pa + (math.pi / 2)), speed * math.sin(pa + (math.pi / 2)))
     end
 
-    if key("space") and cooldown.dodge == 0 and cooldown.sprint < 2 then
+    if key(config.controls.dodge) and cooldown.dodge == 0 and cooldown.sprint < 2 then
         ply.bod:applyLinearImpulse(vx, vy)
         cooldown.dodge = 1
         cooldown.sprint = cooldown.sprint + dt * 10
@@ -355,6 +369,13 @@ function G:draw()
     local percentage =  ply.cooldown.attack / ply:getWeapon().cooldown * 100
 
     love.graphics.line(mx - 20, my + 24, (mx - 20) + percentage / 100 * 40, my + 24)
+
+    love.graphics.setColor(1, 0, 0)
+    local health, maxHealth = ply:getHealth()
+    love.graphics.rectangle("fill", 5, 34, health / maxHealth * 100, 10)
+
+    love.graphics.setColor(0, 0, 1)
+    love.graphics.rectangle("fill", 5, 44, ply.cooldown.sprint / 2 * 100, 10)
 end
 
 function G:exit()

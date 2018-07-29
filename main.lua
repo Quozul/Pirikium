@@ -27,9 +27,35 @@ ai = require "ai"
 
 math.randomseed(os.time())
 
+local configFile = "config.json"
+if not love.filesystem.getInfo( configFile ) then
+    config = {
+        shader = true,
+        controls = {
+            forward = "w",
+            left = "a",
+            backward = "s",
+            right = "d",
+            fire = "1",
+            dodge = "space",
+            use = "e",
+            sprint = "lshift"
+        },
+        ai = {
+            disable = false,
+            debug = false
+        }
+    }
+    love.filesystem.write(configFile, json:encode_pretty( config )) -- create a config file
+    print("Config file not found, creating it")
+else
+    config = json:decode( love.filesystem.read( configFile ) ) -- loads the existing config file
+    print("Config file loaded")
+end
+
 function love.load()
-    menuFont = love.graphics.newFont("data/quicksand.ttf", 24)
-    hudFont = love.graphics.newFont("data/quicksand.ttf", 12)
+    menuFont = love.graphics.newFont(24)
+    hudFont = love.graphics.newFont(12)
     print("Loaded font")
 
     gamestate.registerEvents()
