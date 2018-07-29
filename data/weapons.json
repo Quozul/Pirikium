@@ -48,7 +48,7 @@
             "amount": 1,
             "life": 0.5
         },
-        "weight": 0,
+        "weight": 0.05,
         "cooldown": 0.4
     },
     "shotgun": {
@@ -78,7 +78,37 @@
             "amount": 5,
             "life": 0.5
         },
-        "weight": 0,
+        "weight": 0.1,
         "cooldown": 0.7
+    },
+    "sniper": {
+        "type": "firearm",
+        "damage": {
+            "min": 3,
+            "max": 5
+        },
+        "knockback": {
+            "self": 10,
+            "victim": 5
+        },
+        "critic": {
+            "chance": 2,
+            "mult": {
+                "min": 2,
+                "max": 4
+            }
+        },
+        "spread": {
+            "min": -0.025,
+            "max": 0.025
+        },
+        "bullet": {
+            "speed": 5,
+            "radius": 3,
+            "amount": 1,
+            "life": 1
+        },
+        "weight": 0.15,
+        "cooldown": 1
     }
 }

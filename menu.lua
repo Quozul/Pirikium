@@ -10,19 +10,16 @@ local buttons = {}
 function M.main:init()
     buttons.play = NewButton("button", 10, 10, 200, 100, function() gamestate.switch(game) end , {"Play", 0, 255, 0, menuFont})
     buttons.settings = NewButton("button", 10, 120, 200, 100, function() gamestate.switch(M.settings) end , {"Settings", 0, 0, 255, menuFont})
-    buttons.editor = NewButton("button", 10, 240, 200, 100, function() gamestate.switch(editor) end , {"Editor", 0, 155, 255, menuFont})
 end
 
 function M.main:draw()
     buttons.play:draw()
     buttons.settings:draw()
-    buttons.editor:draw()
 end
 
 function M.main:mousepressed(x, y, button, isTouch)
     buttons.play:mouse()
     buttons.settings:mouse()
-    buttons.editor:mouse()
 end
 
 function M.settings:init()

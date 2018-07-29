@@ -1,9 +1,23 @@
 # Pirikium
-**Pirikium** top-down adventure game, written in lua with the Löve 2D game engine. The game is currently in early stages.
+**Pirikium** top-down adventure game, written in lua with the [Löve 2D](https://love2d.org/) (version 11.1) game engine. The game is currently in early stages.  
 
-## Compiling
-You don't have to compile the game in order to play it, just download the game as zip, extract it and drag the folder onto Löve's executable *love.exe*.  
+### Controls
+Controls can be changed in the config file.
+* **WASD** to move
+* **Left-shift** to sprint
+* **Left mouse** to shoot
+* **Space** to dodge/jump (*strange movement, can't explain it*)
+* **Mouse wheel** to change weapon
+* **E** to use/interact (*not added yet*)
+
+## Run & compiling
+You don't have to compile the game in order to play it.
+* Download the game as zip
+* Download [Löve 2D](https://love2d.org/) for your OS
+* Extract them and drag the folder onto Löve's executable *love.exe*.  
 For more informations about *compiling it* refer on the [Löve's wiki](https://love2d.org/wiki/Game_Distribution).
+
+---
 
 ### Modules
 Here's a list of all used libraries (some of them may not be used, but they're in the game's code):

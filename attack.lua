@@ -70,8 +70,10 @@ function attack(attacker, attacker_id)
             b.bod:setBullet(true)
             b.bod:setAngle(aa)
             b.bod:setLinearDamping(1)
+            b.bod:setMass(0.001)
 
-            b.shape = love.physics.newCircleShape(2)
+            local radius = wep.bullet.radius
+            b.shape = love.physics.newCircleShape(radius)
 
             b.fixture = love.physics.newFixture(b.bod, b.shape)
             b.fixture:setRestitution(.2)
