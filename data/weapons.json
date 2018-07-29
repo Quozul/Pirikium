@@ -1,0 +1,84 @@
+{
+    "fists": {
+        "type": "melee",
+        "damage": {
+            "min": 0,
+            "max": 1
+        },
+        "knockback": {
+            "self": 0,
+            "victim": 1
+        },
+        "critic": {
+            "chance": 40,
+            "mult": {
+                "min": 1,
+                "max": 2
+            }
+        },
+        "range": 100,
+        "radius": 0.2,
+        "weight": 0,
+        "cooldown": 0.2
+    },
+    "gun": {
+        "type": "firearm",
+        "damage": {
+            "min": 1,
+            "max": 3
+        },
+        "knockback": {
+            "self": 2,
+            "victim": 3
+        },
+        "critic": {
+            "chance": 20,
+            "mult": {
+                "min": 1,
+                "max": 2
+            }
+        },
+        "spread": {
+            "min": -0.2,
+            "max": 0.2
+        },
+        "bullet": {
+            "speed": 4,
+            "radius": 2,
+            "amount": 1,
+            "life": 0.5
+        },
+        "weight": 0,
+        "cooldown": 0.4
+    },
+    "shotgun": {
+        "type": "firearm",
+        "damage": {
+            "min": 1,
+            "max": 3
+        },
+        "knockback": {
+            "self": 5,
+            "victim": 2
+        },
+        "critic": {
+            "chance": 5,
+            "mult": {
+                "min": 2,
+                "max": 3
+            }
+        },
+        "spread": {
+            "min": -0.5,
+            "max": 0.5
+        },
+        "bullet": {
+            "speed": 2,
+            "radius": 2,
+            "amount": 5,
+            "life": 0.5
+        },
+        "weight": 0,
+        "cooldown": 0.7
+    }
+}

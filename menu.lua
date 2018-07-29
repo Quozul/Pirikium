@@ -1,0 +1,43 @@
+local M = {}
+
+M.main = {}
+M.settings = {}
+M.pause = {}
+M.connecting = {}
+
+local buttons = {}
+
+function M.main:init()
+    buttons.play = NewButton("button", 10, 10, 200, 100, function() gamestate.switch(game) end , {"Play", 0, 255, 0, menuFont})
+    buttons.settings = NewButton("button", 10, 120, 200, 100, function() gamestate.switch(M.settings) end , {"Settings", 0, 0, 255, menuFont})
+    buttons.editor = NewButton("button", 10, 240, 200, 100, function() gamestate.switch(editor) end , {"Editor", 0, 155, 255, menuFont})
+end
+
+function M.main:draw()
+    buttons.play:draw()
+    buttons.settings:draw()
+    buttons.editor:draw()
+end
+
+function M.main:mousepressed(x, y, button, isTouch)
+    buttons.play:mouse()
+    buttons.settings:mouse()
+    buttons.editor:mouse()
+end
+
+function M.settings:init()
+    buttons.back = NewButton("button", 10, 10, 64, 32, function() gamestate.switch(M.main) end , {"Back", 55, 255, 55, menuFont})
+    buttons.shader = NewButton("checkbox", 100, 100, 10, 10, function() return end , {"Back", nil, nil, nil, menuFont})
+end
+
+function M.settings:draw()
+    buttons.back:draw()
+    buttons.shader:draw()
+end
+
+function M.settings:mousepressed(x, y, button, isTouch)
+    buttons.back:mouse()
+    buttons.shader:mouse()
+end
+
+return M
