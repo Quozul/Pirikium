@@ -127,11 +127,11 @@
         "weight": 0.15,
         "cooldown": 1
     },
-    "bazooka": {
+    "grenade_launcher": {
         "type": "firearm",
         "damage": {
-            "min": 3,
-            "max": 5
+            "min": 5,
+            "max": 8
         },
         "knockback": {
             "self": 15,

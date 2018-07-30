@@ -46,7 +46,8 @@ if not love.filesystem.getInfo( configFile ) then
         },
         ai = {
             disable = false,
-            debug = false
+            debug = false,
+            limit = 4
         },
         debug = true
     }

@@ -12,7 +12,7 @@ function table.find(list, elem)
     end
 end
 
-function newPlayer(x, y, id) -- creates a new player
+function newPlayer(x, y, id, weapon) -- creates a new player
     if x == nil or y == nil then error("You must give coordinates for the new player to spawn")
         return end
 
@@ -33,7 +33,9 @@ function newPlayer(x, y, id) -- creates a new player
     p.defaultMass = p.bod:getMass()
 
     p.health = maxHealth
-    p.inventory = { defaultWeapon }
+    if weapon == nil then weapon = defaultWeapon end
+    print("Entity spawn with " .. weapon)
+    p.inventory = { weapon }
     p.selectedSlot = 1
     p.cooldown = {
         attack = 0,
