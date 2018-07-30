@@ -6,9 +6,12 @@ local pickupDist = 150
 
 function I.drop(x, y, item)
     local i = {}
+
     i.item = item
     i.x = x
     i.y = y
+    i.age = 5
+
     table.insert(items, i)
 end
 
@@ -27,19 +30,21 @@ end
 
 function I.update(dt)
     for index, item in pairs(items) do
+        item.age = math.max(item.age - dt, 0)
 
+        if item.age == 0 then table.remove(items, index) end
     end
 end
 
 function I.draw()
     for index, item in pairs(items) do
+        love.graphics.setColor(1, 1, 1, item.age) -- fade out the item for the last second
         if config.debug then love.graphics.rectangle("line", item.x, item.y, itemHitBox, itemHitBox) end -- debug, show hitbox
         love.graphics.print(item.item, item.x, item.y)
     end
 end
 
 function I.clear()
-    print("ok")
     for index, item in pairs(items) do
         table.remove(items, index)
         print("Cleared item " .. index)

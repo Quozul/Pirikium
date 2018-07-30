@@ -1,1 +1,15 @@
-["sword","gun","shotgun","sniper","bazooka"]
+{
+    "chest": [
+        "sword",
+        "gun",
+        "shotgun",
+        "sniper",
+        "grenade_launcher"
+    ],
+    "ai": [
+        "fists",
+        "sword",
+        "gun",
+        "shotgun"
+    ]
+}

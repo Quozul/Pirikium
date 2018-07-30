@@ -16,7 +16,17 @@ function G:enter()
     cursor = love.graphics.newImage("data/cursor.png")
     love.mouse.setVisible(false)
 
-    weapons = json:decode( love.filesystem.read( "data/weapons.json" ) ) -- Load game content
+    images = {}
+
+    weapons = json:decode( love.filesystem.read( "data/weapons.json" ) ) -- load game content
+    print(#weapons .. " weapons loaded")
+    for name, wep in pairs(weapons) do
+        if wep.texture ~= nil then
+            print("Loaded image for weapon " .. name)
+            images[name] = love.graphics.newImage(wep.texture)
+        end
+    end
+
     loots = json:decode( love.filesystem.read( "data/loots.json" ) )
 
     love.physics.setMeter(64)
@@ -146,12 +156,12 @@ function G:enter()
     entities.entities[playerUUID] = newPlayer(x, y, playerUUID)
     lights.player = Light:new(lightWorld, 200)
     lights.player:SetColor(155, 155, 155)
-    print("Added player's and mouse's light")
+    print("Added player light")
 
     local function addEnnemy()
         local x, y = unpack( spawns.hostile[math.random(1, #spawns.hostile)] )
         local uid = uuid()
-        local weapon = weapons[math.random(1, #weapons)]
+        local weapon = loots.ai[math.random(1, #loots.ai)]
         entities.entities[uid] = newPlayer(x, y, uid, weapon)
         ai.set(entities.entities[uid], uid)
 
@@ -159,7 +169,7 @@ function G:enter()
     end
 
     function entities:update(dt)
-        if table.length(entities.entities) <= 4 then addEnnemy() end
+        if table.length(entities.entities) <= config.ai.limit then addEnnemy() end
 
         for id, ent in pairs(self.entities) do
             local px, py = ent.bod:getPosition()
@@ -203,6 +213,13 @@ function G:enter()
             love.graphics.translate(x, y)
             love.graphics.rotate(a)
             love.graphics.rectangle("fill", -20/2, -20/2, 20, 20)
+
+            local img = images[ent.inventory[ent.selectedSlot]]
+            love.graphics.rotate(1)
+            love.graphics.scale(.25)
+            if img ~= nil then
+                love.graphics.draw(img, (-128/2) + 85, (-128/2) - 50)
+            end
 
             love.graphics.pop()
 
@@ -280,7 +297,7 @@ function G:keypressed(key, scancode, isrepeat)
             if love.physics.getDistance(chest.fixture, ply.fixture) <= 250 then
                 local isInside = chest.fixture:testPoint(x, y)
                 if isInside then
-                    local remove = ply:addItem(loots[math.random(1, #loots)])
+                    local remove = ply:addItem(loots.chest[math.random(1, #loots.chest)])
                     return
                 end
             end
@@ -351,6 +368,7 @@ function G:update(dt)
     pcx, pcy = cam:cameraCoords(px, py)
 
     controls(dt)
+    items.update(dt)
 
     map:update(dt)
     particles.update(dt)

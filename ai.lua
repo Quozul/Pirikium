@@ -44,7 +44,7 @@ function ai.update(ent, target, ent_id) -- => attacker, victim
         inAttackRadius = between(angleToVictim, currentAngle - ent:getWeapon().radius, currentAngle + ent:getWeapon().radius)
     else
         inAttackRange = dist < 250 -- 250 should be replaced using the spread to get the accuracy
-        inAttackRadius = between(angleToVictim, currentAngle + ent:getWeapon().spread.min, currentAngle + ent:getWeapon().spread.max)
+        inAttackRadius = between(angleToVictim, currentAngle - ent:getWeapon().spread, currentAngle + ent:getWeapon().spread)
     end
 
     for node, count in path:nodes() do
