@@ -17,6 +17,7 @@ function G:enter()
     love.mouse.setVisible(false)
 
     weapons = json:decode( love.filesystem.read( "data/weapons.json" ) ) -- Load game content
+    loots = json:decode( love.filesystem.read( "data/loots.json" ) )
 
     love.physics.setMeter(64)
 
@@ -48,9 +49,11 @@ function G:enter()
     map:box2d_init(world)
     print("World created")
 
-    map:addCustomLayer("Doors Layer", 3)
-    map.layers["Doors Layer"].doors = {}
-    doors = map.layers["Doors Layer"]
+    map:addCustomLayer("Entities Layer", 3)
+    map.layers["Entities Layer"].entities = {}
+    map.layers["Entities Layer"].doors = {}
+    map.layers["Entities Layer"].chests = {}
+    entities = map.layers["Entities Layer"]
     
     lightWorld = LightWorld:new()
     lightWorld:SetColor(10, 10, 10, 255)
@@ -71,24 +74,24 @@ function G:enter()
 
         print("Added one door")
 
-        table.insert(doors.doors, d)
+        table.insert(entities.doors, d)
     end
 
-    function doors:draw()
-        for index, door in pairs(self.doors) do
-            love.graphics.push("transform")
+    local function addChest(x, y, r)
+        local c = {}
 
-            local x, y = door.bod:getPosition()
-            local a = door.bod:getAngle()
+        c.bod = love.physics.newBody( world, x * 64 - 32, y * 64 - 32, "dynamic" )
+        c.bod:setLinearDamping(16)
+        c.bod:setAngularDamping(16)
+        c.bod:setAngle(r)
+        c.shape = love.physics.newRectangleShape(48, 48)
+        c.fixture = love.physics.newFixture(c.bod, c.shape)
+        c.fixture:setRestitution(.1)
+        c.fixture:setUserData({"Chest"})
 
-            love.graphics.setColor(1, 1, 1, 1)
+        print("Added one chest")
 
-            love.graphics.translate(x, y)
-            love.graphics.rotate(a)
-            love.graphics.rectangle("fill", -48/2, -16/2, 48, 16)
-
-            love.graphics.pop()
-        end
+        table.insert(entities.chests, c)
     end
 
     lights = {}
@@ -98,26 +101,26 @@ function G:enter()
             local t = map.layers["Collisions"].data[x][y]
             local id = #lights+1
             if t ~= nil and t.id ~= 0 then
-                if t.id == 1 then --[[ print("Collision") ]]
-                elseif t.id == 2 then
+                if t.id == 2 then -- friendly spawn
                     table.insert(spawns.friendly, {y, x})
-                elseif t.id == 3 then
+                elseif t.id == 3 then -- hostile spawn
                     table.insert(spawns.hostile, {y, x})
                 --elseif t.id == 4 then print("One way")
                 --elseif t.id == 5 then print("Hinge")
-                elseif t.id == 6 then
+                elseif t.id == 6 then -- door
                     addDoor(y, x, t.r)
-                --elseif t.id == 7 then print("Weapon spawn")
-                elseif t.id == 8 then print("Blue light")
+                elseif t.id == 7 then -- chest/weapon spawn
+                    addChest(y, x, t.r)
+                elseif t.id == 8 then -- lights
                     lights[id] = Light:new(lightWorld, 300)
                     lights[id]:SetColor(0, 0, 155)
-                elseif t.id == 9 then print("Red light")
+                elseif t.id == 9 then
                     lights[id] = Light:new(lightWorld, 300)
                     lights[id]:SetColor(155, 0, 0)
-                elseif t.id == 10 then print("Yellow light")
+                elseif t.id == 10 then
                     lights[id] = Light:new(lightWorld, 300)
                     lights[id]:SetColor(155, 155, 0)
-                elseif t.id == 11 then print("White light")
+                elseif t.id == 11 then
                     lights[id] = Light:new(lightWorld, 300)
                     lights[id]:SetColor(155, 155, 155)
                 --elseif t.id == 12 then print("Health")
@@ -126,7 +129,7 @@ function G:enter()
                 --elseif t.id == 15 then print("Cannon")
                 end
 
-                if lights[id] then lights[id]:SetPosition(y * 64 - 32, x * 64 - 32) end
+                if lights[id] and config.shader then lights[id]:SetPosition(y * 64 - 32, x * 64 - 32) end
             end
         end
     end
@@ -140,15 +143,9 @@ function G:enter()
 
     playerUUID = uuid()
 
-    map:addCustomLayer("Entities Layer", 3)
-    map.layers["Entities Layer"].entities = {}
-    entities = map.layers["Entities Layer"]
-
     entities.entities[playerUUID] = newPlayer(x, y, playerUUID)
     lights.player = Light:new(lightWorld, 200)
     lights.player:SetColor(155, 155, 155)
-    lights.mouse = Light:new(lightWorld, 100)
-    lights.mouse:SetColor(155, 155, 155)
     print("Added player's and mouse's light")
 
     local function addEnnemy()
@@ -219,7 +216,38 @@ function G:enter()
                 love.graphics.circle("fill", bx, by, radius)
             end
         end
+    
+        for index, door in pairs(self.doors) do
+            love.graphics.push("transform")
+
+            local x, y = door.bod:getPosition()
+            local a = door.bod:getAngle()
+
+            love.graphics.setColor(1, 1, 1, 1)
+
+            love.graphics.translate(x, y)
+            love.graphics.rotate(a)
+            love.graphics.rectangle("fill", -48/2, -16/2, 48, 16)
+
+            love.graphics.pop()
+        end
+        
+        for index, chest in pairs(self.chests) do
+            love.graphics.push("transform")
+
+            local x, y = chest.bod:getPosition()
+            local a = chest.bod:getAngle()
+
+            love.graphics.setColor(1, 1, 1, 1)
+
+            love.graphics.translate(x, y)
+            love.graphics.rotate(a)
+            love.graphics.rectangle("fill", -48/2, -48/2, 48, 48)
+
+            love.graphics.pop()
+        end
     end
+
     cam = camera(0, 0)
     smoother = cam.smooth.damped(5)
     love.graphics.setBackgroundColor(0, .25, .5)
@@ -241,6 +269,18 @@ function G:keypressed(key, scancode, isrepeat)
         if slot <= #ply.inventory then
             ply:setSlot(slot)
         end
+    elseif key == config.controls.use then
+        local x, y = cam:worldCoords(mx, my)
+        for id, chest in pairs(entities.chests) do
+            local isInside = chest.fixture:testPoint(x, y)
+            if isInside then
+                ply:addItem(loots[math.random(1, #loots)])
+            end
+        end
+    elseif key == config.controls.drop then
+        ply:remItem(ply.selectedSlot)
+    elseif key == "escape" then
+        gamestate.switch(menu.main)
     end
 end
 
@@ -294,6 +334,8 @@ function G:update(dt)
     cpx, cpy = cam:position()
     cmx, cmy = cam:mousePosition() -- pos of the mouse in the world
 
+    mx, my = love.mouse.getPosition()
+
     ply = entities.entities[playerUUID]
     px, py = ply.bod:getPosition()
     pcx, pcy = cam:cameraCoords(px, py)
@@ -301,18 +343,20 @@ function G:update(dt)
     controls(dt)
 
     map:update(dt)
+    particles.update(dt)
     world:update(dt)
-    lightWorld:Update()
-    lightWorld:SetPosition(cpx - pcx + (px - cpx), cpy - pcy + (py - cpy))
+    if config.shader then
+        lightWorld:Update()
+        lightWorld:SetPosition(cpx - pcx + (px - cpx), cpy - pcy + (py - cpy))
 
-    lights.player:SetPosition(px, py, 1)
-    lights.mouse:SetPosition(cmx, cmy, 1)
+        lights.player:SetPosition(px, py, 1)
+    end
 
     for index, bullet in pairs(bullets) do
         -- remove bullets using age
         if not bullet.bod:isDestroyed() then
             bullet.age = math.max(bullet.age - dt, 0)
-            if bullet.age == 0 then bullet.bod:destroy() end
+            if bullet.age == 0 then  removeBullet(bullet.bod, bullet.fixture:getUserData().weapon.bullet.type) end
         end
     end
     --[[for index, bullet in pairs(bullets) do
@@ -335,38 +379,41 @@ function G:update(dt)
 end
 
 function G:draw()
-    cam:draw(function()
-        -- draw the map
-        love.graphics.setColor(1, 1, 1)
-        map:draw(cx, cy)
+    -- draw the map
+    love.graphics.setColor(1, 1, 1)
+    map:draw(cx, cy)
 
+    cam:draw(function()
         -- draw collision map (debug)
         --love.graphics.setColor(1, 0, 0, .5)
         --map:box2d_draw()
+
+        particles.draw()
     end)
 
-    lightWorld:Draw()
+    if config.shader then lightWorld:Draw() end
 
     love.graphics.setFont(hudFont)
 
     for index, item in pairs(entities.entities[playerUUID].inventory) do
-        local x = 50 * (index - 1) + 5
-        if entities.entities[playerUUID].selectedSlot == index then
-            love.graphics.setColor(0, 1, 0)
-            love.graphics.rectangle("fill", x, 5, 50, 16)
-        else
-            love.graphics.rectangle("line", x, 5, 50, 16)
+        if item ~= nil then
+            local x = 50 * (index - 1) + 5
+            if entities.entities[playerUUID].selectedSlot == index then
+                love.graphics.setColor(0, 1, 0)
+                love.graphics.rectangle("fill", x, 5, 50, 16)
+            else
+                love.graphics.rectangle("line", x, 5, 50, 16)
+            end
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.print(item, x, 5)
         end
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.print(item, x, 5)
     end
 
     love.graphics.print("Framerate: " .. love.timer.getFPS(), 5, 20)
 
-    mx, my = love.mouse.getPosition()
-    love.graphics.draw(cursor, mx - 16, my - 16)
-
-    local percentage =  ply.cooldown.attack / ply:getWeapon().cooldown * 100
+    if ply:getWeapon() then maxCooldown = ply:getWeapon().cooldown
+    else maxCooldown = 1 end
+    local percentage =  ply.cooldown.attack / maxCooldown * 100
 
     love.graphics.line(mx - 20, my + 24, (mx - 20) + percentage / 100 * 40, my + 24)
 
@@ -375,13 +422,17 @@ function G:draw()
     love.graphics.rectangle("fill", 5, 34, health / maxHealth * 100, 10)
 
     love.graphics.setColor(0, 0, 1)
-    love.graphics.rectangle("fill", 5, 44, ply.cooldown.sprint / 2 * 100, 10)
+    love.graphics.rectangle("fill", 5, 44, (2 - ply.cooldown.sprint) / 2 * 100, 10)
+
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.draw(cursor, mx - 16, my - 16)
 end
 
 function G:exit()
     entities.entities = {}
-    lights.player:remove()
-    lightWorld, world = nil, nil
+    lights = {}
+    lightWorld = nil
+    world = nil
 end
 
 -- collision callback
@@ -389,11 +440,13 @@ function beginContact(a, b, coll)
     if a:isSensor() or a:getUserData()[1] == "Bullet" then return end
 
     if b:getUserData()[1] == "Bullet" then
+        local wep = b:getUserData().weapon
+
         if a:getUserData()[1] == "Player" then
-            bulletDamage(b:getUserData().weapon, a:getUserData().id, b:getBody():getAngle())
+            bulletDamage(wep, a:getUserData().id, b:getBody():getAngle(), b:getBody())
         end
 
-        b:getBody():destroy()
+        removeBullet(b:getBody(), wep.bullet.type)
     end
 end
 

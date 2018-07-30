@@ -16,7 +16,7 @@ end
 
 local function spread(weapon, ent)
     -- must add spread based on ent's speed
-    return rf(weapon.spread.min, weapon.spread.max, 4), rf(weapon.spread.min, weapon.spread.max, 4)
+    return rf(-weapon.spread, weapon.spread, 4), rf(-weapon.spread, weapon.spread, 4)
 end
 
 function attack(attacker, attacker_id)
@@ -92,7 +92,7 @@ function attack(attacker, attacker_id)
     end
 end
 
-function bulletDamage(weapon, victim_id, angle)
+function bulletDamage(weapon, victim_id, angle, bullet)
     local victim = entities.entities[victim_id]
     
     if victim == nil then return end
@@ -106,4 +106,13 @@ function bulletDamage(weapon, victim_id, angle)
         
         print("Attacker dealt " .. damage .. " damage to victim")
     end
+end
+
+function removeBullet(body, type)
+    local x, y = body:getPosition()
+
+    if type == "explosive" then
+        particles.add(10, x, y, {1, 0, 0}, 6)
+    end
+    body:destroy()
 end

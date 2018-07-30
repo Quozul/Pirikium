@@ -1,14 +1,14 @@
-gamestate = require "hump.gamestate"
-camera = require "hump.camera"
-timer = require "hump.timer"
+gamestate = require "modules/hump.gamestate"
+camera = require "modules/hump.camera"
+timer = require "modules/hump.timer"
 bitser = require "modules/bitser"
 uuid = require "modules/uuid"
 json = require "modules/json"
 ser = require "modules/ser"
 
-sti = require "sti"
-grid = require "jumper.grid"
-pathfinder = require "jumper.pathfinder"
+sti = require "modules/sti"
+grid = require "modules/jumper.grid"
+pathfinder = require "modules/jumper.pathfinder"
 
 Shadows = require("shadows")
 LightWorld = require("shadows.LightWorld")
@@ -20,6 +20,7 @@ require "clib/buttons"
 require "clib/utility"
 require "clib/players"
 world_utility = require "clib/world"
+particles = require "clib/particles"
 menu = require "menu"
 game = require "game"
 require "attack"
@@ -39,7 +40,8 @@ if not love.filesystem.getInfo( configFile ) then
             fire = "1",
             dodge = "space",
             use = "e",
-            sprint = "lshift"
+            sprint = "lshift",
+            drop = "r"
         },
         ai = {
             disable = false,
@@ -60,6 +62,10 @@ function love.load()
 
     gamestate.registerEvents()
     gamestate.switch(menu.main)
+end
+
+function love.quit()
+    love.filesystem.write(configFile, json:encode_pretty( config ))
 end
 
 function love.update(dt)
