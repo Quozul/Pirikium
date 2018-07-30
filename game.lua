@@ -151,7 +151,7 @@ function G:enter()
     print(#spawns.hostile .. " ennemy spawns found")
     local x, y = unpack( spawns.friendly[math.random(1, #spawns.friendly)] )
 
-    playerUUID = uuid()
+    playerUUID = "player"
 
     entities.entities[playerUUID] = newPlayer(x, y, playerUUID)
     lights.player = Light:new(lightWorld, 200)
@@ -233,9 +233,17 @@ function G:enter()
 
         for id, bullet in pairs(bullets) do
             if not bullet.bod:isDestroyed() then
+                local wep = bullet.fixture:getUserData().weapon
                 local bx, by = bullet.bod:getPosition()
-                local radius = bullet.fixture:getUserData().weapon.bullet.radius
-                love.graphics.circle("fill", bx, by, radius)
+                local ba = bullet.bod:getAngle()
+                local radius = wep.bullet.radius
+                local type = wep.bullet.type
+
+                if type == "arrow" then
+                    love.graphics.line(bx, by, bx + math.cos(ba) * radius, by + math.sin(ba) * radius)
+                else
+                    love.graphics.circle("fill", bx, by, radius)
+                end
             end
         end
     
@@ -326,7 +334,7 @@ function controls(dt)
     local pa = ply.bod:getAngle()
     local vx, vy = ply.bod:getLinearVelocity()
 
-    local speed = love.physics.getMeter() * 4
+    local speed = love.physics.getMeter() * (4 + ply.skills.speed)
 
     if key(config.controls.sprint) and cooldown.sprint ~= 2 then
         speed = speed * 2
@@ -454,7 +462,7 @@ function G:draw()
     love.graphics.rectangle("fill", 5, 44, (2 - ply.cooldown.sprint) / 2 * 100, 10)
 
     love.graphics.setColor(1, 1, 1)
-    love.graphics.print(ply.kills, 5, 54)
+    love.graphics.print(ply.kills .. " kill", 5, 54)
 
     love.graphics.draw(cursor, mx - 16, my - 16)
 end
@@ -465,6 +473,12 @@ function G:leave()
     lights = {}
     lightWorld = nil
     world = nil
+
+    ply:save()
+end
+
+function G:quit()
+    ply:save()
 end
 
 -- collision callback

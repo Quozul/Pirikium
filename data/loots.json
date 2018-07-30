@@ -4,12 +4,14 @@
         "gun",
         "shotgun",
         "sniper",
-        "grenade_launcher"
+        "grenade_launcher",
+        "bow"
     ],
     "ai": [
         "fists",
         "sword",
         "gun",
-        "shotgun"
+        "shotgun",
+        "bow"
     ]
 }

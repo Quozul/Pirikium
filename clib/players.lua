@@ -2,7 +2,7 @@ local player = {}
 player.__index = player
 
 local maxHealth = 10            -- health at start
-local defaultWeapon = "fists"     -- default weapon to spawn with
+local defaultWeapon = "bow"     -- default weapon to spawn with
 local maxInventory = 2         -- maximum items the player can have
 
 function table.find(list, elem)
@@ -17,6 +17,38 @@ function newPlayer(x, y, id, weapon) -- creates a new player
         return end
 
     local p = {}
+
+    p.health = maxHealth
+    if weapon == nil then weapon = defaultWeapon end
+    p.inventory = { weapon }
+    print("Entity spawn with " .. weapon)
+    p.selectedSlot = 1
+    p.cooldown = {
+        attack = 0,
+        sprint = 0,
+        special = 0,
+        dodge = 0
+    }
+    p.skills = {
+        speed = 0,
+        strength = 0,
+        accuracy = 0
+    }
+    p.kills = 0
+    p.lastAttacker = nil
+
+    if love.filesystem.getInfo( id .. ".sav" ) then
+        local l = bitser.loads(love.filesystem.read( id .. ".sav" ))
+        x = l.x / 64
+        y = l.y / 64
+        --p.health = l.health
+        p.inventory = l.inventory
+        p.kills = l.kills
+
+        print("Player save found")
+        print(ser(l))
+    end
+
     p.bod = love.physics.newBody( world, x * 64, y * 64, "dynamic" ) -- creates a body for the player
     p.bod:setLinearDamping(16)
     p.bod:setAngularDamping(16)
@@ -32,22 +64,24 @@ function newPlayer(x, y, id, weapon) -- creates a new player
 
     p.defaultMass = p.bod:getMass()
 
-    p.health = maxHealth
-    if weapon == nil then weapon = defaultWeapon end
-    print("Entity spawn with " .. weapon)
-    p.inventory = { weapon }
-    p.selectedSlot = 1
-    p.cooldown = {
-        attack = 0,
-        sprint = 0,
-        special = 0,
-        dodge = 0
-    }
-    p.kills = 0
-    p.lastAttacker = nil
+    p.id = id
 
     print("New player created")
     return setmetatable(p, player)
+end
+
+function player:save()
+    local s = {}
+    s.inventory = self.inventory
+    s.kills = self.kills
+    s.health = self.health
+    s.x, s.y = self.bod:getPosition()
+
+    love.filesystem.write( self.id .. ".sav", bitser.dumps( s ) )
+end
+
+function loadStats(stats) -- stats is a table
+
 end
 
 -- health related functions
