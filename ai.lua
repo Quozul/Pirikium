@@ -48,7 +48,7 @@ function ai.update(ent, target, ent_id) -- => attacker, victim
     end
 
     for node, count in path:nodes() do
-        if count == 2 and not inAttackRange then
+        if count == 2 and not inAttackRange and path:getLength() <= 10 then
             local currentX, currentY = nodeToMap(node:getX()) + 32, nodeToMap(node:getY()) + 32
             
             local angleTo = math.atan2(currentY - ay, currentX - ax)

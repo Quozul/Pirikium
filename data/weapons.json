@@ -17,7 +17,7 @@
             }
         },
         "range": 100,
-        "radius": 0.2,
+        "radius": 0.3,
         "weight": 0,
         "cooldown": 0.1
     },
