@@ -151,12 +151,16 @@ function G:enter()
     local function addEnnemy()
         local x, y = unpack( spawns.hostile[math.random(1, #spawns.hostile)] )
         local uid = uuid()
-        entities.entities[uid] = newPlayer(x, y, uid)
+        local weapon = weapons[math.random(1, #weapons)]
+        entities.entities[uid] = newPlayer(x, y, uid, weapon)
         ai.set(entities.entities[uid], uid)
+
+        print("Added one ennemy")
     end
-    addEnnemy()
 
     function entities:update(dt)
+        if table.length(entities.entities) <= 4 then addEnnemy() end
+
         for id, ent in pairs(self.entities) do
             local px, py = ent.bod:getPosition()
 
@@ -173,8 +177,9 @@ function G:enter()
                 if not config.ai.disable then ai.update(ent, self.entities[playerUUID], id) end
 
                 if ent:getHealth() <= 0 then
+                    print(ent.lastAttacker)
+                    self.entities[ent.lastAttacker]:addKill(1)
                     self.entities[id] = nil
-                    addEnnemy()
                 end
             end
         end
@@ -272,13 +277,18 @@ function G:keypressed(key, scancode, isrepeat)
     elseif key == config.controls.use then
         local x, y = cam:worldCoords(mx, my)
         for id, chest in pairs(entities.chests) do
-            local isInside = chest.fixture:testPoint(x, y)
-            if isInside then
-                ply:addItem(loots[math.random(1, #loots)])
+            if love.physics.getDistance(chest.fixture, ply.fixture) <= 250 then
+                local isInside = chest.fixture:testPoint(x, y)
+                if isInside then
+                    local remove = ply:addItem(loots[math.random(1, #loots)])
+                    return
+                end
             end
         end
+
+        items.interact(ply, x, y, px, py)
     elseif key == config.controls.drop then
-        ply:remItem(ply.selectedSlot)
+        ply:drop(ply.selectedSlot)
     elseif key == "escape" then
         gamestate.switch(menu.main)
     end
@@ -389,6 +399,7 @@ function G:draw()
         --map:box2d_draw()
 
         particles.draw()
+        items.draw()
     end)
 
     if config.shader then lightWorld:Draw() end
@@ -425,10 +436,13 @@ function G:draw()
     love.graphics.rectangle("fill", 5, 44, (2 - ply.cooldown.sprint) / 2 * 100, 10)
 
     love.graphics.setColor(1, 1, 1)
+    love.graphics.print(ply.kills, 5, 54)
+
     love.graphics.draw(cursor, mx - 16, my - 16)
 end
 
-function G:exit()
+function G:leave()
+    items.clear()
     entities.entities = {}
     lights = {}
     lightWorld = nil
@@ -443,7 +457,7 @@ function beginContact(a, b, coll)
         local wep = b:getUserData().weapon
 
         if a:getUserData()[1] == "Player" then
-            bulletDamage(wep, a:getUserData().id, b:getBody():getAngle(), b:getBody())
+            bulletDamage(wep, a:getUserData().id, b:getBody():getAngle(), b:getUserData().owner_id)
         end
 
         removeBullet(b:getBody(), wep.bullet.type)

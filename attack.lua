@@ -49,6 +49,8 @@ function attack(attacker, attacker_id)
 
                     victim:remHealth(damage) -- remove health from the victim
                     victim.bod:applyLinearImpulse(math.cos(angleTo) * wep.knockback.victim * 10, math.sin(angleTo) * wep.knockback.victim * 10)
+
+                    victim.lastAttacker = attacker_id
                 elseif dist > wep.range then
                     print("Victim out of range")
                 elseif not between(angleTo, aa - wep.radius, aa + wep.radius) then
@@ -77,7 +79,7 @@ function attack(attacker, attacker_id)
 
             b.fixture = love.physics.newFixture(b.bod, b.shape)
             b.fixture:setRestitution(.2)
-            b.fixture:setUserData({"Bullet", weapon = wep})
+            b.fixture:setUserData({"Bullet", weapon = wep, owner_id = attacker_id})
 
             local spreadx, spready = spread(wep, attacker)
             local speed = wep.bullet.speed or 10
@@ -92,7 +94,7 @@ function attack(attacker, attacker_id)
     end
 end
 
-function bulletDamage(weapon, victim_id, angle, bullet)
+function bulletDamage(weapon, victim_id, angle, owner_id)
     local victim = entities.entities[victim_id]
     
     if victim == nil then return end
@@ -105,6 +107,8 @@ function bulletDamage(weapon, victim_id, angle, bullet)
         victim.bod:applyLinearImpulse(math.cos(angle) * weapon.knockback.victim * 10, math.sin(angle) * weapon.knockback.victim * 10)
         
         print("Attacker dealt " .. damage .. " damage to victim")
+
+        victim.lastAttacker = owner_id
     end
 end
 

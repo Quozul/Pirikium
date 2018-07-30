@@ -21,6 +21,7 @@ require "clib/utility"
 require "clib/players"
 world_utility = require "clib/world"
 particles = require "clib/particles"
+items = require "items"
 menu = require "menu"
 game = require "game"
 require "attack"
@@ -46,7 +47,8 @@ if not love.filesystem.getInfo( configFile ) then
         ai = {
             disable = false,
             debug = false
-        }
+        },
+        debug = true
     }
     love.filesystem.write(configFile, json:encode_pretty( config )) -- create a config file
     print("Config file not found, creating it")
