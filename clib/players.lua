@@ -3,7 +3,7 @@ player.__index = player
 
 local maxHealth = 10            -- health at start
 local defaultWeapon = "fists"     -- default weapon to spawn with
-local maxInventory = 10         -- maximum items the player can have
+local maxInventory = 2         -- maximum items the player can have
 
 function table.find(list, elem)
     for k,v in pairs(list) do
@@ -33,7 +33,7 @@ function newPlayer(x, y, id) -- creates a new player
     p.defaultMass = p.bod:getMass()
 
     p.health = maxHealth
-    p.inventory = { defaultWeapon, "gun", "shotgun", "sniper" }
+    p.inventory = { defaultWeapon }
     p.selectedSlot = 1
     p.cooldown = {
         attack = 0,
@@ -57,9 +57,26 @@ function player:setHealth(newHealth) self.health = newHealth end                
 function player:addHealth(healthPoints) self.health = self.health + healthPoints end    -- add health points to the player
 function player:remHealth(healthPoints) self.health = self.health - healthPoints end    -- remove health points from the player
 
+-- inventory functions
 function player:getWeapon() return weapons[self.inventory[self.selectedSlot]] end
 function player:setSlot(slot)
     self.selectedSlot = slot
     local weightToAdd = self:getWeapon().weight or 0
     self.bod:setMass( self.defaultMass + weightToAdd )
+end
+function player:addItem(item)
+    print("Picking up " .. item)
+    if #self.inventory <= maxInventory and not table.find(self.inventory, item) then
+        table.insert(self.inventory, item)
+    elseif #self.inventory > maxInventory then
+        print("Inventory is full")
+    elseif table.find(self.inventory, item) then
+        print("Item is already in the inventory")
+    end
+end
+function player:remItem(item)
+    print("Dropping " .. item)
+    if item == 1 then print("Can't drop that") return end
+    table.remove(self.inventory, item)
+    if item > #self.inventory then self.selectedSlot = #self.inventory end
 end

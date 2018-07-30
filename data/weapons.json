@@ -19,6 +19,28 @@
         "range": 100,
         "radius": 0.2,
         "weight": 0,
+        "cooldown": 0.1
+    },
+    "sword": {
+        "type": "melee",
+        "damage": {
+            "min": 0,
+            "max": 1
+        },
+        "knockback": {
+            "self": 0,
+            "victim": 2
+        },
+        "critic": {
+            "chance": 50,
+            "mult": {
+                "min": 2,
+                "max": 3
+            }
+        },
+        "range": 150,
+        "radius": 0.5,
+        "weight": 0.025,
         "cooldown": 0.2
     },
     "gun": {
@@ -38,15 +60,13 @@
                 "max": 2
             }
         },
-        "spread": {
-            "min": -0.2,
-            "max": 0.2
-        },
+        "spread": 0.05,
         "bullet": {
             "speed": 4,
             "radius": 2,
             "amount": 1,
-            "life": 0.5
+            "life": 0.5,
+            "type": "normal"
         },
         "weight": 0.05,
         "cooldown": 0.4
@@ -68,15 +88,13 @@
                 "max": 3
             }
         },
-        "spread": {
-            "min": -0.5,
-            "max": 0.5
-        },
+        "spread": 0.05,
         "bullet": {
             "speed": 2,
             "radius": 2,
             "amount": 5,
-            "life": 0.5
+            "life": 0.5,
+            "type": "normal"
         },
         "weight": 0.1,
         "cooldown": 0.7
@@ -98,17 +116,43 @@
                 "max": 4
             }
         },
-        "spread": {
-            "min": -0.025,
-            "max": 0.025
-        },
+        "spread": 0.05,
         "bullet": {
             "speed": 5,
             "radius": 3,
             "amount": 1,
-            "life": 1
+            "life": 1,
+            "type": "normal"
         },
         "weight": 0.15,
         "cooldown": 1
+    },
+    "bazooka": {
+        "type": "firearm",
+        "damage": {
+            "min": 3,
+            "max": 5
+        },
+        "knockback": {
+            "self": 15,
+            "victim": 10
+        },
+        "critic": {
+            "chance": 2,
+            "mult": {
+                "min": 2,
+                "max": 4
+            }
+        },
+        "spread": 0.05,
+        "bullet": {
+            "speed": 2,
+            "radius": 4,
+            "amount": 1,
+            "life": 1,
+            "type": "explosive"
+        },
+        "weight": 0.2,
+        "cooldown": 1.75
     }
 }

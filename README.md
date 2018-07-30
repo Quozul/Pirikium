@@ -8,7 +8,9 @@ Controls can be changed in the config file.
 * **Left mouse** to shoot
 * **Space** to dodge/jump (*strange movement, can't explain it*)
 * **Mouse wheel** to change weapon
-* **E** to use/interact (*not added yet*)
+* **E** to use/interact
+* **R** drop weapon
+* **Escape** while playing to go back to main menu
 
 ## Run & compiling
 You don't have to compile the game in order to play it.
