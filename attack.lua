@@ -44,7 +44,8 @@ function attack(attacker, attacker_id)
 
                 if dist <= wep.range and -- if player is in range to be attacked
                 between(angleTo, aa - wep.radius, aa + wep.radius) then
-                    local damage, wasCritic = damageAmount(wep, dist)
+                    local damage, wasCritic = damageAmount(wep, dist - attacker.skills.accuracy)
+                    damage = damage + attacker.skills.strength
                     print("Attacker dealt " .. damage .. " damage to victim")
 
                     victim:remHealth(damage) -- remove health from the victim
@@ -72,18 +73,18 @@ function attack(attacker, attacker_id)
             b.bod:setBullet(true)
             b.bod:setAngle(aa)
             b.bod:setLinearDamping(1)
-            b.bod:setMass(0.001)
 
             local radius = wep.bullet.radius
             b.shape = love.physics.newCircleShape(radius)
-
+            b.bod:setMass(0.001)
+            
             b.fixture = love.physics.newFixture(b.bod, b.shape)
             b.fixture:setRestitution(.2)
             b.fixture:setUserData({"Bullet", weapon = wep, owner_id = attacker_id})
 
             local spreadx, spready = spread(wep, attacker)
             local speed = wep.bullet.speed or 10
-            b.bod:applyLinearImpulse(math.cos(aa + spreadx) * speed, math.sin(aa + spready) * speed)
+            b.bod:applyLinearImpulse(math.cos(aa + (spreadx - attacker.skills.accuracy / 100)) * speed, math.sin(aa + (spready - attacker.skills.accuracy / 100)) * speed)
 
             b.age = wep.bullet.life
 

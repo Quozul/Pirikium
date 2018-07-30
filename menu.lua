@@ -3,7 +3,7 @@ local M = {}
 M.main = {}
 M.settings = {}
 M.pause = {}
-M.connecting = {}
+M.character = {}
 
 local buttons = {}
 
@@ -25,6 +25,26 @@ end
 function M.main:mousepressed(x, y, button, isTouch)
     buttons.play:mouse()
     buttons.settings:mouse()
+end
+
+function M.character:init()
+    -- slider = newSlider(x, y, length, value, min, max, setter, style)
+    strength = newSlider(100, 100, 100, 0.1, 0, 1)
+    speed = newSlider(100, 120, 100, 0.1, 0, 1)
+    accuracy = newSlider(100, 140, 100, 0.1, 0, 1)
+end
+
+function M.character:update(dt)
+    love.graphics.setColor(1, 1, 1)
+    strength:update()
+    speed:update()
+    accuracy:update()
+end
+
+function M.character:draw()
+    strength:draw()
+    speed:draw()
+    accuracy:draw()
 end
 
 function M.settings:init()

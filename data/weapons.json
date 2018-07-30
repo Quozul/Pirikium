@@ -43,6 +43,34 @@
         "weight": 0.025,
         "cooldown": 0.2
     },
+    "bow": {
+        "type": "firearm",
+        "damage": {
+            "min": 2,
+            "max": 5
+        },
+        "knockback": {
+            "self": 0,
+            "victim": 2
+        },
+        "critic": {
+            "chance": 20,
+            "mult": {
+                "min": 1,
+                "max": 2
+            }
+        },
+        "spread": 0.0075,
+        "bullet": {
+            "speed": 35,
+            "radius": 9,
+            "amount": 1,
+            "life": 1.5,
+            "type": "arrow"
+        },
+        "weight": 0.01,
+        "cooldown": 1
+    },
     "gun": {
         "type": "firearm",
         "damage": {
@@ -60,7 +88,7 @@
                 "max": 2
             }
         },
-        "spread": 0.05,
+        "spread": 0.0075,
         "bullet": {
             "speed": 4,
             "radius": 2,
@@ -116,7 +144,7 @@
                 "max": 4
             }
         },
-        "spread": 0.05,
+        "spread": 0.0005,
         "bullet": {
             "speed": 5,
             "radius": 3,
@@ -144,7 +172,7 @@
                 "max": 4
             }
         },
-        "spread": 0.05,
+        "spread": 0.001,
         "bullet": {
             "speed": 2,
             "radius": 4,

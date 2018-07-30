@@ -2,9 +2,11 @@ gamestate = require "modules/hump.gamestate"
 camera = require "modules/hump.camera"
 timer = require "modules/hump.timer"
 bitser = require "modules/bitser"
+gspot = require "modules/gspot"
 uuid = require "modules/uuid"
 json = require "modules/json"
 ser = require "modules/ser"
+--require "modules/simple-slider"
 
 sti = require "modules/sti"
 grid = require "modules/jumper.grid"
@@ -47,7 +49,7 @@ if not love.filesystem.getInfo( configFile ) then
         ai = {
             disable = false,
             debug = false,
-            limit = 4
+            limit = 2
         },
         debug = true
     }

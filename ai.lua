@@ -54,7 +54,7 @@ function ai.update(ent, target, ent_id) -- => attacker, victim
             local angleTo = math.atan2(currentY - ay, currentX - ax)
             ent.bod:setAngle(angleTo)
 
-            local speed = love.physics.getMeter() * 4
+            local speed = love.physics.getMeter() * (4 + ent.skills.speed)
 
             ent.bod:applyForce(speed * math.cos(currentAngle), speed * math.sin(currentAngle))
             
