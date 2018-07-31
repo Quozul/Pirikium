@@ -109,8 +109,9 @@ function M:init()
     settings.right = gspot:input("Right", {unit*5, unit*9, unit*3, unit*1}, settings, config.controls.right)
     settings.use = gspot:input("Use", {unit*5, unit*10, unit*3, unit*1}, settings, config.controls.use)
     settings.drop = gspot:input("Drop", {unit*5, unit*11, unit*3, unit*1}, settings, config.controls.drop)
+    settings.skills = gspot:input("Skills tree", {unit*5, unit*11, unit*3, unit*1}, settings, config.controls.skill_tree)
 
-    settings.save = gspot:button("Save controls", {0, unit*12, unit*8, unit*2}, settings)
+    settings.save = gspot:button("Save controls", {0, unit*13, unit*8, unit*2}, settings)
     settings.save.click = function(this)
         config.controls.forward = settings.forward.value
         config.controls.left = settings.left.value

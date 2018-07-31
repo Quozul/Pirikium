@@ -74,13 +74,24 @@ function G:enter()
         local d = {}
 
         d.bod = love.physics.newBody( world, x * 64 - 32, y * 64 - 32, "dynamic" )
-        d.bod:setLinearDamping(16)
-        d.bod:setAngularDamping(16)
+        d.bod:setLinearDamping(1)
+        d.bod:setAngularDamping(1)
         d.bod:setAngle(r)
-        d.shape = love.physics.newRectangleShape(48, 16)
+        d.bod:setBullet(true)
+        d.shape = love.physics.newRectangleShape(48, 8)
         d.fixture = love.physics.newFixture(d.bod, d.shape)
-        d.fixture:setRestitution(.2)
+        d.fixture:setRestitution(.5)
         d.fixture:setUserData({"Door"})
+
+        d.hinge = love.physics.newBody(world, x * 64 - 32 + math.cos(r) * 32, y * 64 - 32 + math.sin(r) * 32, "static")
+        d.hinge:setLinearDamping(16)
+        d.hinge:setAngularDamping(16)
+        d.hingeShape = love.physics.newRectangleShape(8, 8)
+        d.hingeFixture = love.physics.newFixture(d.hinge, d.hingeShape)
+        d.hingeFixture:setUserData({"Hinge"})
+        d.hingeFixture:setSensor(true)
+
+        d.joint = love.physics.newRevoluteJoint( d.bod, d.hinge,  x * 64 - 32 + math.cos(r) * 28, y * 64 - 32 + math.sin(r) * 28 )
 
         print("Added one door")
 
@@ -173,10 +184,10 @@ function G:enter()
         for id, ent in pairs(self.entities) do
             local px, py = ent.bod:getPosition()
 
-            ent.cooldown.attack = math.max(ent.cooldown.attack - dt, 0) -- cooldown for primary attack
-            ent.cooldown.special = math.max(ent.cooldown.special - dt, 0) -- cooldown for special attack
-            ent.cooldown.dodge = math.max(ent.cooldown.dodge - dt, 0) -- cooldown for rolling
-            if not ent.sprinting then ent.cooldown.sprint = math.max(ent.cooldown.sprint - dt, 0) end -- cooldown for sprinting
+            ent.cooldown.attack = math.max(ent.cooldown.attack - dt * ent.skills.recoil, 0) -- cooldown for primary attack
+            ent.cooldown.special = math.max(ent.cooldown.special - dt * ent.skills.recoil, 0) -- cooldown for special attack
+            ent.cooldown.dodge = math.max(ent.cooldown.dodge - dt * ent.skills.recoil, 0) -- cooldown for rolling
+            if not ent.sprinting then ent.cooldown.sprint = math.max(ent.cooldown.sprint - dt * ent.skills.recoil, 0) end -- cooldown for sprinting
 
             if id == playerUUID then
                 local pa = math.atan2(cmy - py, cmx - px) -- angle of the player
@@ -201,6 +212,8 @@ function G:enter()
     end
 
     function entities:draw()
+        items.draw()
+
         for id, ent in pairs(self.entities) do
             love.graphics.push("transform")
 
@@ -261,9 +274,24 @@ function G:enter()
 
             love.graphics.translate(x, y)
             love.graphics.rotate(a)
-            love.graphics.rectangle("fill", -48/2, -16/2, 48, 16)
+            love.graphics.rectangle("fill", -64/2, -8/2, 64, 8)
 
             love.graphics.pop()
+
+            if config.debug then -- draw door's hinge
+                love.graphics.push("transform")
+
+                local x, y = door.hinge:getPosition()
+                local a = door.hinge:getAngle()
+
+                love.graphics.setColor(1, 0, 0, .5)
+
+                love.graphics.translate(x, y)
+                love.graphics.rotate(a)
+                love.graphics.rectangle("fill", -8/2, -8/2, 8, 8)
+
+                love.graphics.pop()
+            end
         end
         
         for index, chest in pairs(self.chests) do
@@ -280,6 +308,8 @@ function G:enter()
 
             love.graphics.pop()
         end
+
+        particles.draw()
     end
 
     cam = camera(0, 0)
@@ -315,6 +345,19 @@ function G:keypressed(key, scancode, isrepeat)
             end
         end
 
+        for id, door in pairs(entities.doors) do
+            if love.physics.getDistance(door.fixture, ply.fixture) <= 250 then
+                local isInside = door.fixture:testPoint(x, y)
+                if isInside then
+                    local dx, dy = door.bod:getPosition()
+                    local a = math.atan2(py - dy, px - dx)
+                    local speed = love.physics.getMeter() * -25
+                    door.bod:applyForce(math.cos(a) * speed, math.sin(a) * speed, cmx, cmy)
+                    return
+                end
+            end
+        end
+
         items.interact(ply, x, y, px, py)
     elseif key == config.controls.drop then
         ply:drop(ply.selectedSlot)
@@ -340,7 +383,7 @@ function controls(dt)
 
     local speed = love.physics.getMeter() * (4 + ply.skills.speed)
 
-    if key(config.controls.sprint) and cooldown.sprint ~= 2 then
+    if key(config.controls.sprint) and cooldown.sprint ~= ply.skills.stamina then
         speed = speed * 2
         cooldown.sprint = math.min(cooldown.sprint + dt, 2)
         ply.sprinting = true
@@ -360,7 +403,7 @@ function controls(dt)
         ply.bod:applyForce(speed * math.cos(pa + (math.pi / 2)), speed * math.sin(pa + (math.pi / 2)))
     end
 
-    if key(config.controls.dodge) and cooldown.dodge == 0 and cooldown.sprint < 2 then
+    if key(config.controls.dodge) and cooldown.dodge == 0 and cooldown.sprint < ply.skills.stamina then
         ply.bod:applyLinearImpulse(vx, vy)
         cooldown.dodge = 1
         cooldown.sprint = cooldown.sprint + dt * 10
@@ -423,14 +466,13 @@ function G:draw()
     love.graphics.setColor(1, 1, 1)
     map:draw(cx, cy)
 
-    cam:draw(function()
-        -- draw collision map (debug)
-        --love.graphics.setColor(1, 0, 0, .5)
-        --map:box2d_draw()
+    --cam:draw(function() end)
 
-        particles.draw()
-        items.draw()
-    end)
+    -- draw collision map (debug)
+    if config.debug then
+        love.graphics.setColor(1, 0, 0)
+        map:box2d_draw(cx, cy)
+    end
 
     if config.shader then lightWorld:Draw() end
 

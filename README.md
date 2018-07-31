@@ -6,11 +6,12 @@ Controls can be changed in the config file.
 * **WASD** to move
 * **Left-shift** to sprint
 * **Left mouse** to shoot
+* **Right mouse** for special attack (no special attacks added yet)
 * **Space** to dash
 * **Mouse wheel** to change weapon
 * **E** to use/interact
 * **R** drop weapon
-* **Escape** while playing to go back to main menu
+* **C** to open skill menu
 
 ## Run & compiling
 You don't have to compile the game in order to play it.
@@ -36,3 +37,4 @@ Lighting & shadows | [Shädows](https://github.com/matiasah/shadows)
 World generation | [Astray](https://github.com/SiENcE/astray) (not used yet)
 STI | [STI](https://github.com/karai17/Simple-Tiled-Implementation)
 Pathfinding | [Jumper](https://github.com/Yonaba/Jumper)
+Random names | [lua-namegen](https://github.com/LukeMS/lua-namegen)

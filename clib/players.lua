@@ -34,9 +34,11 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
     }
     p.skills = {
         speed = 0 + level,
+        stamina = 2 + level,
         strength = 0 + level,
         accuracy = 0 + level,
-        brain = 0 + level
+        brain = 0 + level,
+        recoil = 1 + level,
     }
     p.kills = 0
     p.lastAttacker = nil
@@ -116,6 +118,7 @@ function player:addItem(item)
     print("Picking up " .. item)
     if #self.inventory <= maxInventory and not table.find(self.inventory, item) then
         table.insert(self.inventory, item)
+        sounds.pickup:play()
         return true
     elseif #self.inventory > maxInventory then
         print("Inventory is full")
@@ -129,7 +132,8 @@ end
 function player:drop(item)
     print("Dropping " .. item)
     if item == 1 then print("Can't drop that") return end
-    items.drop(px, py, self.inventory[item])
+    local a = self.bod:getAngle()
+    items.drop(px, py, a, self.inventory[item])
     table.remove(self.inventory, item)
     if item > #self.inventory then self.selectedSlot = #self.inventory end
     self:updateWeight()
