@@ -15,6 +15,8 @@ function G:enter()
 
     cursor = love.graphics.newImage("data/cursor.png")
     love.mouse.setVisible(false)
+    love.mouse.setGrabbed(true)
+    dot = love.graphics.newImage("data/cursor_small.png")
 
     images = {}
 
@@ -324,7 +326,6 @@ function G:resize(w, h)
 end
 
 function G:mousepressed(x, y, button, istouch, presses)
-    attack(entities.entities[playerUUID], playerUUID)
 end
 
 function G:keypressed(key, scancode, isrepeat)
@@ -407,6 +408,17 @@ function controls(dt)
         ply.bod:applyLinearImpulse(vx, vy)
         cooldown.dodge = 1
         cooldown.sprint = cooldown.sprint + dt * 10
+    end
+
+    if love.mouse.isDown(1) then
+        if ply:getWeapon().firetype == "auto" then
+            attack(entities.entities[playerUUID], playerUUID)
+        elseif not attackIsDown then
+            attack(entities.entities[playerUUID], playerUUID)
+            attackIsDown = true
+        end
+    elseif not love.mouse.isDown(1) then
+        attackIsDown = false
     end
 end
 
@@ -509,9 +521,13 @@ function G:draw()
 
     love.graphics.setColor(1, 1, 1)
     love.graphics.print(ply.kills .. " kills", 5, 54)
-    love.graphics.print(ply.exp .. " level", 5, 66)
+    love.graphics.print(ply.exp .. " levels", 5, 66)
 
-    love.graphics.draw(cursor, mx - 16, my - 16)
+    if love.mouse.isDown(1) then
+        love.graphics.draw(dot, mx - 16, my - 16)
+    else
+        love.graphics.draw(cursor, mx - 16, my - 16)
+    end
 end
 
 function G:leave()
