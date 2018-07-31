@@ -32,7 +32,7 @@ ai = require "ai"
 math.randomseed(os.time())
 
 local configFile = "config.json"
-if not love.filesystem.getInfo( configFile ) then
+function createConfig()
     config = {
         shader = true,
         controls = {
@@ -55,10 +55,16 @@ if not love.filesystem.getInfo( configFile ) then
     }
     love.filesystem.write(configFile, json:encode_pretty( config )) -- create a config file
     print("Config file not found, creating it")
+end
+
+if not love.filesystem.getInfo( configFile ) then
+    createConfig()
 else
     config = json:decode( love.filesystem.read( configFile ) ) -- loads the existing config file
     print("Config file loaded")
 end
+
+print(rf(0, 1, 4), rf2(0, 1, 4))
 
 function love.load()
     menuFont = love.graphics.newFont(24)
@@ -66,7 +72,7 @@ function love.load()
     print("Loaded font")
 
     gamestate.registerEvents()
-    gamestate.switch(menu.main)
+    gamestate.switch(menu)
 end
 
 function love.quit()
