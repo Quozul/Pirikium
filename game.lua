@@ -159,8 +159,9 @@ function G:enter()
     local function addEnnemy()
         local x, y = unpack( spawns.hostile[math.random(1, #spawns.hostile)] )
         local uid = uuid()
+        local level = rf2(0, ply.kills / 10, 1)
         local weapon = loots.ai[math.random(1, #loots.ai)]
-        entities.entities[uid] = newPlayer(x, y, uid, weapon)
+        entities.entities[uid] = newPlayer(x, y, uid, weapon, level)
         ai.set(entities.entities[uid], uid)
 
         print("Added one ennemy")
@@ -186,7 +187,7 @@ function G:enter()
 
                 if ent:getHealth() <= 0 then
                     print(ent.lastAttacker)
-                    self.entities[ent.lastAttacker]:addKill(1)
+                    self.entities[ent.lastAttacker]:addKill(1, ent)
                     self.entities[id] = nil
                 end
             end
@@ -206,9 +207,14 @@ function G:enter()
             local x, y = ent.bod:getPosition()
             local a = ent.bod:getAngle()
 
+            love.graphics.translate(x, y)
+            if id ~= playerUUID then
+                love.graphics.setColor(1, 1, 1, (255 - sl(cmx, cmy, x, y)) / 255)
+                love.graphics.print(ent.name, -hudFont:getWidth(ent.name) / 2, -25)
+            end
+
             love.graphics.setColor(1, 1, 1, 1)
 
-            love.graphics.translate(x, y)
             love.graphics.rotate(a)
             love.graphics.rectangle("fill", -20/2, -20/2, 20, 20)
 
@@ -460,7 +466,8 @@ function G:draw()
     love.graphics.rectangle("fill", 5, 44, (2 - ply.cooldown.sprint) / 2 * 100, 10)
 
     love.graphics.setColor(1, 1, 1)
-    love.graphics.print(ply.kills .. " kill", 5, 54)
+    love.graphics.print(ply.kills .. " kills", 5, 54)
+    love.graphics.print(ply.exp .. " level", 5, 66)
 
     love.graphics.draw(cursor, mx - 16, my - 16)
 end

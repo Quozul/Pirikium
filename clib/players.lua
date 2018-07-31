@@ -12,9 +12,12 @@ function table.find(list, elem)
     end
 end
 
-function newPlayer(x, y, id, weapon) -- creates a new player
-    if x == nil or y == nil then error("You must give coordinates for the new player to spawn")
-        return end
+function newPlayer(x, y, id, weapon, level) -- creates a new player
+    if x == nil or y == nil then error("You must give coordinates for the new player to spawn") return end
+
+    if not level then level = 0 end
+
+    print("The level of this entity is " .. level)
 
     local p = {}
 
@@ -30,13 +33,14 @@ function newPlayer(x, y, id, weapon) -- creates a new player
         dodge = 0
     }
     p.skills = {
-        speed = 0,
-        strength = 0,
-        accuracy = 0,
-        brain = 0
+        speed = 0 + level,
+        strength = 0 + level,
+        accuracy = 0 + level,
+        brain = 0 + level
     }
     p.kills = 0
     p.lastAttacker = nil
+    p.exp = 0 + level
 
     if love.filesystem.getInfo( id .. ".sav" ) then
         local l = bitser.loads(love.filesystem.read( id .. ".sav" ))
@@ -44,11 +48,16 @@ function newPlayer(x, y, id, weapon) -- creates a new player
         --p.health = l.health
         p.inventory = l.inventory
         p.kills = l.kills
+        p.exp = l.exp
         for skill, value in pairs(l.skills) do
             p.skills[skill] = value
         end
 
+        p.name = id
+
         print("Player save found")
+    else
+        p.name = namegen.generate("human male")
     end
 
     p.bod = love.physics.newBody( world, x * 64, y * 64, "dynamic" ) -- creates a body for the player
@@ -79,12 +88,9 @@ function player:save()
     s.skills = self.skills
     s.health = self.health
     s.x, s.y = self.bod:getPosition()
+    s.exp = self.exp
 
     love.filesystem.write( self.id .. ".sav", bitser.dumps( s ) )
-end
-
-function loadStats(stats) -- stats is a table
-
 end
 
 -- health related functions
@@ -100,10 +106,12 @@ end
 
 -- inventory functions
 function player:getWeapon() return weapons[self.inventory[self.selectedSlot]] end
+
 function player:setSlot(slot)
     self.selectedSlot = slot
     self:updateWeight()
 end
+
 function player:addItem(item)
     print("Picking up " .. item)
     if #self.inventory <= maxInventory and not table.find(self.inventory, item) then
@@ -117,6 +125,7 @@ function player:addItem(item)
         return false
     end
 end
+
 function player:drop(item)
     print("Dropping " .. item)
     if item == 1 then print("Can't drop that") return end
@@ -125,4 +134,22 @@ function player:drop(item)
     if item > #self.inventory then self.selectedSlot = #self.inventory end
     self:updateWeight()
 end
-function player:addKill(amount) self.kills = self.kills + amount end
+
+function player:addKill(amount, victim)
+    self.kills = self.kills + amount
+
+    local skillLevel = 0
+
+    for skill, level in pairs(victim.skills) do
+        skillLevel = skillLevel + level
+        print(skill, level)
+    end
+
+    local xp = victim.exp + victim.kills + skillLevel
+    print(victim.exp, victim.kills)
+
+    self.exp = self.exp + xp
+    sounds.exp:setPitch(rf2(.8, 1.2, 2))
+    sounds.exp:play()
+    print("Gain " .. xp .. " exp")
+end
