@@ -59,10 +59,8 @@ function ai.update(ent, target, ent_id) -- => attacker, victim
             ent.bod:applyForce(speed * math.cos(currentAngle), speed * math.sin(currentAngle))
             
             break
-        elseif inAttackRange and inAttackRadius then
+        elseif inAttackRange then
             attack(ent, ent_id)
-        elseif inAttackRange and not inAttackRadius then
-            ent.bod:setAngle(angleToVictim)
         end
     end
 end

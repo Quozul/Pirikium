@@ -60,7 +60,7 @@
                 "max": 2
             }
         },
-        "spread": 0.0075,
+        "spread": 0.05,
         "bullet": {
             "speed": 35,
             "radius": 9,
@@ -88,7 +88,7 @@
                 "max": 2
             }
         },
-        "spread": 0.0075,
+        "spread": 0.03,
         "bullet": {
             "speed": 4,
             "radius": 2,
@@ -116,7 +116,7 @@
                 "max": 3
             }
         },
-        "spread": 0.05,
+        "spread": 0.5,
         "bullet": {
             "speed": 2,
             "radius": 2,
@@ -144,7 +144,7 @@
                 "max": 4
             }
         },
-        "spread": 0.0005,
+        "spread": 0.01,
         "bullet": {
             "speed": 5,
             "radius": 3,
@@ -172,7 +172,7 @@
                 "max": 4
             }
         },
-        "spread": 0.001,
+        "spread": 0.02,
         "bullet": {
             "speed": 2,
             "radius": 4,

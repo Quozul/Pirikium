@@ -66,7 +66,7 @@ function G:enter()
     entities = map.layers["Entities Layer"]
     
     lightWorld = LightWorld:new()
-    lightWorld:SetColor(10, 10, 10, 255)
+    lightWorld:SetColor(50, 50, 50, 255)
     lightWorld:Resize(853, 480)
     print("Created light world")
 
@@ -150,8 +150,6 @@ function G:enter()
     print(#spawns.friendly .. " player spawns found")
     print(#spawns.hostile .. " ennemy spawns found")
     local x, y = unpack( spawns.friendly[math.random(1, #spawns.friendly)] )
-
-    playerUUID = "player"
 
     entities.entities[playerUUID] = newPlayer(x, y, playerUUID)
     lights.player = Light:new(lightWorld, 200)
@@ -315,7 +313,7 @@ function G:keypressed(key, scancode, isrepeat)
     elseif key == config.controls.drop then
         ply:drop(ply.selectedSlot)
     elseif key == "escape" then
-        gamestate.switch(menu.main)
+        gamestate.switch(menu)
     end
 end
 
@@ -411,7 +409,7 @@ function G:update(dt)
         end
     end]]
     
-    if ply == nil or ply:getHealth() <= 0 then gamestate.switch(menu.main) end
+    if ply == nil or ply:getHealth() <= 0 then gamestate.switch(menu) end
 end
 
 function G:draw()

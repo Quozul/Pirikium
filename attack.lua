@@ -16,7 +16,7 @@ end
 
 local function spread(weapon, ent)
     -- must add spread based on ent's speed
-    return rf(-weapon.spread, weapon.spread, 4), rf(-weapon.spread, weapon.spread, 4)
+    return rf2(-weapon.spread, weapon.spread, 4), rf2(-weapon.spread, weapon.spread, 4)
 end
 
 function attack(attacker, attacker_id)
@@ -68,7 +68,7 @@ function attack(attacker, attacker_id)
 
         for i=1, fire do
             local b = {}
-
+            
             b.bod = love.physics.newBody(world, ax + math.cos(aa) * 20, ay + math.sin(aa) * 20, "dynamic")
             b.bod:setBullet(true)
             b.bod:setAngle(aa)

@@ -1,0 +1,33 @@
+{
+    "bowman": {
+        "weapon": "bow",
+        "skills": {
+            "speed": 0.5,
+            "brain": 0.1
+        },
+        "pos": 3
+    },
+    "warrior": {
+        "weapon": "sword",
+        "skills": {
+            "strength": 0.5
+        },
+        "pos": 2
+    },
+    "survivor": {
+        "weapon": "fists",
+        "skills": {
+            "brain": 0.2
+        },
+        "pos": 1
+    },
+    "tank": {
+        "weapon": "shotgun",
+        "skills": {
+            "speed": -0.2,
+            "accuracy": 0.1,
+            "brain": -0.1
+        },
+        "pos": 4
+    }
+}
