@@ -5,7 +5,9 @@
         "shotgun",
         "sniper",
         "grenade_launcher",
-        "bow"
+        "bow",
+        "smg",
+        "dagger"
     ],
     "ai": [
         "fists",

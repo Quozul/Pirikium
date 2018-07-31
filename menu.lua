@@ -124,6 +124,7 @@ end
 
 function M:enter()
     love.mouse.setVisible(true)
+    love.mouse.setGrabbed(false)
     love.graphics.setBackgroundColor(0, 0, 0)
     print("Entered menu")
 end

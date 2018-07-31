@@ -39,9 +39,32 @@
             }
         },
         "range": 150,
-        "radius": 0.5,
+        "radius": 0.6,
         "weight": 0.025,
         "cooldown": 0.2
+    },
+    "dagger": {
+        "type": "melee",
+        "firetype": "auto",
+        "damage": {
+            "min": 0,
+            "max": 2
+        },
+        "knockback": {
+            "self": 0,
+            "victim": 1
+        },
+        "critic": {
+            "chance": 5,
+            "mult": {
+                "min": 1,
+                "max": 2
+            }
+        },
+        "range": 100,
+        "radius": 0.4,
+        "weight": 0.005,
+        "cooldown": 0.1
     },
     "bow": {
         "type": "firearm",
@@ -54,10 +77,10 @@
             "victim": 2
         },
         "critic": {
-            "chance": 20,
+            "chance": 10,
             "mult": {
-                "min": 1,
-                "max": 2
+                "min": 2,
+                "max": 4
             }
         },
         "spread": 0.05,
@@ -98,6 +121,35 @@
         },
         "weight": 0.05,
         "cooldown": 0.4
+    },
+    "smg": {
+        "type": "firearm",
+        "firetype": "auto",
+        "damage": {
+            "min": 2,
+            "max": 3
+        },
+        "knockback": {
+            "self": 3,
+            "victim": 3
+        },
+        "critic": {
+            "chance": 5,
+            "mult": {
+                "min": 1,
+                "max": 3
+            }
+        },
+        "spread": 0.1,
+        "bullet": {
+            "speed": 5,
+            "radius": 2,
+            "amount": 1,
+            "life": 0.2,
+            "type": "normal"
+        },
+        "weight": 0.04,
+        "cooldown": 0.2
     },
     "shotgun": {
         "type": "firearm",
