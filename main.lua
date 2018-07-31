@@ -44,14 +44,15 @@ function createConfig()
             dodge = "space",
             use = "e",
             sprint = "lshift",
-            drop = "r"
+            drop = "r",
+            skill_tree = "c"
         },
         ai = {
             disable = false,
             debug = false,
             limit = 2
         },
-        debug = true
+        debug = false
     }
     love.filesystem.write(configFile, json:encode_pretty( config )) -- create a config file
     print("Config file not found, creating it")

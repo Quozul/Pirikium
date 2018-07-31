@@ -1,3 +1,6 @@
 *.bat
 *.pdn
 .vscode
+data/weapons/gun.png
+data/weapons/sword.png
+.updateinfo
