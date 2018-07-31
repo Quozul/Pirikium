@@ -52,6 +52,8 @@ function attack(attacker, attacker_id)
                     victim.bod:applyLinearImpulse(math.cos(angleTo) * wep.knockback.victim * 10, math.sin(angleTo) * wep.knockback.victim * 10)
 
                     victim.lastAttacker = attacker_id
+
+                    sounds.hit:play()
                 elseif dist > wep.range then
                     print("Victim out of range")
                 elseif not between(angleTo, aa - wep.radius, aa + wep.radius) then
@@ -65,6 +67,8 @@ function attack(attacker, attacker_id)
         print("Attacking with a firearm")
 
         local fire = wep.bullet.amount or 1
+
+        sounds.fire:play()
 
         for i=1, fire do
             local b = {}
@@ -110,6 +114,8 @@ function bulletDamage(weapon, victim_id, angle, owner_id)
         print("Attacker dealt " .. damage .. " damage to victim")
 
         victim.lastAttacker = owner_id
+
+        sounds.hit:play()
     end
 end
 
@@ -118,6 +124,9 @@ function removeBullet(body, type)
 
     if type == "explosive" then
         particles.add(10, x, y, {1, 0, 0}, 6)
+        sounds.explosion:play()
+    else
+        sounds.hit:play()
     end
     body:destroy()
 end

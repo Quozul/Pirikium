@@ -31,6 +31,7 @@ local function updatePlayerList()
             load[index].rem.click = function(this)
                 gspot:rem(load[index])
                 gspot:rem(load[index].rem)
+                love.filesystem.remove(info[1] .. ".sav")
                 players[index] = nil
                 resavePlayerList()
             end
@@ -42,6 +43,7 @@ local function createPlayer(name)
     local s = {}
     s.inventory = { classes[class.value].weapon }
     s.kills = 0
+    s.exp = 0
     s.skills = classes[class.value].skills
 
     love.filesystem.write( name .. ".sav", bitser.dumps( s ) )

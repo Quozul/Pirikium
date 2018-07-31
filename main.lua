@@ -6,7 +6,7 @@ gspot = require "modules/gspot"
 uuid = require "modules/uuid"
 json = require "modules/json"
 ser = require "modules/ser"
---require "modules/simple-slider"
+namegen = require "modules/namegen.namegen"
 
 sti = require "modules/sti"
 grid = require "modules/jumper.grid"
@@ -64,12 +64,19 @@ else
     print("Config file loaded")
 end
 
-print(rf(0, 1, 4), rf2(0, 1, 4))
-
 function love.load()
     menuFont = love.graphics.newFont(24)
     hudFont = love.graphics.newFont(12)
     print("Loaded font")
+
+    sounds = {}
+    sounds.explosion = love.audio.newSource("data/sounds/explosion.mp3", "stream")
+    sounds.hit = love.audio.newSource("data/sounds/hit_ennemy.mp3", "stream")
+    sounds.melody = love.audio.newSource("data/sounds/melody.mp3", "stream")
+    sounds.exp = love.audio.newSource("data/sounds/pickup_exp.mp3", "stream")
+    sounds.pickup = love.audio.newSource("data/sounds/pickup.mp3", "stream")
+    sounds.fire = love.audio.newSource("data/sounds/shoot.mp3", "stream")
+    print("Loaded sounds")
 
     gamestate.registerEvents()
     gamestate.switch(menu)
