@@ -116,22 +116,19 @@ end
 
 function player:addItem(item)
     print("Picking up " .. item)
-    if #self.inventory <= maxInventory and not table.find(self.inventory, item) then
+    if #self.inventory <= maxInventory then
         table.insert(self.inventory, item)
         sounds.pickup:play()
         return true
     elseif #self.inventory > maxInventory then
         print("Inventory is full")
         return false
-    elseif table.find(self.inventory, item) then
-        print("Item is already in the inventory")
-        return false
     end
 end
 
 function player:drop(item)
     print("Dropping " .. item)
-    if item == 1 then print("Can't drop that") return end
+    if #self.inventory <= 1 then print("Can't drop that") return end
     local a = self.bod:getAngle()
     items.drop(px, py, a, self.inventory[item])
     table.remove(self.inventory, item)
@@ -153,7 +150,7 @@ function player:addKill(amount, victim)
     print(victim.exp, victim.kills)
 
     self.exp = self.exp + xp
-    sounds.exp:setPitch(rf2(.8, 1.2, 2))
+    sounds.exp:setPitch(rf(.8, 1.2, 2))
     sounds.exp:play()
     print("Gain " .. xp .. " exp")
 end
