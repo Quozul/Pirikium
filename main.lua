@@ -5,6 +5,9 @@ love.graphics.setFont(menuFont)
 love.graphics.print("Loading...", (window_width - menuFont:getWidth("Loading...")) / 2, (window_height - menuFont:getHeight("Loading...")) / 2)
 love.graphics.present()
 
+icon = love.image.newImageData("data/icon.png")
+love.window.setIcon(icon)
+
 gamestate = require "modules/hump.gamestate"
 camera = require "modules/hump.camera"
 timer = require "modules/hump.timer"
@@ -13,7 +16,7 @@ gspot = require "modules/gspot"
 uuid = require "modules/uuid"
 json = require "modules/json"
 ser = require "modules/ser"
-namegen = require "modules/namegen.namegen"
+namegen = require "namegen.namegen"
 
 sti = require "modules/sti"
 grid = require "modules/jumper.grid"
@@ -28,6 +31,7 @@ print("Loaded modules")
 require "clib/buttons"
 require "clib/utility"
 require "clib/players"
+require "clib/animation"
 world_utility = require "clib/world"
 particles = require "clib/particles"
 items = require "items"
@@ -92,10 +96,19 @@ function love.load()
 
     love.graphics.setDefaultFilter("nearest", "nearest")
 
+    -- hud & gui stuff
     cursor = love.graphics.newImage("data/cursor.png")
     dot = love.graphics.newImage("data/cursor_small.png")
     slot = love.graphics.newImage("data/inv_slot.png")
     bar = love.graphics.newImage("data/bar.png")
+
+    crate = love.graphics.newImage("data/crate.png")
+    orbs = {
+        health = love.graphics.newImage("data/orbs/health.png"),
+        skill = love.graphics.newImage("data/orbs/skill.png")
+    }
+
+    crate_animation = newAnimation(crate, 48, 48, 0.8)
 
     sounds = {}
     sounds.explosion = love.audio.newSource("data/sounds/explosion.mp3", "stream")

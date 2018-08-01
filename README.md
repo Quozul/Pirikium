@@ -12,6 +12,7 @@ Controls can be changed in the config file.
 * **E** to use/interact
 * **R** drop weapon
 * **C** to open skill menu
+* **F3** toggle debug mode
 
 ## Run & compiling
 You don't have to compile the game in order to play it.

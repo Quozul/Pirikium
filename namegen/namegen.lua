@@ -27,7 +27,7 @@ local function loadrequire(module)
     return loaded
 end
 
-local RangedTable = require("modules/namegen.rangedtable")
+local RangedTable = require("namegen.rangedtable")
 
 local inspect = loadrequire('inspect') or function(t)
     s = "{"
