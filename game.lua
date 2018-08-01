@@ -307,17 +307,22 @@ function G:enter()
         particles.draw()
     end
 
+    tree.init()
+
     cam = camera(0, 0)
     smoother = cam.smooth.damped(5)
     love.graphics.setBackgroundColor(0, .25, .5)
 
     dotCursor = false
+    skillTreeIsOpen = false
 end
 
 function G:resize(w, h)
     print("Window got resized")
 	map:resize(w, h)
     lightWorld:Resize(w, h)
+
+    window_width, window_height = w, h
 end
 
 function G:keypressed(key, scancode, isrepeat)
@@ -360,6 +365,8 @@ function G:keypressed(key, scancode, isrepeat)
     elseif key == "f3" then
         config.debug = not config.debug
         love.mouse.setGrabbed(not love.mouse.isGrabbed())
+    elseif key == config.controls.skill_tree then
+        skillTreeIsOpen = not skillTreeIsOpen
     end
 end
 
@@ -370,6 +377,10 @@ function G:wheelmoved(x, y)
     if newSlot < 1 then ply:setSlot(#ply.inventory)
     elseif newSlot > #ply.inventory then ply:setSlot(1)
     else ply:setSlot(newSlot) end
+end
+
+function G:mousepressed(x, y, button, isTouch)
+    if skillTreeIsOpen then tree:mouse() end
 end
 
 function controls(dt)
@@ -405,7 +416,7 @@ function controls(dt)
         cooldown.sprint = cooldown.sprint + dt * 10
     end
 
-    if love.mouse.isDown(1) then
+    if love.mouse.isDown(1) and not skillTreeIsOpen then
         if ply:getWeapon().firetype == "auto" then
             attack(entities.entities[playerUUID], playerUUID)
         elseif not attackIsDown then
@@ -488,13 +499,13 @@ function G:draw()
     love.graphics.setFont(hudFont)
     for index, item in pairs(entities.entities[playerUUID].inventory) do
         if item ~= nil then
-            local x = 80 * (index - 1) - 80 * 1.5
+            local x = (index - ((#ply.inventory + 1) / 2)) * 48 + window_width / 2
             if entities.entities[playerUUID].selectedSlot == index then
                 love.graphics.setColor(0, 1, 0)
             else
                 love.graphics.setColor(1, 1, 1)
             end
-            local startx, starty = window_width / 2 + x / 2, window_height - 48
+            local startx, starty = x - 16, window_height - 48
 
             love.graphics.draw(slot, startx, starty)
             love.graphics.setColor(1, 1, 1)
@@ -506,11 +517,11 @@ function G:draw()
         end
     end
 
-    if config.debug then love.graphics.print("Framerate: " .. love.timer.getFPS(), 5, 28) end
+    if config.debug then love.graphics.print("Framerate: " .. love.timer.getFPS(), 5, 59) end
 
     if ply:getWeapon() then maxCooldown = ply:getWeapon().cooldown
     else maxCooldown = 1 end
-    local percentage =  ply.cooldown.attack / maxCooldown * 100
+    local percentage = math.min(ply.cooldown.attack / maxCooldown * 100, 100)
 
     love.graphics.line(mx - 20, my + 24, (mx - 20) + percentage / 100 * 40, my + 24)
 
@@ -521,17 +532,30 @@ function G:draw()
     local health, maxHealth = ply:getHealth()
     local percentage = health / maxHealth * 200
     love.graphics.polygon("fill", 5 + padding, 30 - padding, 5 + padding, 5 + padding, 5 - padding + math.min( 5 + percentage + math.min(percentage, 20), 200), 5, 5 + percentage, 30 - padding)
-    love.graphics.draw(bar, 5, 5)
-
-    love.graphics.setColor(0, 0, 1)
-    percentage = (2 - ply.cooldown.sprint) / 2 * 200
-    love.graphics.polygon("fill", 5 + padding, 57 - padding, 5 + padding, 32 + padding, 5 - padding + math.min(5 + percentage + math.min(percentage, 20), 200), 32, 5 + percentage, 57 - padding)
-    love.graphics.draw(bar, 5, 32)
 
     love.graphics.setColor(1, 1, 1)
-    love.graphics.print(ply.kills .. " kills", 5, 57)
-    love.graphics.print(ply.exp .. " levels", 5, 66)
+    love.graphics.draw(bar, 5, 5)
+    love.graphics.print(health .. " hp", (5 + 200 - padding - hudFont:getWidth(health .. " hp")) / 2, 25 - padding - hudFont:getHeight(health .. " hp"))
 
+    love.graphics.setColor(0, 0, 1)
+    percentage = (ply.skills.stamina - ply.cooldown.sprint) / ply.skills.stamina * 200
+    love.graphics.polygon("fill", 5 + padding, 57 - padding, 5 + padding, 32 + padding, 5 - padding + math.min(5 + percentage + math.min(percentage, 20), 200), 32, 5 + percentage, 57 - padding)
+    
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.draw(bar, 5, 32)
+    local percentage = round(percentage / 2, 0) .. "%"
+    love.graphics.print(percentage, (5 + 200 - padding - hudFont:getWidth(percentage)) / 2, 30 + round((25 - padding - hudFont:getHeight(percentage) / 1.5) / 2, 0))
+
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.print(ply.kills .. " kills", 5, 73)
+    love.graphics.print(ply.exp .. " levels", 5, 87)
+
+    if skillTreeIsOpen then
+        tree.draw()
+        love.graphics.setLineWidth(1)
+    end
+
+    love.graphics.setColor(1, 1, 1)
     if dotCursor then
         love.graphics.draw(dot, mx - 16, my - 16)
     else

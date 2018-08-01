@@ -8,6 +8,7 @@ function NewButton(type, x, y, w, h, clic, t, value) -- t should be {text, color
     -- type can be "checkbox" or "button"
     local b = {}
     b.type = type
+    b.value = value
     if type == "checkbox" then b.checked = value end
     b.x, b.y = x, y
     b.w, b.h = w, h
@@ -22,9 +23,9 @@ function button:draw() -- also act as update
         love.graphics.setFont(self.font)
 
         if between(love.mouse.getX(), self.x, self.x + self.w) and between(love.mouse.getY(), self.y, self.y + self.h) then
-            love.graphics.setColor((self.r - 50) / 255, (self.g - 50) / 255, (self.b - 50) / 255)
+            love.graphics.setColor(self.r - .25, self.g - .25, self.b - .25)
         else
-            love.graphics.setColor(self.r / 255, self.g / 255, self.b / 255)
+            love.graphics.setColor(self.r, self.g, self.b)
         end
         rwrc(self.x, self.y, self.w, self.h, 2)
 
@@ -60,4 +61,8 @@ function button:mouse()
             end
         end
     end
+end
+
+function button:getPos()
+    return self.x, self.y
 end
