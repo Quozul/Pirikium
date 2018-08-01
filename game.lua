@@ -17,17 +17,19 @@ function G:enter()
     love.physics.setMeter(64)
 
     -- Load a map exported to Lua from Tiled
-    map = sti("data/maps/blank_lab.lua", { "box2d" })
-    print(#map.layers["Collisions"].data .. " tiles")
+    map = sti("data/maps/brick_arena.lua", { "box2d" })
+    print(#map.layers["Map Entities"].data .. " tiles")
 
-    local map1d = map.layers["Walkable"].data
-    local mapSize = map.layers["Walkable"].width * map.layers["Walkable"].height
+    if config.debug then map.layers["Map Entities"].visible = true end
+
+    local map1d = map.layers["Collisions"].data
+    local mapSize = map.layers["Collisions"].width * map.layers["Collisions"].height
     local map2d = {}
 
-    for x=1, map.layers["Walkable"].width do
+    for x=1, map.layers["Collisions"].width do
         map2d[x] = {}
-        for y=1, map.layers["Walkable"].height do
-            local t = map.layers["Walkable"].data[x][y]
+        for y=1, map.layers["Collisions"].height do
+            local t = map.layers["Collisions"].data[x][y]
             if t ~= nil then
                 map2d[x][y] = t.id
             else
@@ -37,7 +39,7 @@ function G:enter()
     end
 
     local grid = grid( map2d )
-    finder = pathfinder(grid, "JPS", 5)
+    finder = pathfinder(grid, "JPS", 0)
 
     world = love.physics.newWorld()
     world:setCallbacks(beginContact, endContact, preSolve, postSolve)
@@ -48,6 +50,7 @@ function G:enter()
     map.layers["Entities Layer"].entities = {}
     map.layers["Entities Layer"].doors = {}
     map.layers["Entities Layer"].chests = {}
+    map.layers["Entities Layer"].health = {}
     entities = map.layers["Entities Layer"]
     
     lightWorld = LightWorld:new()
@@ -58,12 +61,12 @@ function G:enter()
     local function addDoor(x, y, r)
         local d = {}
 
-        d.bod = love.physics.newBody( world, x * 64 - 32, y * 64 - 32, "dynamic" )
+        d.bod = love.physics.newBody( world, x * 64 - 32, y * 64 - 30, "dynamic" )
         d.bod:setLinearDamping(1)
         d.bod:setAngularDamping(1)
         d.bod:setAngle(r)
         d.bod:setBullet(true)
-        d.shape = love.physics.newRectangleShape(48, 8)
+        d.shape = love.physics.newRectangleShape(54, 8)
         d.fixture = love.physics.newFixture(d.bod, d.shape)
         d.fixture:setRestitution(.5)
         d.fixture:setUserData({"Door"})
@@ -76,7 +79,7 @@ function G:enter()
         d.hingeFixture:setUserData({"Hinge"})
         d.hingeFixture:setSensor(true)
 
-        d.joint = love.physics.newRevoluteJoint( d.bod, d.hinge,  x * 64 - 32 + math.cos(r) * 28, y * 64 - 32 + math.sin(r) * 28 )
+        d.joint = love.physics.newRevoluteJoint( d.bod, d.hinge,  x * 64 - 32 + math.cos(r) * 28, y * 64 - 32 + math.sin(r) * 26 )
 
         print("Added one door")
 
@@ -95,6 +98,9 @@ function G:enter()
         c.fixture:setRestitution(.1)
         c.fixture:setUserData({"Chest"})
 
+        c.light = Light:new(lightWorld, 150)
+        c.light:SetColor(155, 155, 0, 155)
+
         print("Added one chest")
 
         table.insert(entities.chests, c)
@@ -102,9 +108,9 @@ function G:enter()
 
     lights = {}
 
-    for x=1, map.layers["Collisions"].width do
-        for y=1, map.layers["Collisions"].height do
-            local t = map.layers["Collisions"].data[x][y]
+    for x=1, map.layers["Map Entities"].width do
+        for y=1, map.layers["Map Entities"].height do
+            local t = map.layers["Map Entities"].data[x][y]
             local id = #lights+1
             if t ~= nil and t.id ~= 0 then
                 if t.id == 2 then -- friendly spawn
@@ -156,6 +162,7 @@ function G:enter()
         local x, y = unpack( spawns.hostile[math.random(1, #spawns.hostile)] )
         local uid = uuid()
         local level = rf(0, ply.kills / 10, 1)
+        print("Ennemy level is " .. level)
         local weapon = loots.ai[math.random(1, #loots.ai)]
         entities.entities[uid] = newPlayer(x, y, uid, weapon, level)
         ai.set(entities.entities[uid], uid)
@@ -189,6 +196,10 @@ function G:enter()
                     print(ent.lastAttacker)
                     self.entities[ent.lastAttacker]:addKill(1, ent)
                     self.entities[id] = nil
+
+                    if math.random(0, 1) == 0 then
+                        table.insert(entities.health, {x = px, y = py, age = 2, health = math.random(2, 6)})
+                    end
                 end
             end
         end
@@ -222,7 +233,6 @@ function G:enter()
 
             local img = images[ent.inventory[ent.selectedSlot]]
             love.graphics.rotate(1)
-            love.graphics.scale(.25)
             if img ~= nil then
                 love.graphics.draw(img, (-128/2) + 85, (-128/2) - 50)
             end
@@ -237,6 +247,7 @@ function G:enter()
             end
         end
 
+        -- draw bullets
         for id, bullet in pairs(bullets) do
             if not bullet.bod:isDestroyed() then
                 local wep = bullet.fixture:getUserData().weapon
@@ -253,6 +264,7 @@ function G:enter()
             end
         end
     
+        -- draw doors
         for index, door in pairs(self.doors) do
             local isInside = door.fixture:testPoint(cmx, cmy)
             if isInside then dotCursor = true end
@@ -286,22 +298,34 @@ function G:enter()
             end
         end
         
+        -- draw crates
         for index, chest in pairs(self.chests) do
             local isInside = chest.fixture:testPoint(cmx, cmy)
             if isInside then dotCursor = true end
 
+            local x, y = chest.bod:getPosition()
+
+            chest.light:SetPosition(x, y)
+
             love.graphics.push("transform")
 
-            local x, y = chest.bod:getPosition()
             local a = chest.bod:getAngle()
 
             love.graphics.setColor(1, 1, 1, 1)
 
             love.graphics.translate(x, y)
             love.graphics.rotate(a)
-            love.graphics.rectangle("fill", -48/2, -48/2, 48, 48)
+            local spriteNum = math.floor(crate_animation.currentTime / crate_animation.duration * #crate_animation.quads) + 1
+            love.graphics.draw(crate_animation.spriteSheet, crate_animation.quads[spriteNum], -24, -24)
 
             love.graphics.pop()
+        end
+
+        for index, health in pairs(self.health) do
+            local isInside = inSquare(cmx, cmy, health.x, health.y, 64, 64)
+            if isInside then dotCursor = true end
+
+            love.graphics.draw(orbs.health, health.x, health.y)
         end
 
         particles.draw()
@@ -365,6 +389,7 @@ function G:keypressed(key, scancode, isrepeat)
     elseif key == "f3" then
         config.debug = not config.debug
         love.mouse.setGrabbed(not love.mouse.isGrabbed())
+        map.layers["Map Entities"].visible = not map.layers["Map Entities"].visible
     elseif key == config.controls.skill_tree then
         skillTreeIsOpen = not skillTreeIsOpen
     end
@@ -435,6 +460,11 @@ function G:update(dt)
     cmx, cmy = cam:mousePosition() -- pos of the mouse in the world
 
     mx, my = love.mouse.getPosition()
+
+    crate_animation.currentTime = crate_animation.currentTime + dt
+    if crate_animation.currentTime >= crate_animation.duration then
+        crate_animation.currentTime = crate_animation.currentTime - crate_animation.duration
+    end
 
     ply = entities.entities[playerUUID]
     px, py = ply.bod:getPosition()

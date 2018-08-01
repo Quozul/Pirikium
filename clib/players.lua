@@ -55,6 +55,8 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
             p.skills[skill] = value
         end
 
+        p.selectedSlot = l.selectedSlot or 1
+
         p.name = id
 
         print("Player save found")
@@ -91,6 +93,7 @@ function player:save()
     s.health = self.health
     s.x, s.y = self.bod:getPosition()
     s.exp = self.exp
+    s.selectedSlot = self.selectedSlot
 
     love.filesystem.write( self.id .. ".sav", bitser.dumps( s ) )
 end
