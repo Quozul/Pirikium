@@ -11,25 +11,8 @@ local cooldown = {
 }
 
 function G:enter()
-    love.graphics.setDefaultFilter("nearest", "nearest")
-
-    cursor = love.graphics.newImage("data/cursor.png")
     love.mouse.setVisible(false)
-    love.mouse.setGrabbed(true)
-    dot = love.graphics.newImage("data/cursor_small.png")
-
-    images = {}
-
-    weapons = json:decode( love.filesystem.read( "data/weapons.json" ) ) -- load game content
-    print(#weapons .. " weapons loaded")
-    for name, wep in pairs(weapons) do
-        if wep.texture ~= nil then
-            print("Loaded image for weapon " .. name)
-            images[name] = love.graphics.newImage(wep.texture)
-        end
-    end
-
-    loots = json:decode( love.filesystem.read( "data/loots.json" ) )
+    if not config.debug then love.mouse.setGrabbed(true) end
 
     love.physics.setMeter(64)
 
@@ -172,7 +155,7 @@ function G:enter()
     local function addEnnemy()
         local x, y = unpack( spawns.hostile[math.random(1, #spawns.hostile)] )
         local uid = uuid()
-        local level = rf2(0, ply.kills / 10, 1)
+        local level = rf(0, ply.kills / 10, 1)
         local weapon = loots.ai[math.random(1, #loots.ai)]
         entities.entities[uid] = newPlayer(x, y, uid, weapon, level)
         ai.set(entities.entities[uid], uid)
@@ -189,7 +172,11 @@ function G:enter()
             ent.cooldown.attack = math.max(ent.cooldown.attack - dt * ent.skills.recoil, 0) -- cooldown for primary attack
             ent.cooldown.special = math.max(ent.cooldown.special - dt * ent.skills.recoil, 0) -- cooldown for special attack
             ent.cooldown.dodge = math.max(ent.cooldown.dodge - dt * ent.skills.recoil, 0) -- cooldown for rolling
-            if not ent.sprinting then ent.cooldown.sprint = math.max(ent.cooldown.sprint - dt * ent.skills.recoil, 0) end -- cooldown for sprinting
+            if not ent.sprinting then
+                ent.cooldown.sprint = math.max(ent.cooldown.sprint - dt * ent.skills.recoil, 0)
+            else
+                ent.cooldown.sprint = math.min(ent.cooldown.sprint + dt, ent.skills.stamina)
+            end
 
             if id == playerUUID then
                 local pa = math.atan2(cmy - py, cmx - px) -- angle of the player
@@ -267,6 +254,9 @@ function G:enter()
         end
     
         for index, door in pairs(self.doors) do
+            local isInside = door.fixture:testPoint(cmx, cmy)
+            if isInside then dotCursor = true end
+
             love.graphics.push("transform")
 
             local x, y = door.bod:getPosition()
@@ -297,6 +287,9 @@ function G:enter()
         end
         
         for index, chest in pairs(self.chests) do
+            local isInside = chest.fixture:testPoint(cmx, cmy)
+            if isInside then dotCursor = true end
+
             love.graphics.push("transform")
 
             local x, y = chest.bod:getPosition()
@@ -317,15 +310,14 @@ function G:enter()
     cam = camera(0, 0)
     smoother = cam.smooth.damped(5)
     love.graphics.setBackgroundColor(0, .25, .5)
+
+    dotCursor = false
 end
 
 function G:resize(w, h)
     print("Window got resized")
 	map:resize(w, h)
     lightWorld:Resize(w, h)
-end
-
-function G:mousepressed(x, y, button, istouch, presses)
 end
 
 function G:keypressed(key, scancode, isrepeat)
@@ -354,6 +346,7 @@ function G:keypressed(key, scancode, isrepeat)
                     local a = math.atan2(py - dy, px - dx)
                     local speed = love.physics.getMeter() * -25
                     door.bod:applyForce(math.cos(a) * speed, math.sin(a) * speed, cmx, cmy)
+                    sounds.door:play()
                     return
                 end
             end
@@ -364,6 +357,9 @@ function G:keypressed(key, scancode, isrepeat)
         ply:drop(ply.selectedSlot)
     elseif key == "escape" then
         gamestate.switch(menu)
+    elseif key == "f3" then
+        config.debug = not config.debug
+        love.mouse.setGrabbed(not love.mouse.isGrabbed())
     end
 end
 
@@ -384,11 +380,10 @@ function controls(dt)
 
     local speed = love.physics.getMeter() * (4 + ply.skills.speed)
 
-    if key(config.controls.sprint) and cooldown.sprint ~= ply.skills.stamina then
+    if key(config.controls.sprint) and cooldown.sprint ~= ply.skills.stamina and math.abs(vx + vy) > 1 then
         speed = speed * 2
-        cooldown.sprint = math.min(cooldown.sprint + dt, 2)
         ply.sprinting = true
-    elseif not key(config.controls.sprint) then
+    elseif not key(config.controls.sprint) or math.abs(vx + vy) <= 1 then
         ply.sprinting = false
     end
 
@@ -476,6 +471,8 @@ end
 function G:draw()
     -- draw the map
     love.graphics.setColor(1, 1, 1)
+
+    dotCursor = false
     map:draw(cx, cy)
 
     --cam:draw(function() end)
@@ -489,22 +486,27 @@ function G:draw()
     if config.shader then lightWorld:Draw() end
 
     love.graphics.setFont(hudFont)
-
     for index, item in pairs(entities.entities[playerUUID].inventory) do
         if item ~= nil then
-            local x = 50 * (index - 1) + 5
+            local x = 80 * (index - 1) - 80 * 1.5
             if entities.entities[playerUUID].selectedSlot == index then
                 love.graphics.setColor(0, 1, 0)
-                love.graphics.rectangle("fill", x, 5, 50, 16)
             else
-                love.graphics.rectangle("line", x, 5, 50, 16)
+                love.graphics.setColor(1, 1, 1)
             end
+            local startx, starty = window_width / 2 + x / 2, window_height - 48
+
+            love.graphics.draw(slot, startx, starty)
             love.graphics.setColor(1, 1, 1)
-            love.graphics.print(item, x, 5)
+            love.graphics.print(item, startx, starty + 32)
+
+            if inSquare(mx, my, startx, starty, 32, 32) then
+                dotCursor = true
+            end
         end
     end
 
-    love.graphics.print("Framerate: " .. love.timer.getFPS(), 5, 20)
+    if config.debug then love.graphics.print("Framerate: " .. love.timer.getFPS(), 5, 28) end
 
     if ply:getWeapon() then maxCooldown = ply:getWeapon().cooldown
     else maxCooldown = 1 end
@@ -512,18 +514,25 @@ function G:draw()
 
     love.graphics.line(mx - 20, my + 24, (mx - 20) + percentage / 100 * 40, my + 24)
 
+    -- health bar
+    local padding = 2
+
     love.graphics.setColor(1, 0, 0)
     local health, maxHealth = ply:getHealth()
-    love.graphics.rectangle("fill", 5, 34, health / maxHealth * 100, 10)
+    local percentage = health / maxHealth * 200
+    love.graphics.polygon("fill", 5 + padding, 30 - padding, 5 + padding, 5 + padding, 5 - padding + math.min( 5 + percentage + math.min(percentage, 20), 200), 5, 5 + percentage, 30 - padding)
+    love.graphics.draw(bar, 5, 5)
 
     love.graphics.setColor(0, 0, 1)
-    love.graphics.rectangle("fill", 5, 44, (2 - ply.cooldown.sprint) / 2 * 100, 10)
+    percentage = (2 - ply.cooldown.sprint) / 2 * 200
+    love.graphics.polygon("fill", 5 + padding, 57 - padding, 5 + padding, 32 + padding, 5 - padding + math.min(5 + percentage + math.min(percentage, 20), 200), 32, 5 + percentage, 57 - padding)
+    love.graphics.draw(bar, 5, 32)
 
     love.graphics.setColor(1, 1, 1)
-    love.graphics.print(ply.kills .. " kills", 5, 54)
+    love.graphics.print(ply.kills .. " kills", 5, 57)
     love.graphics.print(ply.exp .. " levels", 5, 66)
 
-    if love.mouse.isDown(1) then
+    if dotCursor then
         love.graphics.draw(dot, mx - 16, my - 16)
     else
         love.graphics.draw(cursor, mx - 16, my - 16)
@@ -546,9 +555,13 @@ end
 
 -- collision callback
 function beginContact(a, b, coll)
-    if a:isSensor() or a:getUserData()[1] == "Bullet" then return end
+    if a:getUserData()[1] == "Door" and b:getUserData()[1] == "Player" then
+        sounds.door:play()
+    end
 
     if b:getUserData()[1] == "Bullet" then
+        if a:getUserData()[1] == "Bullet" or a:isSensor() then return end
+
         local wep = b:getUserData().weapon
 
         if a:getUserData()[1] == "Player" then

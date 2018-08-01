@@ -16,7 +16,7 @@ end
 
 local function spread(weapon, ent)
     -- must add spread based on ent's speed
-    return rf2(-weapon.spread, weapon.spread, 4), rf2(-weapon.spread, weapon.spread, 4)
+    return rf(-weapon.spread, weapon.spread, 4), rf(-weapon.spread, weapon.spread, 4)
 end
 
 function attack(attacker, attacker_id)
@@ -35,7 +35,9 @@ function attack(attacker, attacker_id)
 
     -- melee attack
     if wep.type == "melee" then
-        print("Attacking with a melee weapon")
+        sounds.missed:stop()
+        sounds.missed:play()
+
         for id, victim in pairs(entities.entities) do
             if victim:getHealth() > 0 and id ~= attacker_id then -- check if the players is not dead and if it's not the same
                 local vx, vy = victim.bod:getPosition() -- victim pos
@@ -54,20 +56,13 @@ function attack(attacker, attacker_id)
                     victim.lastAttacker = attacker_id
 
                     sounds.hit:play()
-                elseif dist > wep.range then
-                    print("Victim out of range")
-                elseif not between(angleTo, aa - wep.radius, aa + wep.radius) then
-                    print("Victim out of radius")
-                else
-                    error("Unknown error, please report:\n\n" .. ser( wep ) .. "\n\n" .. angleTo .. "\n" .. dist )
                 end
             end
         end
     elseif wep.type == "firearm" then
-        print("Attacking with a firearm")
-
         local fire = wep.bullet.amount or 1
 
+        sounds.fire:stop()
         sounds.fire:play()
 
         for i=1, fire do
@@ -105,7 +100,7 @@ function bulletDamage(weapon, victim_id, angle, owner_id)
     if victim == nil then return end
 
     print("Bullet touched an ennemy")
-    if victim:getHealth() > 0 then
+    if victim:getHealth() > 0 and owner_id ~= victim_id then
         local damage, wasCritic = damageAmount(weapon, dist)
 
         victim:remHealth(damage)
