@@ -50,17 +50,7 @@ local function createPlayer(name)
 end
 
 function M:init()
-    main = gspot:group("Main menu", {unit, unit, unit*8, unit*8})
-    main.drag = true
-
-    main.new = gspot:button("New character", {0, unit*2, unit*8, unit*2}, main)
-    main.new.click = function(this)
-        if new.display then new:hide()
-        else new:show() end
-    end
-    main.load = gspot:button("Load character", {0, unit*4, unit*8, unit*2}, main)
-
-    new = gspot:group("New character", {unit, unit*10, unit*8, unit*8})
+    new = gspot:group("New character", {unit, unit, unit*8, unit*8})
     new.name = gspot:input("", {0, unit*2, unit*8, unit*2}, new, "Name")
     new.class = gspot:button("Class", {0, unit*4, unit*8, unit*2}, new)
     new.class.click = function(this)
@@ -78,7 +68,7 @@ function M:init()
         updatePlayerList()
     end
 
-    class = gspot:group("Character class", {unit*9, 0, unit*8, unit*8}, new)
+    class = gspot:group("Character class", {0, unit * 9, unit*8, unit*6}, new)
     for name, info in pairs(classes) do
         if info.pos == nil then error("You must give a position for the class " .. name) end
         class[name] = gspot:option(name, {0, unit * tonumber(info.pos) + unit, unit*8, unit}, class, name)
@@ -91,10 +81,10 @@ function M:init()
     end
     class:hide()
 
-    load = gspot:group("Load character", {unit*10, unit, unit*8, unit*8})
+    load = gspot:group("Load character", {unit*10, unit, unit*8, unit*15})
     updatePlayerList()
 
-    settings = gspot:group("Settings", {unit*19, unit, unit*8, unit*14})
+    settings = gspot:group("Settings", {unit*19, unit, unit*8, unit*15})
     settings.shader = gspot:button("", {0, unit*2, unit*8, unit*2}, settings)
     settings.shader.click = function(this)
         config.shader = not config.shader

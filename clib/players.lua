@@ -154,3 +154,15 @@ function player:addKill(amount, victim)
     sounds.exp:play()
     print("Gain " .. xp .. " exp")
 end
+
+function player:increaseSkill(name)
+    local cost = math.max(ply.skills[name] * 5, 2.5)
+
+    if self.exp < cost then
+        print("Not enough exp")
+        return
+    end
+
+    self.exp = self.exp - cost
+    self.skills[name] = self.skills[name] + 0.1
+end

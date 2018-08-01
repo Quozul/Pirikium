@@ -34,6 +34,7 @@ items = require "items"
 menu = require "menu"
 game = require "game"
 require "attack"
+tree = require "skills"
 ai = require "ai"
 
 images = {}
