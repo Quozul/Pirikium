@@ -21,3 +21,10 @@ function tableToString(table, sep)
     return string
 end
 function printTable(table) for index, value in pairs(table) do print(index, value) end end
+function table.find(list, elem)
+    for k,v in pairs(list) do
+        print(k .. " " .. v)
+        if v == elem then return k end
+    end
+    return false
+end

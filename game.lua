@@ -223,8 +223,14 @@ function G:enter()
                 if ent:getHealth() <= 0 then
                     print(ent.lastAttacker .. " killed " .. id)
 
-                    if math.random(0, 1) == 0 then
-                        addOrb(px, py, ent.bod:getAngle(), "health")
+                    local pa = ent.bod:getAngle()
+
+                    if math.random(1, 4) == 1 then
+                        addOrb(px, py, pa, "health")
+                    end
+                    
+                    if math.random(1, 8) == 1 then
+                        items.drop(px, py, pa, ent:getWeapon(true))
                     end
 
                     ent.bod:destroy()
@@ -281,7 +287,7 @@ function G:enter()
             love.graphics.rotate(a)
             love.graphics.rectangle("fill", -24/2, -24/2, 24, 24)
 
-            local img = images[ent.inventory[ent.selectedSlot]]
+            local img = images[ent:getWeapon(true)]
             love.graphics.rotate(1)
             if img ~= nil then
                 love.graphics.draw(img, (-128/2) + 85, (-128/2) - 50)

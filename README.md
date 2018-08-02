@@ -1,6 +1,10 @@
 # Pirikium
 **Pirikium** is a top-down adventure game, written in lua with the [Löve 2D](https://love2d.org/) (version 11.1) game engine. The game is currently in early stages.  
 
+## Team
+* **Quôzul** main developper
+* **Katrtlen** artist
+
 ### Controls
 Controls can be changed in the config file.
 * **WASD** to move

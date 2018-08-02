@@ -30,7 +30,7 @@
             "mult": 3.5
         },
         "use": {
-            "default": 0,
+            "default": 1,
             "mult": 0.5
         },
         "health": {

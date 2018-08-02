@@ -6,6 +6,8 @@ local pickupDist = 150
 local dtCenter = itemHitBox / 2
 
 function I.drop(x, y, angle, item)
+    if table.find(loots.black_list, item) then return end
+
     local i = {}
 
     i.item = item

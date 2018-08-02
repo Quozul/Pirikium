@@ -4,13 +4,6 @@ player.__index = player
 local defaultWeapon = "fists"     -- default weapon to spawn with
 local maxInventory = 2         -- maximum items the player can have
 
-function table.find(list, elem)
-    for k,v in pairs(list) do
-        print(k .. " " .. v)
-        if v == elem then return k end
-    end
-end
-
 function newPlayer(x, y, id, weapon, level) -- creates a new player
     if x == nil or y == nil then error("You must give coordinates for the new player to spawn") return end
 
@@ -127,7 +120,10 @@ function player:updateWeight()
 end
 
 -- inventory functions
-function player:getWeapon() return weapons[self.inventory[self.selectedSlot]] end
+function player:getWeapon(name)
+    if name then return self.inventory[self.selectedSlot] end
+    return weapons[self.inventory[self.selectedSlot]]
+end
 
 function player:setSlot(slot)
     self.selectedSlot = slot
@@ -153,7 +149,7 @@ function player:drop(item)
     items.drop(px, py, a, self.inventory[item])
     table.remove(self.inventory, item)
     if item > #self.inventory then self.selectedSlot = #self.inventory end
-    self:updateWeight()
+    --self:updateWeight()
 end
 
 function player:addKill(amount, victim)
