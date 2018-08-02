@@ -15,5 +15,8 @@
         "gun",
         "shotgun",
         "bow"
+    ],
+    "black_list": [
+        "fists"
     ]
 }
