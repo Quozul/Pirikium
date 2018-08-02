@@ -50,7 +50,7 @@ function attack(attacker, attacker_id)
                     damage = damage + attacker.skills.strength
                     print("Attacker dealt " .. damage .. " damage to victim")
 
-                    victim:remHealth(damage) -- remove health from the victim
+                    victim:addHealth(math.max(-damage, 0)) -- remove health from the victim
                     victim.bod:applyLinearImpulse(math.cos(angleTo) * wep.knockback.victim * 10, math.sin(angleTo) * wep.knockback.victim * 10)
 
                     victim.lastAttacker = attacker_id
@@ -103,7 +103,7 @@ function bulletDamage(weapon, victim_id, angle, owner_id)
     if victim:getHealth() > 0 and owner_id ~= victim_id then
         local damage, wasCritic = damageAmount(weapon, dist)
 
-        victim:remHealth(damage)
+        victim:addHealth(math.max(-damage, 0))
         victim.bod:applyLinearImpulse(math.cos(angle) * weapon.knockback.victim * 10, math.sin(angle) * weapon.knockback.victim * 10)
         
         print("Attacker dealt " .. damage .. " damage to victim")

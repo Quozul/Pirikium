@@ -27,7 +27,7 @@ function button:draw() -- also act as update
         else
             love.graphics.setColor(self.r, self.g, self.b)
         end
-        rwrc(self.x, self.y, self.w, self.h, 2)
+        rwrc(self.x, self.y, self.w, self.h, 8)
 
         love.graphics.setColor(0, 0, 0)
         love.graphics.print(self.text, self.x + self.w / 2 - self.font:getWidth(self.text) / 2,  self.y + self.h / 2 - self.font:getHeight(self.text) / 2)
