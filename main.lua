@@ -43,6 +43,7 @@ require "attack"
 tree = require "skills"
 ai = require "ai"
 lang = require "clib/lang"
+require "deathscreen"
 
 lang.decrypt("data/langs/en.lang")
 
@@ -88,7 +89,8 @@ function createConfig()
             limit = 2
         },
         debug = false,
-        lang = "en"
+        lang = "en",
+        warmup = 10
     }
 
     love.filesystem.write(configFile, json:encode_pretty( config )) -- create a config file

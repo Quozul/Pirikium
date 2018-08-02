@@ -414,7 +414,7 @@ function G:enter()
 
     ratio = 1
 
-    warmup = 10
+    warmup = config.warmup
 end
 
 function G:resize(w, h)
@@ -569,7 +569,7 @@ function G:update(dt)
     px, py = ply.bod:getPosition()
     pcx, pcy = cam:cameraCoords(px, py)
 
-    controls(dt)
+    if ply:getHealth() > 0 then controls(dt) end
     items.update(dt)
 
     map:update(dt)
@@ -617,7 +617,7 @@ function G:update(dt)
         fightStarted = true
     end
     
-    if ply == nil or ply:getHealth() <= 0 then gamestate.switch(menu) end
+    if ply:getHealth() <= 0 then deathscreen.update(dt) end
 end
 
 function G:draw()
@@ -699,18 +699,20 @@ function G:draw()
         love.graphics.setLineWidth(1)
     end
 
-    love.graphics.setColor(1, 1, 1)
-    if dotCursor then
-        love.graphics.draw(images.dot, mx - 16, my - 16)
-    else
-        love.graphics.draw(images.cursor, mx - 16, my - 16)
-    end
-
     if warmup ~= 0 then
         text = lang.print("warmup", {round(warmup, 1)})
         love.graphics.setFont(menuFont)
         love.graphics.setColor(1, 1, 1, warmup / 5)
         love.graphics.print(text, window_width / 2 - round(menuFont:getWidth(text) / 2, 0), window_height / 2 + window_height / 4, 0)
+    end
+
+    if ply:getHealth() <= 0 then deathscreen.draw() end
+
+    love.graphics.setColor(1, 1, 1)
+    if dotCursor then
+        love.graphics.draw(images.dot, mx - 16, my - 16)
+    else
+        love.graphics.draw(images.cursor, mx - 16, my - 16)
     end
 end
 

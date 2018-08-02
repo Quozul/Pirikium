@@ -27,6 +27,8 @@ function ai.set(ent, ent_id) -- add a view fixture to the ent, usefull for ai as
 end
 
 function ai.update(ent, target, ent_id) -- => attacker, victim
+    if target:getHealth() <= 0 then return end
+
     local ax, ay = ent.bod:getPosition()
     local currentAngle = ent.bod:getAngle()
     ent.view.bod:setPosition(ax, ay)

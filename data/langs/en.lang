@@ -8,9 +8,14 @@ load=load character
 settings=settings
 disable light=disable lighting
 enable light=enable lighting
-reset=reset config
+reset=reset settings
 remove=remove %s
 languages=languages
+save controls=save controls
+default weapon=default weapon:
+back=back
+
+# controls
 
 forward=forward
 left=left
@@ -19,11 +24,6 @@ right=right
 use=use
 drop=drop
 skill tree=skill tree
-
-save controls=save controls
-
-default weapon=default weapon:
-
 # messages
 
 kills=%d kills
@@ -32,6 +32,7 @@ warmup=enemies spawn in %g seconds
 exp=Experience: %g
 skill level=current level: %g
 skill cost=cost for next level: %g
+death=What a pity!
 
 # items
 
@@ -52,7 +53,7 @@ stamina=stamina
 strength=strength
 accuracy=accuracy
 recoil=recoil
-use=use
+use=use speed
 health=maximum health
 
 # classes
