@@ -1,0 +1,41 @@
+{
+    "list": [
+        "speed",
+        "stamina",
+        "strength",
+        "accuracy",
+        "recoil",
+        "use",
+        "health"
+    ],
+    "skills": {
+        "speed": {
+            "default": 0,
+            "mult": 2.5
+        },
+        "stamina": {
+            "default": 2,
+            "mult": 2
+        },
+        "strength": {
+            "default": 0,
+            "mult": 1.5
+        },
+        "accuracy": {
+            "default": 0,
+            "mult": 1.25
+        },
+        "recoil": {
+            "default": 1,
+            "mult": 3.5
+        },
+        "use": {
+            "default": 0,
+            "mult": 0.5
+        },
+        "health": {
+            "default": 10,
+            "mult": 0.25
+        }
+    }
+}

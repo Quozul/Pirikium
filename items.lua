@@ -1,13 +1,13 @@
 local I = {}
 local items = {} -- all items will be stored in this table
 
-local itemHitBox = 50
+local itemHitBox = 32
 local pickupDist = 150
+local dtCenter = itemHitBox / 2
 
 function I.drop(x, y, angle, item)
     local i = {}
 
-    local dtCenter = itemHitBox / 2
     i.item = item
     i.x, i.y = x - dtCenter + math.cos(angle) * 10, y - dtCenter + math.sin(angle) * 10
     i.a = angle
@@ -20,7 +20,6 @@ end
 
 function I.interact(ent, x, y, px, py)
     for index, item in pairs(items) do
-        print(x, y, item.x, item.y)
         local dist = sl(px, py, item.x, item.y)
         if inSquare(x, y, item.x, item.y, itemHitBox, itemHitBox) and dist <= pickupDist then
             local remove = ent:addItem(item.item)
@@ -45,10 +44,18 @@ end
 
 function I.draw()
     for index, item in pairs(items) do
+        if inSquare(cmx, cmy, item.x, item.y, itemHitBox, itemHitBox) then
+            dotCursor = true
+        end
+
         love.graphics.setColor(1, 1, 1, item.age) -- fade out the item for the last second
-        love.graphics.rectangle("fill", item.x, item.y, itemHitBox, itemHitBox)
-        love.graphics.setColor(0, 0, 0, item.age)
-        love.graphics.print(item.item, item.x, item.y)
+        if images.weapons.side[item.item] then
+            love.graphics.draw(images.weapons.side[item.item], item.x, item.y)
+        else
+            love.graphics.rectangle("fill", item.x, item.y, itemHitBox, itemHitBox)
+            love.graphics.setColor(0, 0, 0, item.age)
+            love.graphics.print(item.item, item.x, item.y)
+        end
         
         if config.debug then
             love.graphics.setColor(1, 0, 0)

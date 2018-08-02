@@ -1,7 +1,6 @@
 local player = {}
 player.__index = player
 
-local maxHealth = 10            -- health at start
 local defaultWeapon = "fists"     -- default weapon to spawn with
 local maxInventory = 2         -- maximum items the player can have
 
@@ -21,10 +20,11 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
 
     local p = {}
 
-    p.health = maxHealth
-    if weapon == nil then weapon = defaultWeapon end
+    if weapon == nil then
+        weapon = defaultWeapon
+        print("Entity spawn with " .. weapon)
+    end
     p.inventory = { weapon }
-    print("Entity spawn with " .. weapon)
     p.selectedSlot = 1
     p.cooldown = {
         attack = 0,
@@ -32,14 +32,13 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
         special = 0,
         dodge = 0
     }
-    p.skills = {
-        speed = 0 + level,
-        stamina = 2 + level,
-        strength = 0 + level,
-        accuracy = 0 + level,
-        brain = 0 + level,
-        recoil = 1 + level,
-    }
+
+    p.skills = {}
+
+    for name, value in pairs(skills.skills) do
+        p.skills[name] = value.default + level
+    end
+    
     p.kills = 0
     p.lastAttacker = nil
     p.exp = 0 + level
@@ -52,7 +51,9 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
         p.kills = l.kills
         p.exp = l.exp
         for skill, value in pairs(l.skills) do
-            p.skills[skill] = value
+            if p.skills[skill] then
+                p.skills[skill] = value
+            end
         end
 
         p.selectedSlot = l.selectedSlot or 1
@@ -63,6 +64,8 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
     else
         p.name = namegen.generate("human male")
     end
+
+    p.health = p.skills.health
 
     p.bod = love.physics.newBody( world, x * 64, y * 64, "dynamic" ) -- creates a body for the player
     p.bod:setLinearDamping(16)
@@ -99,10 +102,24 @@ function player:save()
 end
 
 -- health related functions
-function player:getHealth() return self.health, maxHealth end
+function player:getHealth() return self.health, self.skills.health end
 function player:setHealth(newHealth) self.health = newHealth end                        -- set a new health value of the player
-function player:addHealth(healthPoints) self.health = self.health + healthPoints end    -- add health points to the player
-function player:remHealth(healthPoints) self.health = self.health - healthPoints end    -- remove health points from the player
+function player:addHealth(healthPoints) -- add health points to the player
+    local newHealth = self.health + healthPoints
+    if newHealth <= self.skills.health then
+        self.health = newHealth
+        return true
+    end
+end
+
+function player:getLevel()
+    local level = 0
+    for skill, value in pairs(self.skills) do
+        level = level + value
+    end
+
+    return level
+end
 
 function player:updateWeight()
     local weightToAdd = self:getWeapon().weight or 0
@@ -114,7 +131,7 @@ function player:getWeapon() return weapons[self.inventory[self.selectedSlot]] en
 
 function player:setSlot(slot)
     self.selectedSlot = slot
-    self:updateWeight()
+    --self:updateWeight()
 end
 
 function player:addItem(item)
@@ -159,7 +176,7 @@ function player:addKill(amount, victim)
 end
 
 function player:increaseSkill(name)
-    local cost = math.max(ply.skills[name] * 5, 2.5)
+    local cost = math.max(ply.skills[name] * skills.skills[name].mult, skills.skills[name].mult)
 
     if self.exp < cost then
         print("Not enough exp")

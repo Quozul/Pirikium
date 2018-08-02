@@ -45,31 +45,37 @@ function G:enter()
     world:setCallbacks(beginContact, endContact, preSolve, postSolve)
     map:box2d_init(world)
     print("World created")
+    
+    lightWorld = LightWorld:new()
+    lightWorld:SetColor(50, 50, 50, 255)
+    lightWorld:Resize(853, 480)
+    print("Created light world")
+    
+    lightWorld:InitFromPhysics(world)
+    print("Initialized light world")
 
     map:addCustomLayer("Entities Layer", 3)
     map.layers["Entities Layer"].entities = {}
     map.layers["Entities Layer"].doors = {}
     map.layers["Entities Layer"].chests = {}
     map.layers["Entities Layer"].health = {}
+    map.layers["Entities Layer"].orbs = {}
     entities = map.layers["Entities Layer"]
-    
-    lightWorld = LightWorld:new()
-    lightWorld:SetColor(50, 50, 50, 255)
-    lightWorld:Resize(853, 480)
-    print("Created light world")
 
     local function addDoor(x, y, r)
         local d = {}
 
         d.bod = love.physics.newBody( world, x * 64 - 32, y * 64 - 30, "dynamic" )
-        d.bod:setLinearDamping(1)
-        d.bod:setAngularDamping(1)
+        d.bod:setLinearDamping(4)
+        d.bod:setAngularDamping(4)
         d.bod:setAngle(r)
         d.bod:setBullet(true)
         d.shape = love.physics.newRectangleShape(54, 8)
         d.fixture = love.physics.newFixture(d.bod, d.shape)
         d.fixture:setRestitution(.5)
         d.fixture:setUserData({"Door"})
+
+        d.shadow = Body:new(lightWorld):InitFromPhysics(d.bod)
 
         d.hinge = love.physics.newBody(world, x * 64 - 32 + math.cos(r) * 32, y * 64 - 32 + math.sin(r) * 32, "static")
         d.hinge:setLinearDamping(16)
@@ -89,6 +95,8 @@ function G:enter()
     local function addChest(x, y, r)
         local c = {}
 
+        c.time = math.random(10, 25)
+
         c.bod = love.physics.newBody( world, x * 64 - 32, y * 64 - 32, "dynamic" )
         c.bod:setLinearDamping(16)
         c.bod:setAngularDamping(16)
@@ -98,12 +106,39 @@ function G:enter()
         c.fixture:setRestitution(.1)
         c.fixture:setUserData({"Chest"})
 
+        c.shadow = Body:new(lightWorld):InitFromPhysics(c.bod)
+
         c.light = Light:new(lightWorld, 150)
         c.light:SetColor(155, 155, 0, 155)
 
         print("Added one chest")
 
         table.insert(entities.chests, c)
+    end
+
+    local function addOrb(x, y, r, type)
+        local o = {}
+
+        o.bod = love.physics.newBody( world, x, y, "dynamic" )
+        o.bod:setLinearDamping(16)
+        o.bod:setAngularDamping(16)
+        o.bod:applyLinearImpulse(math.cos(r) * 10, math.sin(r) * 10)
+        o.shape = love.physics.newCircleShape(32)
+        o.fixture = love.physics.newFixture(o.bod, o.shape)
+        o.fixture:setRestitution(.8)
+        o.fixture:setUserData({"Orb"})
+        o.fixture:setSensor(true)
+
+        if type == "health" then
+            o.type = "health"
+            o.amount = rf(2, 6, 1)
+        end
+
+        o.age = 2
+
+        print("Added one " .. type .. " orb")
+
+        table.insert(entities.orbs, o)
     end
 
     lights = {}
@@ -145,9 +180,6 @@ function G:enter()
             end
         end
     end
-    
-    lightWorld:InitFromPhysics(world)
-    print("Initialized light world")
 
     print(#spawns.friendly .. " player spawns found")
     print(#spawns.hostile .. " ennemy spawns found")
@@ -171,7 +203,7 @@ function G:enter()
     end
 
     function entities:update(dt)
-        if table.length(entities.entities) <= config.ai.limit then addEnnemy() end
+        if table.length(entities.entities) <= config.ai.limit and warmup == 0 then addEnnemy() end
 
         for id, ent in pairs(self.entities) do
             local px, py = ent.bod:getPosition()
@@ -185,21 +217,19 @@ function G:enter()
                 ent.cooldown.sprint = math.min(ent.cooldown.sprint + dt, ent.skills.stamina)
             end
 
-            if id == playerUUID then
-                local pa = math.atan2(cmy - py, cmx - px) -- angle of the player
-                ent.bod:setAngle( pa )
-                cam:lockPosition( px + math.cos(pa) * 20, py + math.sin(pa) * 20, smoother )
-            else
+            if id ~= playerUUID then
                 if not config.ai.disable then ai.update(ent, self.entities[playerUUID], id) end
 
                 if ent:getHealth() <= 0 then
-                    print(ent.lastAttacker)
-                    self.entities[ent.lastAttacker]:addKill(1, ent)
-                    self.entities[id] = nil
+                    print(ent.lastAttacker .. " killed " .. id)
 
                     if math.random(0, 1) == 0 then
-                        table.insert(entities.health, {x = px, y = py, age = 2, health = math.random(2, 6)})
+                        addOrb(px, py, ent.bod:getAngle(), "health")
                     end
+
+                    ent.bod:destroy()
+                    self.entities[ent.lastAttacker]:addKill(1, ent)
+                    self.entities[id] = nil
                 end
             end
         end
@@ -209,9 +239,29 @@ function G:enter()
                 table.remove(bullets, id)
             end
         end
+
+        for id, orb in pairs(self.orbs) do
+            local isInside = orb.fixture:testPoint(cmx, cmy)
+            local speed = 1
+            if isInside then
+                if orb.type == "health" then
+                    if key(config.controls.use) then
+                        local succes = ply:addHealth(dt * ply.skills.use)
+                        if succes then speed = 8 * ply.skills.use end
+                    end
+                end
+            end
+
+            orb.shape:setRadius( math.max(orb.shape:getRadius() - dt * speed, 8) )
+            if orb.shape:getRadius() == 8 then
+                orb.bod:destroy()
+                entities.orbs[id] = nil
+            end
+        end
     end
 
     function entities:draw()
+        love.graphics.setFont(hudFont)
         items.draw()
 
         for id, ent in pairs(self.entities) do
@@ -229,7 +279,7 @@ function G:enter()
             love.graphics.setColor(1, 1, 1, 1)
 
             love.graphics.rotate(a)
-            love.graphics.rectangle("fill", -20/2, -20/2, 20, 20)
+            love.graphics.rectangle("fill", -24/2, -24/2, 24, 24)
 
             local img = images[ent.inventory[ent.selectedSlot]]
             love.graphics.rotate(1)
@@ -240,7 +290,7 @@ function G:enter()
             love.graphics.pop()
 
             love.graphics.setColor(0, 0, 0, 1)
-            love.graphics.line(x, y, x + math.cos(a) * 20, y + math.sin(a) * 20)
+            love.graphics.line(x, y, x + math.cos(a) * 24, y + math.sin(a) * 24)
 
             if id ~= playerUUID then
                 if config.ai.debug then ai.draw(ent, self.entities[playerUUID]) end -- show the brain of the ai (debug)
@@ -300,32 +350,48 @@ function G:enter()
         
         -- draw crates
         for index, chest in pairs(self.chests) do
-            local isInside = chest.fixture:testPoint(cmx, cmy)
-            if isInside then dotCursor = true end
+            if chest.bod:isActive() then
+                local isInside = chest.fixture:testPoint(cmx, cmy)
+                if isInside then dotCursor = true end
 
-            local x, y = chest.bod:getPosition()
+                local x, y = chest.bod:getPosition()
+                local a = chest.bod:getAngle()
 
-            chest.light:SetPosition(x, y)
+                chest.light:SetPosition(x, y)
+                love.graphics.setColor(1, 1, 1, 1)
 
-            love.graphics.push("transform")
+                love.graphics.push("transform")
 
-            local a = chest.bod:getAngle()
+                love.graphics.translate(x, y)
+                love.graphics.rotate(a)
 
-            love.graphics.setColor(1, 1, 1, 1)
+                local spriteNum = math.floor(crate_animation.currentTime / crate_animation.duration * #crate_animation.quads) + 1
+                love.graphics.draw(crate_animation.spriteSheet, crate_animation.quads[spriteNum], -24, -24)
 
-            love.graphics.translate(x, y)
-            love.graphics.rotate(a)
-            local spriteNum = math.floor(crate_animation.currentTime / crate_animation.duration * #crate_animation.quads) + 1
-            love.graphics.draw(crate_animation.spriteSheet, crate_animation.quads[spriteNum], -24, -24)
-
-            love.graphics.pop()
+                love.graphics.pop()
+            end
         end
 
-        for index, health in pairs(self.health) do
-            local isInside = inSquare(cmx, cmy, health.x, health.y, 64, 64)
+        -- draw orbs
+        for id, orb in pairs(self.orbs) do
+            if orb.bod:isDestroyed() then return end
+
+            local isInside = orb.fixture:testPoint(cmx, cmy)
             if isInside then dotCursor = true end
 
-            love.graphics.draw(orbs.health, health.x, health.y)
+            local x, y = orb.bod:getPosition()
+            local a = orb.bod:getAngle()
+
+            love.graphics.push("transform")
+            
+            love.graphics.translate(x, y)
+            love.graphics.rotate(a)
+
+            if orb.type == "health" then
+                love.graphics.draw(images.orbs.health, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 32)
+            end
+
+            love.graphics.pop()
         end
 
         particles.draw()
@@ -339,6 +405,10 @@ function G:enter()
 
     dotCursor = false
     skillTreeIsOpen = false
+
+    ratio = 1
+
+    warmup = 10
 end
 
 function G:resize(w, h)
@@ -347,6 +417,8 @@ function G:resize(w, h)
     lightWorld:Resize(w, h)
 
     window_width, window_height = w, h
+
+    ratio = math.min(w/853, h/480)
 end
 
 function G:keypressed(key, scancode, isrepeat)
@@ -357,12 +429,31 @@ function G:keypressed(key, scancode, isrepeat)
         end
     elseif key == config.controls.use then
         local x, y = cam:worldCoords(mx, my)
+
+        -- interact with crates
         for id, chest in pairs(entities.chests) do
-            if love.physics.getDistance(chest.fixture, ply.fixture) <= 250 then
-                local isInside = chest.fixture:testPoint(x, y)
-                if isInside then
-                    local remove = ply:addItem(loots.chest[math.random(1, #loots.chest)])
-                    return
+            if chest.bod:isActive() then
+                if love.physics.getDistance(chest.fixture, ply.fixture) <= 250 then
+                    local isInside = chest.fixture:testPoint(x, y)
+                    if isInside then
+                        local cratex, cratey = chest.bod:getPosition()
+                        local crateAngle = chest.bod:getAngle()
+                        items.drop(cratex, cratey, crateAngle, loots.chest[math.random(1, #loots.chest)])
+                        -- destroy crate
+                        chest.bod:setActive(false)
+                        chest.shadow:Remove()
+                        chest.light:Remove()
+
+                        timer.after(chest.time, function()
+                            print("Respawning chest")
+                            chest.bod:setActive(true)
+                            chest.shadow = Body:new(lightWorld):InitFromPhysics(chest.bod)
+                            
+                            chest.light = Light:new(lightWorld, 150)
+                            chest.light:SetColor(155, 155, 0, 155)
+                        end)
+                        return
+                    end
                 end
             end
         end
@@ -441,7 +532,7 @@ function controls(dt)
         cooldown.sprint = cooldown.sprint + dt * 10
     end
 
-    if love.mouse.isDown(1) and not skillTreeIsOpen then
+    if love.mouse.isDown(1) and not skillTreeIsOpen and warmup <= 9 then
         if ply:getWeapon().firetype == "auto" then
             attack(entities.entities[playerUUID], playerUUID)
         elseif not attackIsDown then
@@ -466,6 +557,8 @@ function G:update(dt)
         crate_animation.currentTime = crate_animation.currentTime - crate_animation.duration
     end
 
+    warmup = math.max(warmup - dt, 0)
+
     ply = entities.entities[playerUUID]
     px, py = ply.bod:getPosition()
     pcx, pcy = cam:cameraCoords(px, py)
@@ -475,10 +568,17 @@ function G:update(dt)
 
     map:update(dt)
     particles.update(dt)
+    timer.update(dt)
     world:update(dt)
+    cam:zoomTo(ratio)
+
+    local pa = math.atan2(cmy - py, cmx - px) -- angle of the player
+    ply.bod:setAngle( pa )
+    cam:lockPosition( px + math.cos(pa) * 20, py + math.sin(pa) * 20, smoother )
+
     if config.shader then
-        lightWorld:Update()
-        lightWorld:SetPosition(cpx - pcx + (px - cpx), cpy - pcy + (py - cpy))
+        lightWorld:Update(dt)
+        lightWorld:SetPosition((cpx - pcx + (px - cpx)), (cpy - pcy + (py - cpy)))
 
         lights.player:SetPosition(px, py, 1)
     end
@@ -505,6 +605,11 @@ function G:update(dt)
             end
         end
     end]]
+
+    if warmup == 0 and not fightStarted then
+        sounds.melody:play()
+        fightStarted = true
+    end
     
     if ply == nil or ply:getHealth() <= 0 then gamestate.switch(menu) end
 end
@@ -514,14 +619,14 @@ function G:draw()
     love.graphics.setColor(1, 1, 1)
 
     dotCursor = false
-    map:draw(cx, cy)
+    map:draw(cx / ratio, cy / ratio, ratio, ratio)
 
     --cam:draw(function() end)
 
     -- draw collision map (debug)
     if config.debug then
         love.graphics.setColor(1, 0, 0)
-        map:box2d_draw(cx, cy)
+        map:box2d_draw(cx / ratio, cy / ratio, ratio, ratio)
     end
 
     if config.shader then lightWorld:Draw() end
@@ -529,17 +634,19 @@ function G:draw()
     love.graphics.setFont(hudFont)
     for index, item in pairs(entities.entities[playerUUID].inventory) do
         if item ~= nil then
-            local x = (index - ((#ply.inventory + 1) / 2)) * 48 + window_width / 2
+            local x = (index - ((#ply.inventory + 1) / 2)) * 64 + window_width / 2
             if entities.entities[playerUUID].selectedSlot == index then
                 love.graphics.setColor(0, 1, 0)
             else
                 love.graphics.setColor(1, 1, 1)
             end
-            local startx, starty = x - 16, window_height - 48
+            local startx, starty = x - 24, window_height - 64
 
-            love.graphics.draw(slot, startx, starty)
+            love.graphics.draw(images.slot, startx, starty)
             love.graphics.setColor(1, 1, 1)
-            love.graphics.print(item, startx, starty + 32)
+            love.graphics.print(item, startx, starty + 48)
+
+            if images.weapons.side[item] then love.graphics.draw(images.weapons.side[item], startx + 8, starty + 8) end
 
             if inSquare(mx, my, startx, starty, 32, 32) then
                 dotCursor = true
@@ -564,21 +671,22 @@ function G:draw()
     love.graphics.polygon("fill", 5 + padding, 30 - padding, 5 + padding, 5 + padding, 5 - padding + math.min( 5 + percentage + math.min(percentage, 20), 200), 5, 5 + percentage, 30 - padding)
 
     love.graphics.setColor(1, 1, 1)
-    love.graphics.draw(bar, 5, 5)
-    love.graphics.print(health .. " hp", (5 + 200 - padding - hudFont:getWidth(health .. " hp")) / 2, 25 - padding - hudFont:getHeight(health .. " hp"))
+    love.graphics.draw(images.bar, 5, 5)
+    local text = round(health, 1) .. " hp"
+    love.graphics.print(text, (5 + 200 - padding - hudFont:getWidth(text)) / 2, 25 - padding - hudFont:getHeight(text))
 
     love.graphics.setColor(0, 0, 1)
     percentage = (ply.skills.stamina - ply.cooldown.sprint) / ply.skills.stamina * 200
     love.graphics.polygon("fill", 5 + padding, 57 - padding, 5 + padding, 32 + padding, 5 - padding + math.min(5 + percentage + math.min(percentage, 20), 200), 32, 5 + percentage, 57 - padding)
     
     love.graphics.setColor(1, 1, 1)
-    love.graphics.draw(bar, 5, 32)
+    love.graphics.draw(images.bar, 5, 32)
     local percentage = round(percentage / 2, 0) .. "%"
     love.graphics.print(percentage, (5 + 200 - padding - hudFont:getWidth(percentage)) / 2, 30 + round((25 - padding - hudFont:getHeight(percentage) / 1.5) / 2, 0))
 
     love.graphics.setColor(1, 1, 1)
     love.graphics.print(ply.kills .. " kills", 5, 73)
-    love.graphics.print(ply.exp .. " levels", 5, 87)
+    love.graphics.print("Level: " .. round(ply:getLevel(), 1), 5, 87)
 
     if skillTreeIsOpen then
         tree.draw()
@@ -587,9 +695,16 @@ function G:draw()
 
     love.graphics.setColor(1, 1, 1)
     if dotCursor then
-        love.graphics.draw(dot, mx - 16, my - 16)
+        love.graphics.draw(images.dot, mx - 16, my - 16)
     else
-        love.graphics.draw(cursor, mx - 16, my - 16)
+        love.graphics.draw(images.cursor, mx - 16, my - 16)
+    end
+
+    if warmup ~= 0 then
+        text = "Enemies spawn in " .. round(warmup, 1) .. " seconds"
+        love.graphics.setFont(menuFont)
+        love.graphics.setColor(1, 1, 1, warmup / 5)
+        love.graphics.print(text, window_width / 2 - round(menuFont:getWidth(text) / 2, 0), window_height / 2 + window_height / 4, 0)
     end
 end
 
