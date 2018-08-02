@@ -56,7 +56,7 @@ function I.draw()
         else
             love.graphics.rectangle("fill", item.x, item.y, itemHitBox, itemHitBox)
             love.graphics.setColor(0, 0, 0, item.age)
-            love.graphics.print(item.item, item.x, item.y)
+            love.graphics.print(lang.print(item.item), item.x, item.y)
         end
         
         if config.debug then

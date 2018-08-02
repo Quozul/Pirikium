@@ -22,7 +22,7 @@ function T.init()
         skills_buttons[index] = NewButton(
             "button", x, y, 128, 32,
             function() ply:increaseSkill(name) end,
-            {name, rf(0, 1, 2), rf(0, 1, 2), rf(0, 1, 2), hudFont}, name )
+            {lang.print(name), rf(0, 1, 2), rf(0, 1, 2), rf(0, 1, 2), hudFont}, name )
         print("Added button for " .. name)
     end
 end
@@ -35,7 +35,7 @@ function T.draw()
     love.graphics.rectangle("fill", centerX / 4, centerY / 4, centerX * 1.5, centerY * 1.5)
     
     love.graphics.setColor(1, 1, 1)
-    love.graphics.print("Exp.: " .. round(ply.exp, 1), centerX / 4 + 4, centerY / 4 + 4)
+    love.graphics.print(lang.print("exp", {round(ply.exp, 1)}), centerX / 4 + 4, centerY / 4 + 4)
 
     love.graphics.setLineWidth(1)
     love.graphics.setColor(1, 1, 1, 1)
@@ -44,7 +44,9 @@ function T.draw()
 
         local x, y = skills_buttons[index]:getPos()
         local cost = round(math.max(ply.skills[name] * skills.skills[name].mult, skills.skills[name].mult), 2)
-        love.graphics.print("Current level: " .. ply.skills[name] .. "\nCost for next level: " .. cost, x + 128 + 16, y)
+        local text = lang.print("skill level", {ply.skills[name]}) .. "\n" .. lang.print("skill cost", {cost})
+
+        love.graphics.print(text, x + 128 + 16, y)
     end
 end
 

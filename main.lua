@@ -42,6 +42,9 @@ game = require "game"
 require "attack"
 tree = require "skills"
 ai = require "ai"
+lang = require "clib/lang"
+
+lang.decrypt("data/langs/en.lang")
 
 images = {}
 images.weapons = {}
@@ -64,28 +67,30 @@ skills = json:decode( love.filesystem.read( "data/skills.json" ) )
 math.randomseed(os.time())
 
 local configFile = "config.json"
-config = {
-    shader = true,
-    controls = {
-        forward = "w",
-        left = "a",
-        backward = "s",
-        right = "d",
-        fire = "1",
-        dodge = "space",
-        use = "e",
-        sprint = "lshift",
-        drop = "r",
-        skill_tree = "c"
-    },
-    ai = {
-        disable = false,
-        debug = false,
-        limit = 2
-    },
-    debug = false
-}
 function createConfig()
+    config = {
+        shader = true,
+        controls = {
+            forward = "w",
+            left = "a",
+            backward = "s",
+            right = "d",
+            fire = "1",
+            dodge = "space",
+            use = "e",
+            sprint = "lshift",
+            drop = "r",
+            skill_tree = "c"
+        },
+        ai = {
+            disable = false,
+            debug = false,
+            limit = 2
+        },
+        debug = false,
+        lang = "en"
+    }
+
     love.filesystem.write(configFile, json:encode_pretty( config )) -- create a config file
     print("Config file not found, creating it")
 end
@@ -96,6 +101,13 @@ else
     config = json:decode( love.filesystem.read( configFile ) ) -- loads the existing config file
     print("Config file loaded")
 end
+
+if config.lang == nil then createConfig() end
+
+languages_list = love.filesystem.load( "data/languages_list.lua" )()
+print(#languages_list .. " available")
+
+lang.decrypt(("data/langs/%s.lang"):format(config.lang))
 
 function love.load()
     finishedLoading = false

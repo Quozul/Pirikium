@@ -650,7 +650,7 @@ function G:draw()
 
             love.graphics.draw(images.slot, startx, starty)
             love.graphics.setColor(1, 1, 1)
-            love.graphics.print(item, startx, starty + 48)
+            love.graphics.print(lang.print(item), startx, starty + 48)
 
             if images.weapons.side[item] then love.graphics.draw(images.weapons.side[item], startx + 8, starty + 8) end
 
@@ -691,8 +691,8 @@ function G:draw()
     love.graphics.print(percentage, (5 + 200 - padding - hudFont:getWidth(percentage)) / 2, 30 + round((25 - padding - hudFont:getHeight(percentage) / 1.5) / 2, 0))
 
     love.graphics.setColor(1, 1, 1)
-    love.graphics.print(ply.kills .. " kills", 5, 73)
-    love.graphics.print("Level: " .. round(ply:getLevel(), 1), 5, 87)
+    love.graphics.print(lang.print("kills", {ply.kills}), 5, 73)
+    love.graphics.print(lang.print("level", {round(ply:getLevel(), 1)}), 5, 87)
 
     if skillTreeIsOpen then
         tree.draw()
@@ -707,7 +707,7 @@ function G:draw()
     end
 
     if warmup ~= 0 then
-        text = "Enemies spawn in " .. round(warmup, 1) .. " seconds"
+        text = lang.print("warmup", {round(warmup, 1)})
         love.graphics.setFont(menuFont)
         love.graphics.setColor(1, 1, 1, warmup / 5)
         love.graphics.print(text, window_width / 2 - round(menuFont:getWidth(text) / 2, 0), window_height / 2 + window_height / 4, 0)
