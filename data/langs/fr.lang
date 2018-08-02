@@ -11,6 +11,11 @@ enable light=activer l'éclairage
 reset=réinitialiser la config
 remove=supprimer %s
 languages=langues
+save controls=sauvegarder les contrôles
+default weapon=arme principale:
+back=retour
+
+# controls
 
 forward=avancer
 left=gauche
@@ -20,10 +25,6 @@ use=utiliser
 drop=lâcher
 skill tree=arbre de compétences
 
-save controls=sauvegarder les contrôles
-
-default weapon=arme principale:
-
 # messages
 
 kills=%d tués
@@ -32,6 +33,7 @@ warmup=les ennemis apparaîssent dans %g secondes
 exp=expérience: 
 skill level=niveau actuel: %g
 skill cost=coût du prochain niveau: %g
+death=Quel dommage!
 
 # items
 
@@ -52,7 +54,7 @@ stamina=energie
 strength=force
 accuracy=précision
 recoil=rechargement
-use=utilisation
+use=vitesse utilisation
 health=vie maximum
 
 # classes
