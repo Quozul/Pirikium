@@ -21,13 +21,13 @@ local function updatePlayerList()
             if load[index] then gspot:rem(load[index]) end
 
             load[index] = gspot:button(index .. ". " .. info[1], {0, unit * index + unit, unit*7, unit}, load)
-            load[index].tip = info[2]
+            load[index].tip = lang.print(info[2])
             load[index].click = function(this)
                 playerUUID = info[1]
                 gamestate.switch(game)
             end
             load[index].rem = gspot:button("-", {unit*7, unit * index + unit, unit, unit}, load)
-            load[index].rem.tip = "Remove " .. info[1]
+            load[index].rem.tip = lang.print("remove", {info[1]})
             load[index].rem.click = function(this)
                 gspot:rem(load[index])
                 gspot:rem(load[index].rem)
@@ -50,14 +50,14 @@ local function createPlayer(name)
 end
 
 function M:init()
-    new = gspot:group("New character", {unit, unit, unit*8, unit*8})
-    new.name = gspot:input("", {0, unit*2, unit*8, unit*2}, new, "Name")
-    new.class = gspot:button("Class", {0, unit*4, unit*8, unit*2}, new)
+    new = gspot:group(lang.print("new"), {unit, unit, unit*8, unit*8})
+    new.name = gspot:input("", {0, unit*2, unit*8, unit*2}, new, lang.print("name"), false)
+    new.class = gspot:button(lang.print("class"), {0, unit*4, unit*8, unit*2}, new)
     new.class.click = function(this)
         if class.display then class:hide()
         else class:show() end
     end
-    new.create = gspot:button("Create", {0, unit*6, unit*8, unit*2}, new)
+    new.create = gspot:button(lang.print("create"), {0, unit*6, unit*8, unit*2}, new)
     new.create.click = function(this)
         if not class.value then
             gspot:feedback("Please choose a class")
@@ -68,40 +68,40 @@ function M:init()
         updatePlayerList()
     end
 
-    class = gspot:group("Character class", {0, unit * 9, unit*8, unit*6}, new)
+    class = gspot:group(lang.print("class"), {0, unit * 9, unit*8, unit*6}, new)
     for name, info in pairs(classes) do
         if info.pos == nil then error("You must give a position for the class " .. name) end
-        class[name] = gspot:option(name, {0, unit * tonumber(info.pos) + unit, unit*8, unit}, class, name)
-        class[name].tip = "Default weapon: " .. info.weapon
+        class[name] = gspot:option(lang.print(name), {0, unit * tonumber(info.pos) + unit, unit*8, unit}, class, name)
+        class[name].tip = lang.print("default weapon") .. " " .. lang.print(info.weapon)
         if info.skills then
             for skill, value in pairs(info.skills) do
-                class[name].tip = class[name].tip .. "\n" .. skill .. ": " .. value
+                class[name].tip = class[name].tip .. "\n" .. lang.print(skill) .. ": " .. value
             end
         end
     end
     class:hide()
 
-    load = gspot:group("Load character", {unit*10, unit, unit*8, unit*15})
+    load = gspot:group(lang.print("load"), {unit*10, unit, unit*8, unit*15})
     updatePlayerList()
 
-    settings = gspot:group("Settings", {unit*19, unit, unit*8, unit*15})
+    settings = gspot:group(lang.print("settings"), {unit*19, unit, unit*8, unit*15})
     settings.shader = gspot:button("", {0, unit*2, unit*8, unit*2}, settings)
     settings.shader.click = function(this)
         config.shader = not config.shader
     end
-    settings.config = gspot:button("Reset config", {0, unit*4, unit*8, unit*2}, settings)
+    settings.config = gspot:button(lang.print("reset"), {0, unit*4, unit*8, unit*2}, settings)
     settings.config.click = function(this)
         createConfig()
     end
-    settings.forward = gspot:input("Forward", {unit*5, unit*6, unit*3, unit*1}, settings, config.controls.forward)
-    settings.left = gspot:input("Left", {unit*5, unit*7, unit*3, unit*1}, settings, config.controls.left)
-    settings.back = gspot:input("Backward", {unit*5, unit*8, unit*3, unit*1}, settings, config.controls.backward)
-    settings.right = gspot:input("Right", {unit*5, unit*9, unit*3, unit*1}, settings, config.controls.right)
-    settings.use = gspot:input("Use", {unit*5, unit*10, unit*3, unit*1}, settings, config.controls.use)
-    settings.drop = gspot:input("Drop", {unit*5, unit*11, unit*3, unit*1}, settings, config.controls.drop)
-    settings.skills = gspot:input("Skills tree", {unit*5, unit*12, unit*3, unit*1}, settings, config.controls.skill_tree)
+    settings.forward = gspot:input(lang.print("forward"), {unit*5, unit*6, unit*3, unit*1}, settings, config.controls.forward)
+    settings.left = gspot:input(lang.print("left"), {unit*5, unit*7, unit*3, unit*1}, settings, config.controls.left)
+    settings.back = gspot:input(lang.print("backward"), {unit*5, unit*8, unit*3, unit*1}, settings, config.controls.backward)
+    settings.right = gspot:input(lang.print("right"), {unit*5, unit*9, unit*3, unit*1}, settings, config.controls.right)
+    settings.use = gspot:input(lang.print("use"), {unit*5, unit*10, unit*3, unit*1}, settings, config.controls.use)
+    settings.drop = gspot:input(lang.print("drop"), {unit*5, unit*11, unit*3, unit*1}, settings, config.controls.drop)
+    settings.skills = gspot:input(lang.print("skill tree"), {unit*5, unit*12, unit*3, unit*1}, settings, config.controls.skill_tree)
 
-    settings.save = gspot:button("Save controls", {0, unit*13, unit*8, unit*2}, settings)
+    settings.save = gspot:button(lang.print("save controls"), {0, unit*13, unit*8, unit*2}, settings)
     settings.save.click = function(this)
         config.controls.forward = settings.forward.value
         config.controls.left = settings.left.value
@@ -110,12 +110,22 @@ function M:init()
         config.controls.use = settings.use.value
         config.controls.drop = settings.drop.value
     end
+
+    languages_group = gspot:group(lang.print("languages"), {unit*28, unit, unit*8, unit*15})
+    local pos = 1
+    for value, name in pairs(languages_list) do
+        class[value] = gspot:option(upper(name), {0, unit * pos + unit, unit*8, unit}, languages_group, value)
+        class[value].click = function(this)
+            config.lang = value
+            love.event.quit("restart")
+        end
+        pos = pos + 1
+    end
 end
 
 function M:enter()
     love.mouse.setVisible(true)
     love.mouse.setGrabbed(false)
-    love.graphics.setBackgroundColor(0, 0, 0)
     print("Entered menu")
 end
 
@@ -123,9 +133,9 @@ function M:update(dt)
     gspot:update(dt)
 
     if config.shader then
-        settings.shader.label = "Disable lighting"
+        settings.shader.label = lang.print("disable light")
     else
-        settings.shader.label = "Enable lighting"
+        settings.shader.label = lang.print("enable light")
     end
 end
 function M:draw() gspot:draw() end

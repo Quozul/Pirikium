@@ -1,0 +1,64 @@
+# menu
+
+new=new character
+name=name
+class=class
+create=create
+load=load character
+settings=settings
+disable light=disable lighting
+enable light=enable lighting
+reset=reset config
+remove=remove %s
+languages=languages
+
+forward=forward
+left=left
+backward=backward
+right=right
+use=use
+drop=drop
+skill tree=skill tree
+
+save controls=save controls
+
+default weapon=default weapon:
+
+# messages
+
+kills=%d kills
+level=level %d
+warmup=enemies spawn in %g seconds
+exp=Experience: %g
+skill level=current level: %g
+skill cost=cost for next level: %g
+
+# items
+
+fists=fists
+sword=sword
+dagger=dagger
+bow=bow
+gun=gun
+smg=smg
+shotgun=shotgun
+sniper=sniper
+grenade_launcher=grenade launcher
+
+# skills
+
+speed=speed
+stamina=stamina
+strength=strength
+accuracy=accuracy
+recoil=recoil
+use=use
+health=maximum health
+
+# classes
+
+bowman=bowman
+warrior=warrior
+survivor=survivor
+tank=tank
+assassin=assassin

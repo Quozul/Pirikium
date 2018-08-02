@@ -1,0 +1,64 @@
+# menu
+
+new=nouveau
+name=nom
+class=classes
+create=créer
+load=charger
+settings=options
+disable light=désactiver l'éclairage
+enable light=activer l'éclairage
+reset=réinitialiser la config
+remove=supprimer %s
+languages=langues
+
+forward=avancer
+left=gauche
+backward=reculer
+right=droite
+use=utiliser
+drop=lâcher
+skill tree=arbre de compétences
+
+save controls=sauvegarder les contrôles
+
+default weapon=arme principale:
+
+# messages
+
+kills=%d tués
+level=niveau %d
+warmup=les ennemis apparaîssent dans %g secondes
+exp=expérience: 
+skill level=niveau actuel: %g
+skill cost=coût du prochain niveau: %g
+
+# items
+
+fists=poings
+sword=epée
+dagger=dague
+bow=arc
+gun=pistolet
+smg=smg
+shotgun=fusils à pompe
+sniper=sniper
+grenade_launcher=lance grenade
+
+# skills
+
+speed=vitesse
+stamina=energie
+strength=force
+accuracy=précision
+recoil=rechargement
+use=utilisation
+health=vie maximum
+
+# classes
+
+bowman=archer
+warrior=guerrier
+survivor=survivant
+tank=tank
+assassin=assassin
