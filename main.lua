@@ -152,6 +152,7 @@ function love.load()
     loader.newSource( sounds, "fire", "data/sounds/shoot.mp3", "static")
     loader.newSource( sounds, "missed", "data/sounds/empty_hit.mp3", "static")
     loader.newSource( sounds, "door", "data/sounds/door_kick.mp3", "static")
+    loader.newSource( sounds, "crate", "data/sounds/srehpog_crate_smash.mp3", "static")
 
     loader.newSource( sounds, "melody", "data/sounds/melody.mp3", "stream") -- stream is for musics/long files
 

@@ -264,6 +264,14 @@ function G:enter()
                 entities.orbs[id] = nil
             end
         end
+
+        for id, chest in pairs(self.chests) do
+            if not chest.bod:isActive() then
+                local r, g, b, a = chest.light:GetColor()
+                a = math.max(a - dt * 155, 0)
+                chest.light:SetColor(r, g, b, a)
+            end
+        end
     end
 
     function entities:draw()
@@ -452,14 +460,14 @@ function G:keypressed(key, scancode, isrepeat)
                         -- destroy crate
                         chest.bod:setActive(false)
                         chest.shadow:Remove()
-                        chest.light:Remove()
+
+                        sounds.crate:play()
 
                         timer.after(chest.time, function()
                             print("Respawning chest")
                             chest.bod:setActive(true)
                             chest.shadow = Body:new(lightWorld):InitFromPhysics(chest.bod)
                             
-                            chest.light = Light:new(lightWorld, 150)
                             chest.light:SetColor(155, 155, 0, 155)
                         end)
                         return
