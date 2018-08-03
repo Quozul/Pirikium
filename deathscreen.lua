@@ -10,7 +10,10 @@ end
 function deathscreen.update(dt)
     alpha = math.min(alpha + dt / duration, 1)
 
-    if alpha == 1 and love.mouse.isDown(1) then gamestate.switch(menu) end
+    if alpha == 1 and love.mouse.isDown(1) then
+        ply:save()
+        gamestate.switch(menu)
+    end
 end
 
 function deathscreen.draw()
