@@ -1,13 +1,13 @@
 loading = require "loading_screen"
 
+window_width, window_height = love.window.getMode()
+
 love.graphics.clear()
 love.graphics.setBackgroundColor(29 / 255, 29 / 255, 29 / 255)
 
 loading.setText("Loading modules...")
 loading.draw()
 love.graphics.present()
-
-window_width, window_height = love.window.getMode()
 
 gamestate = require "modules/hump.gamestate"
 loader = require "modules/love-loader"
@@ -50,14 +50,18 @@ lang.decrypt("data/langs/en.lang")
 images = {}
 images.weapons = {}
 images.weapons.side = {}
+images.weapons.hold = {}
 
 weapons = json:decode( love.filesystem.read( "data/weapons.json" ) ) -- load game content
 print(#weapons .. " weapons loaded")
 for name, wep in pairs(weapons) do
-    if wep.textures ~= nil then
+    if wep.texture ~= nil then
         print("Loaded image for weapon " .. name)
-        if wep.textures.side ~= nil then
-            loader.newImage(images.weapons.side, name, wep.textures.side)
+        if wep.texture.side ~= nil then
+            loader.newImage(images.weapons.side, name, wep.texture.side)
+        end
+        if wep.texture.hold ~= nil then
+            loader.newImage(images.weapons.hold, name, wep.texture.hold)
         end
     end
 end
@@ -65,7 +69,7 @@ end
 loots = json:decode( love.filesystem.read( "data/loots.json" ) )
 skills = json:decode( love.filesystem.read( "data/skills.json" ) )
 
-math.randomseed(os.time())
+math.randomseed( os.time() )
 
 local configFile = "config.json"
 function createConfig()
@@ -90,7 +94,8 @@ function createConfig()
         },
         debug = false,
         lang = "en",
-        warmup = 10
+        warmup = 10,
+        ratio = 1
     }
 
     love.filesystem.write(configFile, json:encode_pretty( config )) -- create a config file
@@ -105,6 +110,12 @@ else
 end
 
 if config.lang == nil then createConfig() end
+
+function updateScreenSize()
+    love.window.setMode(1280*config.ratio, 720*config.ratio)
+    window_width, window_height = 1280*config.ratio, 720*config.ratio
+end
+if config.ratio ~= 1 then updateScreenSize() end
 
 languages_list = love.filesystem.load( "data/languages_list.lua" )()
 print(#languages_list .. " available")

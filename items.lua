@@ -12,6 +12,10 @@ function I.drop(x, y, angle, item)
 
     i.item = item
     i.x, i.y = x - dtCenter + math.cos(angle) * 10, y - dtCenter + math.sin(angle) * 10
+
+    i.slowDown = rf(1.15, 1.25, 2)
+
+    i.angularSpeed = rf(-1, 1, 2)
     i.a = angle
 
     i.vx, i.vy = math.cos(angle) * 10, math.sin(angle) * 10
@@ -38,7 +42,10 @@ function I.update(dt)
         item.x = item.x + item.vx
         item.y = item.y + item.vy
 
-        item.vx, item.vy = item.vx / 1.2, item.vy / 1.2
+        item.vx, item.vy = item.vx / item.slowDown, item.vy / item.slowDown
+
+        item.a = item.a + item.angularSpeed
+        item.angularSpeed = item.angularSpeed / 1.1
 
         if item.age == 0 then table.remove(items, index) end
     end
@@ -50,14 +57,21 @@ function I.draw()
             dotCursor = true
         end
 
+        love.graphics.push("transform")
+
+        love.graphics.translate(item.x + 16, item.y + 16)
+        love.graphics.rotate(item.a)
+
         love.graphics.setColor(1, 1, 1, item.age) -- fade out the item for the last second
         if images.weapons.side[item.item] then
-            love.graphics.draw(images.weapons.side[item.item], item.x, item.y)
+            love.graphics.draw(images.weapons.side[item.item], -16, -16)
         else
-            love.graphics.rectangle("fill", item.x, item.y, itemHitBox, itemHitBox)
+            love.graphics.rectangle("fill", -16, -16, itemHitBox, itemHitBox)
             love.graphics.setColor(0, 0, 0, item.age)
-            love.graphics.print(lang.print(item.item), item.x, item.y)
+            love.graphics.print(lang.print(item.item), -16, -16)
         end
+
+        love.graphics.pop()
         
         if config.debug then
             love.graphics.setColor(1, 0, 0)

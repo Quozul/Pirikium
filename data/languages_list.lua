@@ -1,4 +1,5 @@
 return {
     en = "english",
-    fr = "français"
+    fr = "français",
+    pl = "polski"
 }

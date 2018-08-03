@@ -31,7 +31,7 @@ local function updatePlayerList()
             load[index].rem.click = function(this)
                 gspot:rem(load[index])
                 gspot:rem(load[index].rem)
-                love.filesystem.remove(info[1] .. ".sav")
+                love.filesystem.remove(info[1])
                 players[index] = nil
                 resavePlayerList()
             end
@@ -40,13 +40,15 @@ local function updatePlayerList()
 end
 
 local function createPlayer(name)
+    print("Name of new player: " .. name)
     local s = {}
-    s.inventory = { classes[class.value].weapon }
+    s.defaultWeapon = classes[class.value].weapon
     s.kills = 0
     s.exp = 0
     s.skills = classes[class.value].skills
 
-    love.filesystem.write( name .. ".sav", bitser.dumps( s ) )
+    local succes, error = love.filesystem.write( tostring(name), bitser.dumps( s ) )
+    print(succes, error)
 end
 
 function M:init()
@@ -62,8 +64,11 @@ function M:init()
         if not class.value then
             gspot:feedback("Please choose a class")
             return
+        elseif new.name.value:match("\r") then
+            gspot:feedback("This name is invalid")
+            return
         end
-        love.filesystem.append( "player_list", new.name.value .. "," .. class.value .. ";" )
+        love.filesystem.append( "player_list", ";" .. new.name.value .. "," .. class.value )
         createPlayer(new.name.value)
         updatePlayerList()
     end
@@ -114,12 +119,29 @@ function M:init()
     languages_group = gspot:group(lang.print("languages"), {unit*28, unit, unit*8, unit*15})
     local pos = 1
     for value, name in pairs(languages_list) do
-        class[value] = gspot:option(upper(name), {0, unit * pos + unit, unit*8, unit}, languages_group, value)
+        class[value] = gspot:option(upper(name), {0, unit * pos + unit, unit*8, unit}, languages_group)
         class[value].click = function(this)
             config.lang = value
             love.event.quit("restart")
         end
         pos = pos + 1
+    end
+
+    scale = gspot:group(lang.print("scale"), {unit*37, unit, unit*8, unit*15})
+    scale[0] = gspot:option("480p", {0, unit*2, unit*8, unit}, scale, 0.5)
+    scale[0].click = function(this)
+        config.ratio = this.value
+        updateScreenSize()
+    end
+    scale[1] = gspot:option("720p", {0, unit*3, unit*8, unit}, scale, 1)
+    scale[1].click = function(this)
+        config.ratio = this.value
+        updateScreenSize()
+    end
+    scale[2] = gspot:option("1080p", {0, unit*4, unit*8, unit}, scale, 1.5)
+    scale[2].click = function(this)
+        config.ratio = this.value
+        updateScreenSize()
     end
 end
 

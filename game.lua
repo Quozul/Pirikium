@@ -48,7 +48,7 @@ function G:enter()
     
     lightWorld = LightWorld:new()
     lightWorld:SetColor(50, 50, 50, 255)
-    lightWorld:Resize(853, 480)
+    lightWorld:Resize(1280 * config.ratio, 720 * config.ratio)
     print("Created light world")
     
     lightWorld:InitFromPhysics(world)
@@ -100,7 +100,7 @@ function G:enter()
         c.bod = love.physics.newBody( world, x * 64 - 32, y * 64 - 32, "dynamic" )
         c.bod:setLinearDamping(16)
         c.bod:setAngularDamping(16)
-        c.bod:setAngle(r)
+        c.bod:setAngle( rf(0, 2 * math.pi, 4) )
         c.shape = love.physics.newRectangleShape(48, 48)
         c.fixture = love.physics.newFixture(c.bod, c.shape)
         c.fixture:setRestitution(.1)
@@ -120,8 +120,8 @@ function G:enter()
         local o = {}
 
         o.bod = love.physics.newBody( world, x, y, "dynamic" )
-        o.bod:setLinearDamping(16)
-        o.bod:setAngularDamping(16)
+        o.bod:setLinearDamping(1)
+        o.bod:setAngularDamping(1)
         o.bod:applyLinearImpulse(math.cos(r) * 10, math.sin(r) * 10)
         o.shape = love.physics.newCircleShape(32)
         o.fixture = love.physics.newFixture(o.bod, o.shape)
@@ -270,38 +270,7 @@ function G:enter()
         love.graphics.setFont(hudFont)
         items.draw()
 
-        for id, ent in pairs(self.entities) do
-            love.graphics.push("transform")
-
-            local x, y = ent.bod:getPosition()
-            local a = ent.bod:getAngle()
-
-            love.graphics.translate(x, y)
-            if id ~= playerUUID then
-                love.graphics.setColor(1, 1, 1, (255 - sl(cmx, cmy, x, y)) / 255)
-                love.graphics.print(ent.name, -hudFont:getWidth(ent.name) / 2, -25)
-            end
-
-            love.graphics.setColor(1, 1, 1, 1)
-
-            love.graphics.rotate(a)
-            love.graphics.rectangle("fill", -24/2, -24/2, 24, 24)
-
-            local img = images[ent:getWeapon(true)]
-            love.graphics.rotate(1)
-            if img ~= nil then
-                love.graphics.draw(img, (-128/2) + 85, (-128/2) - 50)
-            end
-
-            love.graphics.pop()
-
-            love.graphics.setColor(0, 0, 0, 1)
-            love.graphics.line(x, y, x + math.cos(a) * 24, y + math.sin(a) * 24)
-
-            if id ~= playerUUID then
-                if config.ai.debug then ai.draw(ent, self.entities[playerUUID]) end -- show the brain of the ai (debug)
-            end
-        end
+        love.graphics.setColor(0, 0, 0, 1)
 
         -- draw bullets
         for id, bullet in pairs(bullets) do
@@ -400,6 +369,41 @@ function G:enter()
             love.graphics.pop()
         end
 
+        for id, ent in pairs(self.entities) do
+            love.graphics.push("transform")
+
+            local x, y = ent.bod:getPosition()
+            local a = ent.bod:getAngle()
+
+            love.graphics.translate(x, y)
+            if id ~= playerUUID then
+                love.graphics.setColor(1, 1, 1, (255 - sl(cmx, cmy, x, y)) / 255)
+                love.graphics.print(ent.name, -hudFont:getWidth(ent.name) / 2, -25)
+            end
+
+            love.graphics.setColor(1, 1, 1, 1)
+
+            love.graphics.rotate(a)
+            --love.graphics.rectangle("fill", -24/2, -24/2, 24, 24)
+            rwrc("fill", -24/2, -24/2, 24, 24, 8)
+
+            local img = images.weapons.hold[ent:getWeapon(true)]
+            if img ~= nil then
+                love.graphics.rotate(math.pi/2)
+                love.graphics.translate(0, -32)
+                love.graphics.draw(img, -16, -16)
+                love.graphics.pop()
+            else
+                love.graphics.pop()
+                love.graphics.setColor(0, 0, 0, 1)
+                love.graphics.line(x, y, x + math.cos(a) * 24, y + math.sin(a) * 24)
+            end
+
+            if id ~= playerUUID then
+                if config.ai.debug then ai.draw(ent, self.entities[playerUUID]) end -- show the brain of the ai (debug)
+            end
+        end
+
         particles.draw()
     end
 
@@ -412,28 +416,28 @@ function G:enter()
     dotCursor = false
     skillTreeIsOpen = false
 
-    ratio = 1
-
     warmup = config.warmup
+
+    ratio = 1
+    pause = false
+    deathscreen.init()
 end
 
 function G:resize(w, h)
     print("Window got resized")
 	map:resize(w, h)
-    lightWorld:Resize(w, h)
+    --lightWorld:Resize(w, h)
 
     window_width, window_height = w, h
-
-    ratio = math.min(w/853, h/480)
 end
 
 function G:keypressed(key, scancode, isrepeat)
-    if isIn(key, {"1", "2", "3", "4", "5", "6", "7", "8", "9"}) then
+    if isIn(key, {"1", "2", "3", "4", "5", "6", "7", "8", "9"}) and not pause then
         local slot = tonumber(key)
         if slot <= #ply.inventory then
             ply:setSlot(slot)
         end
-    elseif key == config.controls.use then
+    elseif key == config.controls.use and not pause then
         local x, y = cam:worldCoords(mx, my)
 
         -- interact with crates
@@ -479,7 +483,7 @@ function G:keypressed(key, scancode, isrepeat)
         end
 
         items.interact(ply, x, y, px, py)
-    elseif key == config.controls.drop then
+    elseif key == config.controls.drop and not pause then
         ply:drop(ply.selectedSlot)
     elseif key == "escape" then
         gamestate.switch(menu)
@@ -487,12 +491,14 @@ function G:keypressed(key, scancode, isrepeat)
         config.debug = not config.debug
         love.mouse.setGrabbed(not love.mouse.isGrabbed())
         map.layers["Map Entities"].visible = not map.layers["Map Entities"].visible
-    elseif key == config.controls.skill_tree then
+    elseif key == config.controls.skill_tree and not pause then
         skillTreeIsOpen = not skillTreeIsOpen
     end
 end
 
 function G:wheelmoved(x, y)
+    if pause then return end
+
     local ply = entities.entities[playerUUID]
     local newSlot = ply.selectedSlot - y
 
@@ -569,14 +575,14 @@ function G:update(dt)
     px, py = ply.bod:getPosition()
     pcx, pcy = cam:cameraCoords(px, py)
 
-    if ply:getHealth() > 0 then controls(dt) end
+    if not pause then controls(dt) end
     items.update(dt)
 
     map:update(dt)
     particles.update(dt)
     timer.update(dt)
     world:update(dt)
-    cam:zoomTo(ratio)
+    cam:zoomTo(config.ratio)
 
     local pa = math.atan2(cmy - py, cmx - px) -- angle of the player
     ply.bod:setAngle( pa )
@@ -584,7 +590,7 @@ function G:update(dt)
 
     if config.shader then
         lightWorld:Update(dt)
-        lightWorld:SetPosition((cpx - pcx + (px - cpx)), (cpy - pcy + (py - cpy)))
+        lightWorld:SetPosition((cpx - pcx + (px - cpx)) / config.ratio, (cpy - pcy + (py - cpy)) / config.ratio, config.ratio)
 
         lights.player:SetPosition(px, py, 1)
     end
@@ -616,8 +622,15 @@ function G:update(dt)
         sounds.melody:play()
         fightStarted = true
     end
+
+    if pause and skillTreeIsOpen then
+        skillTreeIsOpen = false
+    end
     
-    if ply:getHealth() <= 0 then deathscreen.update(dt) end
+    if ply:getHealth() <= 0 then
+        pause = true
+        deathscreen.update(dt)
+    end
 end
 
 function G:draw()
@@ -625,14 +638,14 @@ function G:draw()
     love.graphics.setColor(1, 1, 1)
 
     dotCursor = false
-    map:draw(cx / ratio, cy / ratio, ratio, ratio)
+    map:draw(cx / config.ratio, cy / config.ratio, config.ratio, config.ratio)
 
     --cam:draw(function() end)
 
     -- draw collision map (debug)
     if config.debug then
         love.graphics.setColor(1, 0, 0)
-        map:box2d_draw(cx / ratio, cy / ratio, ratio, ratio)
+        map:box2d_draw(cx / config.ratio, cy / config.ratio, config.ratio, config.ratio)
     end
 
     if config.shader then lightWorld:Draw() end

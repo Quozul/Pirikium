@@ -1,3 +1,5 @@
+author=Quozul
+
 # menu
 
 new=new character
@@ -14,6 +16,9 @@ languages=languages
 save controls=save controls
 default weapon=default weapon:
 back=back
+scale=scale
+score=you can do better... %g
+new score=this is your best score so far! %g
 
 # controls
 
@@ -24,6 +29,7 @@ right=right
 use=use
 drop=drop
 skill tree=skill tree
+
 # messages
 
 kills=%d kills
@@ -42,9 +48,12 @@ dagger=dagger
 bow=bow
 gun=gun
 smg=smg
+assault_riffle=assault riffle
 shotgun=shotgun
 sniper=sniper
 grenade_launcher=grenade launcher
+rocket_launcher=rocket launcher
+flamethrower=flamethrower
 
 # skills
 

@@ -35,13 +35,12 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
     p.kills = 0
     p.lastAttacker = nil
     p.exp = 0 + level
+    p.score = 0
 
-    if love.filesystem.getInfo( id .. ".sav" ) then
-        local l = bitser.loads(love.filesystem.read( id .. ".sav" ))
-        if l.x and l.y then x, y = l.x / 64, l.y / 64 end
-        --p.health = l.health
-        p.inventory = l.inventory
-        p.kills = l.kills
+    if love.filesystem.getInfo( id ) then
+        local l = bitser.loads(love.filesystem.read( id ))
+        p.inventory = { l.defaultWeapon }
+        p.defaultWeapon = l.defaultWeapon
         p.exp = l.exp
         for skill, value in pairs(l.skills) do
             if p.skills[skill] then
@@ -49,11 +48,12 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
             end
         end
 
-        p.selectedSlot = l.selectedSlot or 1
+        if l.highScore then p.previousScore = l.highScore end
 
         p.name = id
 
         print("Player save found")
+        print(l.defaultWeapon)
     else
         p.name = namegen.generate("human male")
     end
@@ -70,8 +70,7 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
     p.fixture:setRestitution(.2)
     p.fixture:setUserData({"Player", id = id})
 
-    --p.lightBody = Body:new(lightWorld)
-    --p.lightBody:TrackPhysics(p.bod)
+    --p.shadow = Body:new(lightWorld):InitFromPhysics(p.bod)
 
     p.defaultMass = p.bod:getMass()
 
@@ -83,15 +82,16 @@ end
 
 function player:save()
     local s = {}
-    s.inventory = self.inventory
-    s.kills = self.kills
+    s.defaultWeapon = self.defaultWeapon
     s.skills = self.skills
     s.health = self.health
     s.x, s.y = self.bod:getPosition()
     s.exp = self.exp
-    s.selectedSlot = self.selectedSlot
+    if not self.previousScore or self.score > self.previousScore then
+        s.highScore = self.score
+    end
 
-    love.filesystem.write( self.id .. ".sav", bitser.dumps( s ) )
+    love.filesystem.write( self.id, bitser.dumps( s ) )
 end
 
 -- health related functions
@@ -154,6 +154,8 @@ end
 
 function player:addKill(amount, victim)
     self.kills = self.kills + amount
+
+    self.score = self.score + victim:getLevel()
 
     local skillLevel = 0
 

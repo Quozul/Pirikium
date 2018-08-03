@@ -19,7 +19,11 @@
         "range": 100,
         "radius": 0.3,
         "weight": 0,
-        "cooldown": 0.1
+        "cooldown": 0.1,
+        "texture": {
+            "side": "data/weapons/side/fists.png",
+            "hold": "data/weapons/hold/fists.png"
+        }
     },
     "sword": {
         "type": "melee",
@@ -64,7 +68,11 @@
         "range": 100,
         "radius": 0.4,
         "weight": 0.005,
-        "cooldown": 0.1
+        "cooldown": 0.1,
+        "texture": {
+            "side": "data/weapons/side/dagger.png",
+            "hold": "data/weapons/hold/dagger.png"
+        }
     },
     "bow": {
         "type": "firearm",
@@ -92,7 +100,11 @@
             "type": "arrow"
         },
         "weight": 0.01,
-        "cooldown": 1
+        "cooldown": 1,
+        "texture": {
+            "side": "data/weapons/side/bow.png",
+            "hold": "data/weapons/hold/bow.png"
+        }
     },
     "gun": {
         "type": "firearm",
@@ -121,20 +133,21 @@
         },
         "weight": 0.05,
         "cooldown": 0.4,
-        "textures": {
-            "side": "data/weapons/side/gun.png"
+        "texture": {
+            "side": "data/weapons/side/gun.png",
+            "hold": "data/weapons/hold/gun.png"
         }
     },
     "smg": {
         "type": "firearm",
         "firetype": "auto",
         "damage": {
-            "min": 2,
+            "min": 1,
             "max": 3
         },
         "knockback": {
-            "self": 3,
-            "victim": 3
+            "self": 2,
+            "victim": 1
         },
         "critic": {
             "chance": 5,
@@ -151,8 +164,37 @@
             "life": 0.2,
             "type": "normal"
         },
+        "weight": 0.03,
+        "cooldown": 0.1
+    },
+    "assault_riffle": {
+        "type": "firearm",
+        "firetype": "auto",
+        "damage": {
+            "min": 2,
+            "max": 4
+        },
+        "knockback": {
+            "self": 3,
+            "victim": 2
+        },
+        "critic": {
+            "chance": 10,
+            "mult": {
+                "min": 2,
+                "max": 3
+            }
+        },
+        "spread": 0.075,
+        "bullet": {
+            "speed": 5,
+            "radius": 2,
+            "amount": 1,
+            "life": 0.4,
+            "type": "normal"
+        },
         "weight": 0.04,
-        "cooldown": 0.2
+        "cooldown": 0.3
     },
     "shotgun": {
         "type": "firearm",
@@ -181,8 +223,9 @@
         },
         "weight": 0.1,
         "cooldown": 0.7,
-        "textures": {
-            "side": "data/weapons/side/shotgun.png"
+        "texture": {
+            "side": "data/weapons/side/shotgun.png",
+            "hold": "data/weapons/hold/shotgun.png"
         }
     },
     "sniper": {
@@ -240,5 +283,40 @@
         },
         "weight": 0.2,
         "cooldown": 1.75
+    },
+    "rocket_launcher": {
+        "type": "firearm",
+        "damage": {
+            "min": 5,
+            "max": 8
+        },
+        "knockback": {
+            "self": 15,
+            "victim": 10
+        },
+        "critic": {
+            "chance": 2,
+            "mult": {
+                "min": 2,
+                "max": 4
+            }
+        },
+        "spread": 0.02,
+        "bullet": {
+            "speed": 5,
+            "radius": 3,
+            "amount": 1,
+            "life": 1,
+            "type": "explosive"
+        },
+        "weight": 0.25,
+        "cooldown": 2
+    },
+    "flamethrower": {
+        "type": "firearm",
+        "_comment": "This weapon is experimental and doesn't work currently",
+        "bullet": {
+            "type": "fire"
+        }
     }
 }
