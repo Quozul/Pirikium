@@ -29,6 +29,8 @@ You don't have to compile the game in order to play it.
 * Extract them and drag the folder onto Löve's executable *love.exe*.  
 For more informations about *compiling it* refer on the [Löve's wiki](https://love2d.org/wiki/Game_Distribution) or the [forum](https://love2d.org/forums/viewtopic.php?f=4&t=451).
 
+Some of the sounds used are from [Freesound.org](https://freesound.org/)
+
 ---
 
 ### Modules

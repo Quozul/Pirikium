@@ -157,15 +157,7 @@ function player:addKill(amount, victim)
 
     self.score = self.score + victim:getLevel()
 
-    local skillLevel = 0
-
-    for skill, level in pairs(victim.skills) do
-        skillLevel = skillLevel + level
-        print(skill, level)
-    end
-
-    local xp = victim.exp + victim.kills + skillLevel
-    print(victim.exp, victim.kills)
+    local xp = victim.exp
 
     self.exp = self.exp + xp
     sounds.exp:setPitch(rf(.8, 1.2, 2))
