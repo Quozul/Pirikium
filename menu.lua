@@ -128,18 +128,23 @@ function M:init()
     end
 
     scale = gspot:group(lang.print("scale"), {unit*37, unit, unit*8, unit*15})
-    scale[0] = gspot:option("480p", {0, unit*2, unit*8, unit}, scale, 0.5)
+    scale[0] = gspot:option("853×480 (broken)", {0, unit*2, unit*8, unit}, scale, 0.5)
     scale[0].click = function(this)
         config.ratio = this.value
         updateScreenSize()
     end
-    scale[1] = gspot:option("720p", {0, unit*3, unit*8, unit}, scale, 1)
+    scale[1] = gspot:option("1280×720", {0, unit*3, unit*8, unit}, scale, 1)
     scale[1].click = function(this)
         config.ratio = this.value
         updateScreenSize()
     end
-    scale[2] = gspot:option("1080p", {0, unit*4, unit*8, unit}, scale, 1.5)
+    scale[2] = gspot:option("1366×768 (broken)", {0, unit*4, unit*8, unit}, scale, 768/720)
     scale[2].click = function(this)
+        config.ratio = this.value
+        updateScreenSize()
+    end
+    scale[3] = gspot:option("1920×1080", {0, unit*5, unit*8, unit}, scale, 1.5)
+    scale[3].click = function(this)
         config.ratio = this.value
         updateScreenSize()
     end

@@ -36,9 +36,14 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
     p.lastAttacker = nil
     p.exp = 0 + level
     p.score = 0
+    
+    p.boostedSkills = {}
 
     if love.filesystem.getInfo( id ) then
         local l = bitser.loads(love.filesystem.read( id ))
+        print("Player save found")
+
+        if l.defaultWeapon == nil then error("No weapon found in the save!") end
         p.inventory = { l.defaultWeapon }
         p.defaultWeapon = l.defaultWeapon
         p.exp = l.exp
@@ -52,7 +57,6 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
 
         p.name = id
 
-        print("Player save found")
         print(l.defaultWeapon)
     else
         p.name = namegen.generate("human male")
@@ -81,6 +85,8 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
 end
 
 function player:save()
+    self:resetSkills()
+
     local s = {}
     s.defaultWeapon = self.defaultWeapon
     s.skills = self.skills
@@ -175,4 +181,31 @@ function player:increaseSkill(name)
 
     self.exp = self.exp - cost
     self.skills[name] = self.skills[name] + 0.1
+end
+
+function player:skillBoost(skill, amount)
+    local currentSkill = self.skills[skill]
+    local newSkill = self.skills[skill] + amount
+    local delta = newSkill - currentSkill
+
+    self.skills[skill] = newSkill
+
+    local index = #self.boostedSkills + 1
+
+    table.insert(self.boostedSkills, index, {name = skill, amount = delta})
+
+    print(("Skill %s boosted by %g"):format(skill, amount))
+
+    timer.after(math.random(10, 20), function()
+        self.skills[skill] = self.skills[skill] - delta
+        print(("Skill %s back to %g"):format(skill, self.skills[skill]))
+
+        table.remove(self.boostedSkills, index)
+    end)
+end
+
+function player:resetSkills()
+    for index, skill in pairs(self.boostedSkills) do
+        self.skills[skill.name] = self.skills[skill.name] - skill.amount
+    end
 end

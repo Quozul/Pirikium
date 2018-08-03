@@ -122,8 +122,7 @@ function G:enter()
         o.bod = love.physics.newBody( world, x, y, "dynamic" )
         o.bod:setLinearDamping(1)
         o.bod:setAngularDamping(1)
-        o.bod:applyLinearImpulse(math.cos(r) * 10, math.sin(r) * 10)
-        o.shape = love.physics.newCircleShape(32)
+        o.shape = love.physics.newCircleShape(16)
         o.fixture = love.physics.newFixture(o.bod, o.shape)
         o.fixture:setRestitution(.8)
         o.fixture:setUserData({"Orb"})
@@ -132,6 +131,10 @@ function G:enter()
         if type == "health" then
             o.type = "health"
             o.amount = rf(2, 6, 1)
+        elseif type == "skill" then
+            o.type = "skill"
+            o.skill = skills.list[math.random(1, #skills.list)]
+            o.amount = rf(1.1, 1.5, 1)
         end
 
         o.age = 2
@@ -227,9 +230,11 @@ function G:enter()
 
                     if math.random(1, 4) == 1 then
                         addOrb(px, py, pa, "health")
+                    elseif math.random(1, 4) == 1 then
+                        addOrb(px, py, pa, "skill")
                     end
                     
-                    if math.random(1, 8) == 1 then
+                    if math.random(1, 6) == 1 then
                         items.drop(px, py, pa, ent:getWeapon(true))
                     end
 
@@ -247,19 +252,28 @@ function G:enter()
         end
 
         for id, orb in pairs(self.orbs) do
-            local isInside = orb.fixture:testPoint(cmx, cmy)
+            local isInside = orb.fixture:testPoint(cmx, cmy) and sl(cmx, cmy, px, py) <= 64
             local speed = 1
             if isInside then
                 if orb.type == "health" then
+                    local sucess = ply:addHealth( rf(3, 6, 1) )
+
+                    if sucess then
+                        orb.shape:setRadius(8)
+                        sounds.orb:play()
+                    end
+                elseif orb.type == "skill" then
                     if key(config.controls.use) then
-                        local succes = ply:addHealth(dt * ply.skills.use)
-                        if succes then speed = 8 * ply.skills.use end
+                        ply:skillBoost(orb.skill, orb.amount)
+                        orb.shape:setRadius(8)
+                        sounds.orb:play()
                     end
                 end
             end
 
-            orb.shape:setRadius( math.max(orb.shape:getRadius() - dt * speed, 8) )
-            if orb.shape:getRadius() == 8 then
+            orb.shape:setRadius( math.max(orb.shape:getRadius() - dt, 8) )
+
+            if orb.shape:getRadius() <= 8 then
                 orb.bod:destroy()
                 entities.orbs[id] = nil
             end
@@ -372,6 +386,8 @@ function G:enter()
 
             if orb.type == "health" then
                 love.graphics.draw(images.orbs.health, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 32)
+            elseif orb.type == "skill" then
+                love.graphics.draw(images.orbs.skill, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 32)
             end
 
             love.graphics.pop()
@@ -583,6 +599,14 @@ function G:update(dt)
     px, py = ply.bod:getPosition()
     pcx, pcy = cam:cameraCoords(px, py)
 
+    if ply.inventory == nil or #ply.inventory <= 0 then
+        error("Inventory is empty!")
+    elseif ply:getWeapon() == nil and ply.selectedSlot ~= 1 then
+        ply:setSlot(1)
+    elseif ply:getWeapon() == nil then
+        error("Weapon cannot be found!")
+    end
+
     if not pause then controls(dt) end
     items.update(dt)
 
@@ -625,11 +649,6 @@ function G:update(dt)
             end
         end
     end]]
-
-    if warmup == 0 and not fightStarted then
-        sounds.melody:play()
-        fightStarted = true
-    end
 
     if pause and skillTreeIsOpen then
         skillTreeIsOpen = false
@@ -675,10 +694,22 @@ function G:draw()
 
             if images.weapons.side[item] then love.graphics.draw(images.weapons.side[item], startx + 8, starty + 8) end
 
-            if inSquare(mx, my, startx, starty, 32, 32) then
+            if inSquare(mx, my, startx, starty, 48, 48) then
                 dotCursor = true
+                attackIsDown = true
+                if love.mouse.isDown(1) then
+                    ply:setSlot(index)
+                end
             end
         end
+    end
+
+    for index, skill in pairs(ply.boostedSkills) do
+        local x = window_width - index * 64
+        love.graphics.draw(images.slot, x, 16)
+
+        love.graphics.print(lang.print(skill.name), x, 16)
+        love.graphics.print("+" .. skill.amount, x, 32)
     end
 
     if config.debug then love.graphics.print("Framerate: " .. love.timer.getFPS(), 5, 59) end
