@@ -256,9 +256,10 @@ function G:enter()
             local speed = 1
             if isInside then
                 if orb.type == "health" then
-                    local sucess = ply:addHealth( rf(3, 6, 1) )
+                    local health, maxHealth = ply:getHealth()
+                    if health < maxHealth then
+                        ply:addHealth( rf(3, 6, 1) )
 
-                    if sucess then
                         orb.shape:setRadius(8)
                         sounds.orb:play()
                     end
@@ -391,7 +392,7 @@ function G:enter()
 
             love.graphics.pop()
         end
-        
+
         items.draw()
 
         for id, ent in pairs(self.entities) do
@@ -779,13 +780,14 @@ function G:draw()
 end
 
 function G:leave()
+    ply:save()
+    timer.clear()
+
     items.clear()
     entities.entities = {}
     lights = {}
     lightWorld = nil
     world = nil
-
-    ply:save()
 end
 
 function G:quit()

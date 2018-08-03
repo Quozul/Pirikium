@@ -53,11 +53,11 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
             end
         end
 
-        if l.highScore then p.highScore = l.highScore end
+        p.highScore = l.highScore
 
         p.name = id
 
-        print(l.defaultWeapon)
+        print(l.highScore)
     else
         p.name = namegen.generate("human male")
     end
@@ -95,6 +95,8 @@ function player:save()
     s.exp = self.exp
     if not self.highScore or self.score > self.highScore then
         s.highScore = self.score
+    else
+        s.highScore = self.highScore
     end
 
     love.filesystem.write( self.id, bitser.dumps( s ) )
@@ -104,11 +106,8 @@ end
 function player:getHealth() return self.health, self.skills.health end
 function player:setHealth(newHealth) self.health = newHealth end                        -- set a new health value of the player
 function player:addHealth(healthPoints) -- add health points to the player
-    local newHealth = self.health + healthPoints
-    if newHealth ~= self.skills.health then
-        self.health = math.min(newHealth, self.skills.health)
-        return true
-    end
+    self.health = math.min(self.health + healthPoints, self.skills.health)
+    return true
 end
 
 function player:getLevel()
@@ -211,5 +210,9 @@ end
 function player:resetSkills()
     for index, skill in pairs(self.boostedSkills) do
         self.skills[skill.name] = self.skills[skill.name] - skill.amount
+
+        if skill == "health" and self.health > self.skills.health then
+            self:setHealth(self.skills.health)
+        end
     end
 end

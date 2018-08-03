@@ -46,6 +46,7 @@ local function createPlayer(name)
     s.kills = 0
     s.exp = 0
     s.skills = classes[class.value].skills
+    s.highScore = 0
 
     local succes, error = love.filesystem.write( tostring(name), bitser.dumps( s ) )
     print(succes, error)
