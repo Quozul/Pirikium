@@ -1,0 +1,71 @@
+author=Katrtlen
+
+# menu
+
+new=nowa postac
+name=nazwa
+class=klasa
+create=stworz
+load=zaladuj postac
+settings=opcje
+disable light=wylacz oswietlenie
+enable light=wlacz oswietlenie
+reset=zresetuj ustawienia
+remove=usun %s
+languages=jezyk
+save controls=zapisz sterowanie
+default weapon=standardowa bron
+back=back
+scale=scale
+score=you can do better... %g
+new score=this is your best score so far! %g
+
+forward=naprzod
+left=w lewo
+backward=do tylu
+right=w prawo
+use=interakcja
+drop=upusc
+skill tree=drzewo umiejetnosci
+
+# messages
+
+kills=zabic: %d
+level=poziom %d
+warmup=rozgrzewka: %g
+exp=doswiadczenie: %g
+skill level=obecny poziom: %g
+skill cost=koszt do nastepnego poziomu: %g
+
+# items
+
+fists=piesci
+sword=miecz
+dagger=sztylet
+bow=luk
+gun=pistolet
+smg=karabin
+assault_riffle=assault riffle
+shotgun=shotgun
+sniper=snajperka
+grenade_launcher=granatnik
+rocket_launcher=rocket launcher
+flamethrower=flamethrower
+
+# skills
+
+speed=predkosc
+stamina=energia
+strength=sila
+accuracy=celnosc
+recoil=odrzut
+use=uzycie
+health=zdrowie
+
+# classes
+
+bowman=lucznik
+warrior=wojownik
+survivor=ocalaly
+tank=czolg
+assassin=zabojca

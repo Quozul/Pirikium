@@ -1,3 +1,5 @@
+author=Quozul
+
 # menu
 
 new=nouveau
@@ -14,6 +16,9 @@ languages=langues
 save controls=sauvegarder les contrôles
 default weapon=arme principale:
 back=retour
+scale=echelle
+score=tu peux faire mieux... %g
+new score=c'est ton meilleur score! %g
 
 # controls
 
@@ -30,7 +35,7 @@ skill tree=arbre de compétences
 kills=%d tués
 level=niveau %d
 warmup=les ennemis apparaîssent dans %g secondes
-exp=expérience: 
+exp=expérience: %g
 skill level=niveau actuel: %g
 skill cost=coût du prochain niveau: %g
 death=Quel dommage!
@@ -43,9 +48,12 @@ dagger=dague
 bow=arc
 gun=pistolet
 smg=smg
+assault_riffle=fusils d'assaut
 shotgun=fusils à pompe
 sniper=sniper
 grenade_launcher=lance grenade
+rocket_launcher=lance roquette
+flamethrower=lance flamme
 
 # skills
 

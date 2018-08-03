@@ -3,8 +3,6 @@ local L = {}
 local function rf(min, max, decimals) return math.random(min * 10^decimals, max * 10^decimals) / 10^decimals end
 local function round(num, decimals) return math.floor(num * 10^(decimals or 0) + 0.5) / 10^(decimals or 0) end
 
-local width, height = love.window.getMode()
-
 colors = {}
 for i = 1, 5 do
     colors[i] = {}
@@ -42,12 +40,12 @@ end
 function L.draw()
     for i = 1, 5 do
         love.graphics.setColor(colors[i].r, colors[i].g, colors[i].b)
-        love.graphics.rectangle("fill", (width / 2 + (5 * 24) / 2) - i * 24, height / 2 - (16 + colors[i].s) / 2, 16, 16 + colors[i].s)
+        love.graphics.rectangle("fill", (window_width / 2 + (5 * 24) / 2) - i * 24, window_height / 2 - (16 + colors[i].s) / 2, 16, 16 + colors[i].s)
     end
 
     love.graphics.setFont(font)
     love.graphics.setColor(1, 1, 1)
-    love.graphics.print(text, round((width - font:getWidth(text)) / 2, 0), round((height - font:getHeight(text)) / 2 + 48, 0))
+    love.graphics.print(text, round((window_width - font:getWidth(text)) / 2, 0), round((window_height - font:getHeight(text)) / 2 + 48, 0))
 end
 
 return L
