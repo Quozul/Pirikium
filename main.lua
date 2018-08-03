@@ -1,3 +1,5 @@
+loadTime = 0
+
 loading = require "loading_screen"
 
 window_width, window_height = love.window.getMode()
@@ -95,7 +97,8 @@ function createConfig()
         debug = false,
         lang = "en",
         warmup = 10,
-        ratio = 1
+        ratio = 1,
+        play_music = true
     }
 
     love.filesystem.write(configFile, json:encode_pretty( config )) -- create a config file
@@ -135,6 +138,7 @@ function love.load()
     love.window.setIcon(icon)
 
     images.orbs = {}
+    images.player = {}
     sounds = {}
 
     loader.newImage(images, "cursor", "data/cursor.png")
@@ -144,6 +148,8 @@ function love.load()
     loader.newImage(images, "crate", "data/crate.png")
     loader.newImage(images.orbs, "health", "data/orbs/health.png")
     loader.newImage(images.orbs, "skill", "data/orbs/skill.png")
+    loader.newImage(images.player, "stand", "data/player/bald/stand.png")
+    loader.newImage(images.player, "walk", "data/player/bald/walking.png")
 
     loader.newSource( sounds, "explosion", "data/sounds/explosion.mp3", "static")
     loader.newSource( sounds, "hit", "data/sounds/hit_ennemy.mp3", "static")
@@ -155,9 +161,13 @@ function love.load()
     loader.newSource( sounds, "crate", "data/sounds/srehpog_crate_smash.mp3", "static")
     loader.newSource( sounds, "orb", "data/sounds/conarb13_pop.mp3", "static")
 
+    loader.newSource( sounds, "menu_theme", "data/sounds/menu_music.mp3", "stream")
+
     loader.start(function()
         finishedLoading = true
-        crate_animation = newAnimation(images.crate, 48, 48, 0.8)
+        crate_animation = newAnimation(images.crate, 48, 48, 0.8) -- crate animation
+        player_animation = newAnimation(images.player.walk, 24, 24, 0.5) -- walking player animation
+        print("Game loaded in " .. round(loadTime, 1) .. " seconds")
 
         gamestate.registerEvents()
         gamestate.switch(menu)
@@ -172,6 +182,7 @@ function love.update(dt)
     loading.update(dt)
 
     if not finishedLoading then
+        loadTime = loadTime + dt
         loader.update()
     end
 end
@@ -183,7 +194,6 @@ function love.draw()
         if loader.resourceCount ~= 0 then
             percent = loader.loadedCount / loader.resourceCount
             loading.setText("Loading .. " .. round(percent * 100, 0) .. "%")
-            print(("Loading .. %d%%"):format(percent*100))
         end
     end
 end

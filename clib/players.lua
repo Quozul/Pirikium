@@ -53,7 +53,7 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
             end
         end
 
-        if l.highScore then p.previousScore = l.highScore end
+        if l.highScore then p.highScore = l.highScore end
 
         p.name = id
 
@@ -93,7 +93,7 @@ function player:save()
     s.health = self.health
     s.x, s.y = self.bod:getPosition()
     s.exp = self.exp
-    if not self.previousScore or self.score > self.previousScore then
+    if not self.highScore or self.score > self.highScore then
         s.highScore = self.score
     end
 
@@ -105,8 +105,8 @@ function player:getHealth() return self.health, self.skills.health end
 function player:setHealth(newHealth) self.health = newHealth end                        -- set a new health value of the player
 function player:addHealth(healthPoints) -- add health points to the player
     local newHealth = self.health + healthPoints
-    if newHealth <= self.skills.health then
-        self.health = newHealth
+    if newHealth ~= self.skills.health then
+        self.health = math.min(newHealth, self.skills.health)
         return true
     end
 end
@@ -199,6 +199,10 @@ function player:skillBoost(skill, amount)
     timer.after(math.random(10, 20), function()
         self.skills[skill] = self.skills[skill] - delta
         print(("Skill %s back to %g"):format(skill, self.skills[skill]))
+
+        if skill == "health" and self.health > self.skills.health then
+            self:setHealth(self.skills.health)
+        end
 
         table.remove(self.boostedSkills, index)
     end)

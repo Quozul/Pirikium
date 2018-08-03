@@ -17,7 +17,8 @@ save controls=sauvegarder les contrôles
 default weapon=arme principale:
 back=retour
 scale=echelle
-score=tu peux faire mieux... %g
+score=%g, tu peux faire mieux...
+best score=ton meilleur score est de %g
 new score=c'est ton meilleur score! %g
 
 # controls

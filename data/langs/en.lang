@@ -17,7 +17,8 @@ save controls=save controls
 default weapon=default weapon:
 back=back
 scale=scale
-score=you can do better... %g
+score=%g, you can do better...
+best score=your best score is %g
 new score=this is your best score so far! %g
 
 # controls
