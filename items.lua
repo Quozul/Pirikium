@@ -53,13 +53,17 @@ end
 
 function I.draw()
     for index, item in pairs(items) do
-        if inSquare(cmx, cmy, item.x, item.y, itemHitBox, itemHitBox) then
-            dotCursor = true
-        end
-
         love.graphics.push("transform")
 
         love.graphics.translate(item.x + 16, item.y + 16)
+        
+        if inSquare(cmx, cmy, item.x, item.y, itemHitBox, itemHitBox) then
+            dotCursor = true
+
+            local name = lang.print(item.item)
+            love.graphics.print(name, round(-hudFont:getWidth(name) / 2, 0), -32)
+        end
+
         love.graphics.rotate(item.a)
 
         love.graphics.setColor(1, 1, 1, item.age) -- fade out the item for the last second

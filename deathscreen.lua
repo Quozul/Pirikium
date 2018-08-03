@@ -21,10 +21,10 @@ function deathscreen.draw()
     love.graphics.setColor(1, 1, 1, alpha)
     love.graphics.print(lang.print("death"), (window_width - menuFont:getWidth(lang.print("death"))) / 2, (window_height - menuFont:getHeight(lang.print("death"))) / 2)
 
-    if not ply.previousScore or ply.score > ply.previousScore then -- new record
+    if not ply.highScore or ply.score > ply.highScore then -- new record
         text = lang.print("new score", {ply.score})
     else
-        text = lang.print("score", {ply.previousScore})
+        text = lang.print("score", {ply.score}) .. "\n" .. lang.print("best score", {ply.highScore})
     end
     local x, y = (window_width - hudFont:getWidth(text)) / 2, window_height / 2 + hudFont:getHeight(text) * 2
 

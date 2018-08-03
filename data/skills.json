@@ -5,7 +5,6 @@
         "strength",
         "accuracy",
         "recoil",
-        "use",
         "health"
     ],
     "skills": {
@@ -32,6 +31,10 @@
         "use": {
             "default": 1,
             "mult": 1.5
+        },
+        "brain": {
+            "default": 0,
+            "mult": 2
         },
         "health": {
             "default": 10,

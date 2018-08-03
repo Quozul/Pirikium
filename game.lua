@@ -290,7 +290,6 @@ function G:enter()
 
     function entities:draw()
         love.graphics.setFont(hudFont)
-        items.draw()
 
         love.graphics.setColor(0, 0, 0, 1)
 
@@ -392,11 +391,14 @@ function G:enter()
 
             love.graphics.pop()
         end
+        
+        items.draw()
 
         for id, ent in pairs(self.entities) do
             love.graphics.push("transform")
 
             local x, y = ent.bod:getPosition()
+            local vx, vy = ent.bod:getLinearVelocity()
             local a = ent.bod:getAngle()
 
             love.graphics.translate(x, y)
@@ -407,21 +409,24 @@ function G:enter()
 
             love.graphics.setColor(1, 1, 1, 1)
 
-            love.graphics.rotate(a)
-            --love.graphics.rectangle("fill", -24/2, -24/2, 24, 24)
-            rwrc("fill", -24/2, -24/2, 24, 24, 8)
+            love.graphics.rotate(a + math.pi / 2)
+            love.graphics.scale(1.5, 1.5)
+
+            if math.abs(vx + vy) > 1 then
+                local spriteNum = math.floor(player_animation.currentTime / player_animation.duration * #player_animation.quads) + 1
+                love.graphics.draw(player_animation.spriteSheet, player_animation.quads[spriteNum], -12, -12)
+            else
+                love.graphics.draw(images.player.stand, -12, -12)
+            end
 
             local img = images.weapons.hold[ent:getWeapon(true)]
             if img ~= nil then
-                love.graphics.rotate(math.pi/2)
+                --love.graphics.rotate(math.pi/2)
                 love.graphics.translate(0, -32)
-                love.graphics.draw(img, -16, -16)
-                love.graphics.pop()
-            else
-                love.graphics.pop()
-                love.graphics.setColor(0, 0, 0, 1)
-                love.graphics.line(x, y, x + math.cos(a) * 24, y + math.sin(a) * 24)
+                love.graphics.draw(img, -16, -6)
             end
+
+            love.graphics.pop()
 
             if id ~= playerUUID then
                 if config.ai.debug then ai.draw(ent, self.entities[playerUUID]) end -- show the brain of the ai (debug)
@@ -593,6 +598,11 @@ function G:update(dt)
         crate_animation.currentTime = crate_animation.currentTime - crate_animation.duration
     end
 
+    player_animation.currentTime = player_animation.currentTime + dt
+    if player_animation.currentTime >= player_animation.duration then
+        player_animation.currentTime = player_animation.currentTime - player_animation.duration
+    end
+
     warmup = math.max(warmup - dt, 0)
 
     ply = entities.entities[playerUUID]
@@ -730,7 +740,7 @@ function G:draw()
 
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(images.bar, 5, 5)
-    local text = round(health, 1) .. " hp"
+    local text = math.max(round(health, 1), 0) .. " hp"
     love.graphics.print(text, (5 + 200 - padding - hudFont:getWidth(text)) / 2, 25 - padding - hudFont:getHeight(text))
 
     love.graphics.setColor(0, 0, 1)

@@ -7,10 +7,15 @@
 
 ## Team
 * **Quôzul** main developper
-* **Katrtlen** artist
+* **Katrtlen** main artist
 
-### Controls
-Controls can be changed in the config file.
+### Known bugs
+* *Sometimes* when a crate respawn → crash
+* *Sometimes* crate's shadow doesn't disappear
+* When inventory gets empty → crash
+
+### Default controls
+Some controls can be changed in the config file.
 * **WASD** to move
 * **Left-shift** to sprint
 * **Left mouse** to shoot

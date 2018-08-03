@@ -154,6 +154,12 @@ function M:enter()
     love.mouse.setVisible(true)
     love.mouse.setGrabbed(false)
     print("Entered menu")
+
+    if config.play_music then sounds.menu_theme:play() end
+end
+
+function M:leave()
+    sounds.menu_theme:stop()
 end
 
 function M:update(dt)

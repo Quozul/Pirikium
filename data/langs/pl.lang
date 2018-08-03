@@ -18,6 +18,7 @@ default weapon=standardowa bron
 back=back
 scale=scale
 score=you can do better... %g
+best score=your best score is %g
 new score=this is your best score so far! %g
 
 forward=naprzod

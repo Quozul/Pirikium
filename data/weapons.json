@@ -190,7 +190,7 @@
             "speed": 5,
             "radius": 2,
             "amount": 1,
-            "life": 0.4,
+            "life": 0.3,
             "type": "normal"
         },
         "weight": 0.04,
