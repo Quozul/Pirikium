@@ -45,6 +45,7 @@ require "attack"
 tree = require "skills"
 ai = require "ai"
 lang = require "clib/lang"
+require "clib/transition"
 require "deathscreen"
 
 lang.decrypt("data/langs/en.lang")
