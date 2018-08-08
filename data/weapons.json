@@ -254,7 +254,11 @@
             "type": "normal"
         },
         "weight": 0.15,
-        "cooldown": 1
+        "cooldown": 1,
+        "texture": {
+            "side": "data/weapons/side/sniper.png",
+            "hold": "data/weapons/hold/sniper.png"
+        }
     },
     "grenade_launcher": {
         "type": "firearm",
