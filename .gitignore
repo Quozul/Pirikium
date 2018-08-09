@@ -1,5 +1,6 @@
 *.bat
 *.pdn
+*.old.lua
 .vscode
 data/weapons/gun.png
 data/weapons/sword.png

@@ -538,7 +538,11 @@ function G:wheelmoved(x, y)
 end
 
 function G:mousepressed(x, y, button, isTouch)
-    if skillTreeIsOpen then tree:mouse() end
+    if skillTreeIsOpen then tree.mousepressed(x, y, button) end
+end
+
+function G:mousereleased(x, y, button, isTouch)
+    if skillTreeIsOpen then tree.mousereleased(x, y, button) end
 end
 
 function controls(dt)
@@ -645,6 +649,7 @@ function G:update(dt)
             if bullet.age == 0 then  removeBullet(bullet.bod, bullet.fixture:getUserData().weapon.bullet.type) end
         end
     end
+
     --[[for index, bullet in pairs(bullets) do
         -- remove bullets using speed
         if not bullet.bod:isDestroyed() then
@@ -664,6 +669,8 @@ function G:update(dt)
     if pause and skillTreeIsOpen then
         skillTreeIsOpen = false
     end
+
+    if skillTreeIsOpen then tree.update(dt) end
     
     if ply:getHealth() <= 0 then
         pause = true
@@ -737,7 +744,12 @@ function G:draw()
     love.graphics.setColor(1, 0, 0)
     local health, maxHealth = ply:getHealth()
     local percentage = health / maxHealth * 200
-    love.graphics.polygon("fill", 5 + padding, 30 - padding, 5 + padding, 5 + padding, 5 - padding + math.min( 5 + percentage + math.min(percentage, 20), 200), 5, 5 + percentage, 30 - padding)
+    love.graphics.polygon("fill",
+        5 + padding, 30 - padding,
+        5 + padding, 5 + padding,
+        5 - padding + math.min( 5 + percentage + math.min(percentage, 20), 200), 5,
+        5 + percentage, 30 - padding
+    )
 
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(images.bar, 5, 5)
