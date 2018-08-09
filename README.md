@@ -10,8 +10,6 @@
 * **Katrtlen** main artist
 
 ### Known bugs
-* *Sometimes* when a crate respawn → crash
-* *Sometimes* crate's shadow doesn't disappear
 * When inventory gets empty → crash
 
 ### Default controls
