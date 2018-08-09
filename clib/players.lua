@@ -63,6 +63,7 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
     end
 
     p.health = p.skills.health
+    p.previous_health = p.health
 
     p.bod = love.physics.newBody( world, x * 64, y * 64, "dynamic" ) -- creates a body for the player
     p.bod:setLinearDamping(16)
@@ -103,9 +104,10 @@ function player:save()
 end
 
 -- health related functions
-function player:getHealth() return self.health, self.skills.health end
+function player:getHealth() return self.health, self.skills.health, self.previous_health end
 function player:setHealth(newHealth) self.health = newHealth end                        -- set a new health value of the player
 function player:addHealth(healthPoints) -- add health points to the player
+    self.previous_health = self.health
     self.health = math.min(self.health + healthPoints, self.skills.health)
     return true
 end

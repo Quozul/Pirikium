@@ -7,7 +7,8 @@
         "bow",
         "assault_riffle",
         "smg",
-        "dagger"
+        "dagger",
+        "crossbow"
     ],
     "ai": [
         "fists",

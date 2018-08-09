@@ -614,8 +614,10 @@ function G:update(dt)
     px, py = ply.bod:getPosition()
     pcx, pcy = cam:cameraCoords(px, py)
 
-    if ply.inventory == nil or #ply.inventory <= 0 then
+    if ply.inventory == nil or ply.inventory == {} or #ply.inventory == 0 then
         error("Inventory is empty!")
+    elseif #ply.inventory < 0 then
+        error("Inventory size is negative! " .. #ply.inventory)
     elseif ply:getWeapon() == nil and ply.selectedSlot ~= 1 then
         ply:setSlot(1)
     elseif ply:getWeapon() == nil then
@@ -743,6 +745,7 @@ function G:draw()
 
     love.graphics.setColor(1, 0, 0)
     local health, maxHealth = ply:getHealth()
+
     local percentage = health / maxHealth * 200
     love.graphics.polygon("fill",
         5 + padding, 30 - padding,
@@ -758,7 +761,12 @@ function G:draw()
 
     love.graphics.setColor(0, 0, 1)
     percentage = (ply.skills.stamina - ply.cooldown.sprint) / ply.skills.stamina * 200
-    love.graphics.polygon("fill", 5 + padding, 57 - padding, 5 + padding, 32 + padding, 5 - padding + math.min(5 + percentage + math.min(percentage, 20), 200), 32, 5 + percentage, 57 - padding)
+    love.graphics.polygon("fill",
+        5 + padding, 57 - padding,
+        5 + padding, 32 + padding,
+        5 - padding + math.min(5 + percentage + math.min(percentage, 20), 200), 32,
+        5 + percentage, 57 - padding
+    )
     
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(images.bar, 5, 32)
