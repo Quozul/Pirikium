@@ -152,6 +152,7 @@ function love.load()
     loader.newImage(images.player, "stand", "data/player/bald/stand.png")
     loader.newImage(images.player, "walk", "data/player/bald/walking.png")
 
+    -- game sounds
     loader.newSource( sounds, "explosion", "data/sounds/explosion.mp3", "static")
     loader.newSource( sounds, "hit", "data/sounds/hit_ennemy.mp3", "static")
     loader.newSource( sounds, "exp", "data/sounds/pickup_exp.mp3", "static")
@@ -159,8 +160,13 @@ function love.load()
     loader.newSource( sounds, "fire", "data/sounds/shoot.mp3", "static")
     loader.newSource( sounds, "missed", "data/sounds/empty_hit.mp3", "static")
     loader.newSource( sounds, "door", "data/sounds/door_kick.mp3", "static")
-    loader.newSource( sounds, "crate", "data/sounds/srehpog_crate_smash.mp3", "static")
+    loader.newSource( sounds, "crate", "data/sounds/srehpog_crate_smash_2.mp3", "static")
     loader.newSource( sounds, "orb", "data/sounds/conarb13_pop.mp3", "static")
+    
+    -- gui sounds
+    loader.newSource( sounds, "hover", "data/sounds/nenadsimic_menu_selection.mp3", "static")
+    loader.newSource( sounds, "click", "data/sounds/radiy_click.mp3", "static")
+    loader.newSource( sounds, "whoosh", "data/sounds/radiy_whooshtohit.mp3", "static")
 
     loader.newSource( sounds, "menu_theme", "data/sounds/menu_music.mp3", "stream")
 
@@ -169,6 +175,8 @@ function love.load()
         crate_animation = newAnimation(images.crate, 48, 48, 0.8) -- crate animation
         player_animation = newAnimation(images.player.walk, 24, 24, 0.5) -- walking player animation
         print("Game loaded in " .. round(loadTime, 1) .. " seconds")
+
+        SetSounds(sounds.hover, sounds.click) -- set the sounds for the buttons
 
         gamestate.registerEvents()
         gamestate.switch(menu)

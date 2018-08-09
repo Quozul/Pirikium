@@ -19,10 +19,16 @@ function T.init()
         local x = centerX / 4 + 8 + centerX * collumn
         local y = (row - ((#skills + 1) / 2)) * 48 + centerY / 4
 
+        -- NewButton(type, x, y, w, h, click, text, color, style, value)
+        --skills_buttons[index] = NewButton(
+        --    "button", x, y, 128, 32,
+        --    function() ply:increaseSkill(name) end,
+        --    {lang.print(name), rf(0, 1, 2), rf(0, 1, 2), rf(0, 1, 2), hudFont}, name )
         skills_buttons[index] = NewButton(
-            "button", x, y, 128, 32,
-            function() ply:increaseSkill(name) end,
-            {lang.print(name), rf(0, 1, 2), rf(0, 1, 2), rf(0, 1, 2), hudFont}, name )
+            "button", x, y, 128, 32, function() ply:increaseSkill(name) end,
+            lang.print(name), {math.random(55, 255), math.random(55, 255), math.random(55, 255)},
+            {shape = "sharp", easing = "inOut"}
+        )
         print("Added button for " .. name)
     end
 end
@@ -50,9 +56,21 @@ function T.draw()
     end
 end
 
-function T.mouse()
-    for index, name in pairs(skills.list) do
-        skills_buttons[index]:mouse()
+function T.update(dt)
+    for index, but in pairs(skills.list) do
+        skills_buttons[index]:update(dt)
+    end
+end
+
+function T.mousepressed(x, y, button)
+    for index, but in pairs(skills.list) do
+        skills_buttons[index]:mousepressed(x, y, button)
+    end
+end
+
+function T.mousereleased(x, y, button)
+    for index, but in pairs(skills.list) do
+        skills_buttons[index]:mousereleased(x, y, button)
     end
 end
 
