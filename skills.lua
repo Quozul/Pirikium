@@ -41,7 +41,9 @@ function T.draw()
     love.graphics.rectangle("fill", centerX / 4, centerY / 4, centerX * 1.5, centerY * 1.5)
     
     love.graphics.setColor(1, 1, 1)
-    love.graphics.print(lang.print("exp", {round(ply.exp, 1)}), centerX / 4 + 4, centerY / 4 + 4)
+    --love.graphics.print(lang.print("exp", {round(ply.exp, 1)}), centerX / 4 + 4, centerY / 4 + 4)
+    love.graphics.draw(images.exp, centerX / 4 + 4, centerY / 4 + 4)
+    love.graphics.print(round(ply.exp, 1), centerX / 4 + 4 + 32, centerY / 4 + 8)
 
     love.graphics.setLineWidth(1)
     love.graphics.setColor(1, 1, 1, 1)

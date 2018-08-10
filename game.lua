@@ -759,6 +759,7 @@ function G:draw()
     local text = math.max(round(health, 1), 0) .. " hp"
     love.graphics.print(text, (5 + 200 - padding - hudFont:getWidth(text)) / 2, 25 - padding - hudFont:getHeight(text))
 
+    -- stamina bar
     love.graphics.setColor(0, 0, 1)
     percentage = (ply.skills.stamina - ply.cooldown.sprint) / ply.skills.stamina * 200
     love.graphics.polygon("fill",
@@ -773,15 +774,20 @@ function G:draw()
     local percentage = round(percentage / 2, 0) .. "%"
     love.graphics.print(percentage, (5 + 200 - padding - hudFont:getWidth(percentage)) / 2, 30 + round((25 - padding - hudFont:getHeight(percentage) / 1.5) / 2, 0))
 
+    -- kills and level
     love.graphics.setColor(1, 1, 1)
-    love.graphics.print(lang.print("kills", {ply.kills}), 5, 73)
-    love.graphics.print(lang.print("level", {round(ply:getLevel(), 1)}), 5, 87)
+    love.graphics.draw(images.skull, 5, 64)
+    love.graphics.print(ply.kills, 32, 68)
+    love.graphics.draw(images.level, 64, 64)
+    love.graphics.print(round(ply:getLevel(), 1), 96, 68)
 
+    -- skill tree (if opened)
     if skillTreeIsOpen then
         tree.draw()
         love.graphics.setLineWidth(1)
     end
 
+    -- warmup message
     if warmup ~= 0 then
         text = lang.print("warmup", {round(warmup, 1)})
         love.graphics.setFont(menuFont)
