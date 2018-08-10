@@ -151,6 +151,9 @@ function love.load()
     loader.newImage(images.orbs, "skill", "data/orbs/skill.png")
     loader.newImage(images.player, "stand", "data/player/bald/stand.png")
     loader.newImage(images.player, "walk", "data/player/bald/walking.png")
+    loader.newImage(images, "skull", "data/death_icon.png")
+    loader.newImage(images, "level", "data/level_icon.png")
+    loader.newImage(images, "exp", "data/exp_icon.png")
 
     -- game sounds
     loader.newSource( sounds, "explosion", "data/sounds/explosion.mp3", "static")
