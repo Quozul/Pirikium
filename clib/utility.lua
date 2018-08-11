@@ -8,6 +8,7 @@ function isIn(value, table) for index, element in pairs(table) do if value == el
 function table.length(table) count = 0 for _ in pairs(table) do count = count + 1 end return count end
 function inSquare(x1, y1, x2, y2, w2, h2) return x1 >= x2 and x1 <= x2 + w2 and y1 >= y2 and y1 <= y2 + h2 end
 function upper(str) return str:gsub("^%l", string.upper) end
+function printTable(table) for index, value in pairs(table) do print(index, value) end end
 function string:split(sep)
     local sep, fields = sep or ":", {}
     local pattern = string.format("([^%s]+)", sep)
@@ -16,35 +17,20 @@ function string:split(sep)
 end
 function tableToString(table, sep)
     local string = ""
-    for _, value in pairs(table) do
-        string = string .. sep .. value
-    end
+    for _, value in pairs(table) do string = string .. sep .. value end
     return string
 end
-function printTable(table) for index, value in pairs(table) do print(index, value) end end
-function table.find(list, elem)
-    for k,v in pairs(list) do
-        print(k .. " " .. v)
-        if v == elem then return k end
-    end
-    return false
-end
+function table.find(list, elem) for k,v in pairs(list) do if v == elem then return k end end return false end
 
--- rounded corner rectangle
-local right = 0
-local left = math.pi
-local bottom = math.pi * 0.5
-local top = math.pi * 1.5
-
-function rwrc(type, x, y, w, h, r)
-	r = r or 15
-	love.graphics.rectangle(type, x, y+r, w, h-r*2)
-	love.graphics.rectangle(type, x+r, y, w-r*2, r)
-	love.graphics.rectangle(type, x+r, y+h-r, w-r*2, r)
-	love.graphics.arc(type, x+r, y+r, r, left, top)
-	love.graphics.arc(type, x + w-r, y+r, r, -bottom, right)
-	love.graphics.arc(type, x + w-r, y + h-r, r, right, bottom)
-	love.graphics.arc(type, x+r, y + h-r, r, bottom, left)
+ -- ultra simple camera
+function basicCamera(centerx, centery, drawing)
+    local w, h = love.window.getMode()
+    local x, y = round(w / 2 - centerx, 0), round(h / 2 - centery, 0)
+    love.graphics.push("transform")
+    love.graphics.translate(x, y)
+    drawing()
+    love.graphics.pop()
+    return x, y
 end
 
 -- watch a variable and returns true if it changed
@@ -59,6 +45,5 @@ function updateWatching(name, value) -- to remove a value, juste send nil as a v
     else
         watchings[name] = value
     end
-    
     return false
 end

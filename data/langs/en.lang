@@ -30,6 +30,9 @@ right=right
 use=use
 drop=drop
 skill tree=skill tree
+sprint=sprint
+sneak=sneak
+dash=dash
 
 # messages
 

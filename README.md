@@ -16,6 +16,7 @@
 Some controls can be changed in the config file.
 * **WASD** to move
 * **Left-shift** to sprint
+* **Left-control** to sneak
 * **Left mouse** to shoot
 * **Right mouse** for special attack (no special attacks added yet)
 * **Space** to dash

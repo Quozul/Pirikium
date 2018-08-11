@@ -1,6 +1,22 @@
 local trans = {}
 trans.__index = trans
 
+local function outBounce(current_time, start_point, change, duration)
+    current_time = current_time / duration
+    if current_time < 1 / 2.75 then
+        return change * (7.5625 * current_time * current_time) + start_point
+    elseif current_time < 2 / 2.75 then
+        current_time = current_time - (1.5 / 2.75)
+        return change * (7.5625 * current_time * current_time + 0.75) + start_point
+    elseif current_time < 2.5 / 2.75 then
+        current_time = current_time - (2.25 / 2.75)
+        return change * (7.5625 * current_time * current_time + 0.9375) + start_point
+    else
+        current_time = current_time - (2.625 / 2.75)
+        return change * (7.5625 * current_time * current_time + 0.984375) + start_point
+    end
+end
+
 local function linear(current_time, start_point, change, duration)
     return change * current_time / duration + start_point
 end
@@ -42,6 +58,8 @@ function trans:update(dt)
         self.current_point = math.min(easeIn(unpack(values)), self.end_point)
     elseif self.type == "out" then
         self.current_point = math.min(easeOut(unpack(values)), self.end_point)
+    elseif self.type == "bounce" then
+        self.current_point = math.min(outBounce(unpack(values)), self.end_point)
     else
         self.current_point = math.min(linear(unpack(values)), self.end_point)
     end

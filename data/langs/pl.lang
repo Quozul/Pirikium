@@ -21,6 +21,8 @@ score=you can do better... %g
 best score=your best score is %g
 new score=this is your best score so far! %g
 
+# controls
+
 forward=naprzod
 left=w lewo
 backward=do tylu
@@ -28,6 +30,9 @@ right=w prawo
 use=interakcja
 drop=upusc
 skill tree=drzewo umiejetnosci
+sprint=sprint
+sneak=sneak
+dash=dash
 
 # messages
 

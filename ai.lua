@@ -31,12 +31,16 @@ function ai.update(ent, target, ent_id) -- => attacker, victim
 
     local health = ent:getHealth()
     local doHealthChanged = updateWatching("health" .. ent_id, health)
-    if doHealthChanged then forceFollow = true end
+    if doHealthChanged then forceFollow = true end -- got attacked, noticed the player
 
     local ax, ay = ent.bod:getPosition()
     local vx, vy = target.bod:getPosition()
+    local targetVelocityX, targetVelocityY = target.bod:getLinearVelocity()
+    local targetIsMoving = math.abs(targetVelocityX + targetVelocityY)
+    local distToTarget = sl(ax, ay, vx, vy)
 
     local angleToVictim = math.atan2(vy - ay, vx - ax)
+    if distToTarget < 50 then forceFollow = true end -- the player is too close and got noticed
     if target.sneaking and math.abs(angleToVictim) > math.pi / 2 and not forceFollow then return end
     -- if the player sneaks behind the enemy, the enemy doesn't notice him
 
@@ -48,17 +52,16 @@ function ai.update(ent, target, ent_id) -- => attacker, victim
     path = getPath(ent, target)
     if path == nil then return end -- simple verification
 
-    local dist = sl(ax, ay, vx, vy)
     if ent:getWeapon().type == "melee" then
-        inAttackRange = dist + ent:getWeapon().range / 10 < ent:getWeapon().range
+        inAttackRange = distToTarget + ent:getWeapon().range / 10 < ent:getWeapon().range
         inAttackRadius = between(angleToVictim, currentAngle - ent:getWeapon().radius, currentAngle + ent:getWeapon().radius)
     else
-        inAttackRange = dist < 250 -- 250 should be replaced using the spread to get the accuracy
+        inAttackRange = distToTarget < 250 -- 250 should be replaced using the spread to get the accuracy
         inAttackRadius = between(angleToVictim, currentAngle - ent:getWeapon().spread, currentAngle + ent:getWeapon().spread)
     end
 
     if path:getLength() > 10 then
-        forceFollow = false
+        forceFollow = false -- the path is too long, the ai give up
         return
     end
 
@@ -78,6 +81,8 @@ function ai.update(ent, target, ent_id) -- => attacker, victim
             attack(ent, ent_id)
         end
     end
+
+    forceFollow = true -- the ai has already seen the player, so he keeps following him
 end
 
 function ai.draw(ent, target)
