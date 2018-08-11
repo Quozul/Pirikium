@@ -29,17 +29,25 @@ end
 function ai.update(ent, target, ent_id) -- => attacker, victim
     if target:getHealth() <= 0 then return end
 
-    local ax, ay = ent.bod:getPosition()
-    local currentAngle = ent.bod:getAngle()
-    ent.view.bod:setPosition(ax, ay)
-    ent.view.bod:setAngle(currentAngle)
+    local health = ent:getHealth()
+    local doHealthChanged = updateWatching("health" .. ent_id, health)
+    if doHealthChanged then forceFollow = true end
 
-    path = getPath(ent, target)
-    if path == nil then return end -- simple verification
-    local avx, avy = ent.bod:getLinearVelocity()
+    local ax, ay = ent.bod:getPosition()
     local vx, vy = target.bod:getPosition()
 
     local angleToVictim = math.atan2(vy - ay, vx - ax)
+    if target.sneaking and math.abs(angleToVictim) > math.pi / 2 and not forceFollow then return end
+    -- if the player sneaks behind the enemy, the enemy doesn't notice him
+
+    local currentAngle = ent.bod:getAngle()
+    --ent.view.bod:setPosition(ax, ay)
+    --ent.view.bod:setAngle(currentAngle)
+    local avx, avy = ent.bod:getLinearVelocity()
+
+    path = getPath(ent, target)
+    if path == nil then return end -- simple verification
+
     local dist = sl(ax, ay, vx, vy)
     if ent:getWeapon().type == "melee" then
         inAttackRange = dist + ent:getWeapon().range / 10 < ent:getWeapon().range
@@ -49,8 +57,13 @@ function ai.update(ent, target, ent_id) -- => attacker, victim
         inAttackRadius = between(angleToVictim, currentAngle - ent:getWeapon().spread, currentAngle + ent:getWeapon().spread)
     end
 
+    if path:getLength() > 10 then
+        forceFollow = false
+        return
+    end
+
     for node, count in path:nodes() do
-        if count == 2 and not inAttackRange and path:getLength() <= 10 then
+        if count == 2 and not inAttackRange then
             local currentX, currentY = nodeToMap(node:getX()) + 32, nodeToMap(node:getY()) + 32
             
             local angleTo = math.atan2(currentY - ay, currentX - ax)
@@ -61,7 +74,7 @@ function ai.update(ent, target, ent_id) -- => attacker, victim
             ent.bod:applyForce(speed * math.cos(currentAngle), speed * math.sin(currentAngle))
             
             break
-        elseif inAttackRange then
+        elseif inAttackRange and math.abs(angleToVictim) <= math.pi then
             attack(ent, ent_id)
         end
     end

@@ -46,3 +46,19 @@ function rwrc(type, x, y, w, h, r)
 	love.graphics.arc(type, x + w-r, y + h-r, r, right, bottom)
 	love.graphics.arc(type, x+r, y + h-r, r, bottom, left)
 end
+
+-- watch a variable and returns true if it changed
+local watchings = {}
+function updateWatching(name, value) -- to remove a value, juste send nil as a value
+    if not watchings[name] then
+        watchings[name] = value
+    elseif value ~= watchings[name] then
+        print(("Value %q as changed to %g"):format(name, value))
+        watchings[name] = value
+        return true
+    else
+        watchings[name] = value
+    end
+    
+    return false
+end

@@ -17,7 +17,7 @@ function T.init()
         end
 
         local x = centerX / 4 + 8 + centerX * collumn
-        local y = (row - ((#skills + 1) / 2)) * 48 + centerY / 4
+        local y = (row - ((#skills + 1) / 2)) * 48 + centerY / 4 + 16
         skills_buttons[index] = NewButton(
             "button", x, y, 128, 32, function() ply:increaseSkill(name) end,
             lang.print(name), {math.random(55, 255), math.random(55, 255), math.random(55, 255)},
@@ -28,21 +28,21 @@ function T.init()
 end
 
 function T.draw()
+    love.graphics.setColor(0.25, 0.25, 0.25, 0.75)
+    love.graphics.rectangle("fill", centerX / 4, centerY / 4, centerX * 1.5, centerY * 1.5, 5)
     love.graphics.setLineWidth(8)
     love.graphics.setColor(0, 0, 0, 1)
-    love.graphics.rectangle("line", centerX / 4, centerY / 4, centerX * 1.5, centerY * 1.5)
-    love.graphics.setColor(0.25, 0.25, 0.25, 0.75)
-    love.graphics.rectangle("fill", centerX / 4, centerY / 4, centerX * 1.5, centerY * 1.5)
+    love.graphics.rectangle("line", centerX / 4, centerY / 4, centerX * 1.5, centerY * 1.5, 5)
     
     love.graphics.setColor(1, 1, 1)
-    --love.graphics.print(lang.print("exp", {round(ply.exp, 1)}), centerX / 4 + 4, centerY / 4 + 4)
-    love.graphics.draw(images.exp, centerX / 4 + 4, centerY / 4 + 4)
-    love.graphics.print(round(ply.exp, 1), centerX / 4 + 4 + 32, centerY / 4 + 8)
+    love.graphics.draw(images.exp_orb, centerX / 4 + 8, centerY / 4 + 8, 0, 0.75, 0.75)
+    love.graphics.print(lang.print("exp", {round(ply.exp, 1)}), centerX / 4 + 36, centerY / 4 + 10)
 
     love.graphics.setLineWidth(1)
     love.graphics.setColor(1, 1, 1, 1)
     for index, name in pairs(skills.list) do
         skills_buttons[index]:draw()
+        if skills_buttons[index]:isIn() then dotCursor = true end
 
         local x, y = skills_buttons[index]:getPos()
         local cost = round(math.max(ply.skills[name] * skills.skills[name].mult, skills.skills[name].mult), 2)

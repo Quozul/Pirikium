@@ -88,7 +88,8 @@ function createConfig()
             use = "e",
             sprint = "lshift",
             drop = "r",
-            skill_tree = "c"
+            skill_tree = "c",
+            sneak = "lctrl"
         },
         ai = {
             disable = false,
@@ -153,7 +154,7 @@ function love.load()
     loader.newImage(images.player, "walk", "data/player/bald/walking.png")
     loader.newImage(images, "skull", "data/death_icon.png")
     loader.newImage(images, "level", "data/level_icon.png")
-    loader.newImage(images, "exp", "data/exp_icon.png")
+    loader.newImage(images, "exp_orb", "data/exp_orb.png")
 
     -- game sounds
     loader.newSource( sounds, "explosion", "data/sounds/explosion.mp3", "static")
