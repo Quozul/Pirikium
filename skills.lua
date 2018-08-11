@@ -18,12 +18,6 @@ function T.init()
 
         local x = centerX / 4 + 8 + centerX * collumn
         local y = (row - ((#skills + 1) / 2)) * 48 + centerY / 4
-
-        -- NewButton(type, x, y, w, h, click, text, color, style, value)
-        --skills_buttons[index] = NewButton(
-        --    "button", x, y, 128, 32,
-        --    function() ply:increaseSkill(name) end,
-        --    {lang.print(name), rf(0, 1, 2), rf(0, 1, 2), rf(0, 1, 2), hudFont}, name )
         skills_buttons[index] = NewButton(
             "button", x, y, 128, 32, function() ply:increaseSkill(name) end,
             lang.print(name), {math.random(55, 255), math.random(55, 255), math.random(55, 255)},

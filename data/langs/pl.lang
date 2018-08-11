@@ -63,6 +63,7 @@ accuracy=celnosc
 recoil=odrzut
 use=uzycie
 health=zdrowie
+regen=regeneration
 
 # classes
 
@@ -71,3 +72,4 @@ warrior=wojownik
 survivor=ocalaly
 tank=czolg
 assassin=zabojca
+soldier=soldier

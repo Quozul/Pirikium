@@ -1,26 +1,31 @@
 {
+    "list": [
+        "survivor",
+        "warrior",
+        "bowman",
+        "tank",
+        "assassin",
+        "soldier"
+    ],
     "bowman": {
         "weapon": "bow",
         "skills": {
             "speed": 2,
             "health": 8.5,
             "stamina": 1.5
-        },
-        "pos": 3
+        }
     },
     "warrior": {
         "weapon": "sword",
         "skills": {
             "strength": 2
-        },
-        "pos": 2
+        }
     },
     "survivor": {
         "weapon": "fists",
         "skills": {
             "stamina": 3
-        },
-        "pos": 1
+        }
     },
     "tank": {
         "weapon": "shotgun",
@@ -29,8 +34,7 @@
             "accuracy": 1.5,
             "health": 12,
             "stamina": 1
-        },
-        "pos": 4
+        }
     },
     "assassin": {
         "weapon": "dagger",
@@ -39,7 +43,14 @@
             "strength": -2,
             "health": 8,
             "stamina": 2
-        },
-        "pos": 5
+        }
+    },
+    "soldier": {
+        "weapon": "assault_riffle",
+        "skills": {
+            "speed": 1.25,
+            "regen": 0.025,
+            "accuracy": 2
+        }
     }
 }

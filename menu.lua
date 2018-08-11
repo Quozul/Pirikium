@@ -75,9 +75,9 @@ function M:init()
     end
 
     class = gspot:group(lang.print("class"), {0, unit * 9, unit*8, unit*6}, new)
-    for name, info in pairs(classes) do
-        if info.pos == nil then error("You must give a position for the class " .. name) end
-        class[name] = gspot:option(lang.print(name), {0, unit * tonumber(info.pos) + unit, unit*8, unit}, class, name)
+    for index, name in pairs(classes.list) do
+        local info = classes[name]
+        class[name] = gspot:option(lang.print(name), {0, unit * tonumber(index) + unit, unit*8, unit}, class, name)
         class[name].tip = lang.print("default weapon") .. " " .. lang.print(info.weapon)
         if info.skills then
             for skill, value in pairs(info.skills) do

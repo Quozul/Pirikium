@@ -57,9 +57,14 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
 
         p.name = id
 
-        print(l.highScore)
+        print("High score for this player is " .. l.highScore)
     else
         p.name = namegen.generate("human male")
+    end
+
+    print("Skill values:")
+    for name, value in pairs(p.skills) do
+        print(name, value)
     end
 
     p.health = p.skills.health
@@ -164,7 +169,7 @@ function player:addKill(amount, victim)
 
     self.score = self.score + victim:getLevel()
 
-    local xp = victim.exp
+    local xp = math.max(victim.exp * 2, rf(1, 2.5, 1))
 
     self.exp = self.exp + xp
     sounds.exp:setPitch(rf(.8, 1.2, 2))
@@ -175,13 +180,16 @@ end
 function player:increaseSkill(name)
     local cost = math.max(ply.skills[name] * skills.skills[name].mult, skills.skills[name].mult)
 
+    print("Cost for upgrading " .. name .. " to level " .. ply.skills[name] + 1 .. " is " .. cost .. "exp")
     if self.exp < cost then
         print("Not enough exp")
         return
     end
 
     self.exp = self.exp - cost
-    self.skills[name] = self.skills[name] + 0.1
+    print("Current level: " .. self.skills[name])
+    self.skills[name] = self.skills[name] + skills.skills[name].amount.upgrade
+    print("New level: " .. self.skills[name])
 end
 
 function player:skillBoost(skill, amount)
@@ -195,7 +203,7 @@ function player:skillBoost(skill, amount)
 
     table.insert(self.boostedSkills, index, {name = skill, amount = delta})
 
-    print(("Skill %s boosted by %g"):format(skill, amount))
+    print(("Skill %s boosted by %g (previous value was: %g)"):format(skill, amount, currentSkill))
 
     timer.after(math.random(10, 20), function()
         self.skills[skill] = self.skills[skill] - delta
@@ -210,11 +218,16 @@ function player:skillBoost(skill, amount)
 end
 
 function player:resetSkills()
+    print("Forcing skill reset...")
     for index, skill in pairs(self.boostedSkills) do
         self.skills[skill.name] = self.skills[skill.name] - skill.amount
-
-        if skill == "health" and self.health > self.skills.health then
-            self:setHealth(self.skills.health)
-        end
+        print(("Skill %s back to %g"):format(skill.name, self.skills[skill.name]))
     end
+
+    if self.health > self.skills.health then
+        self:setHealth(self.skills.health)
+        print("Fixing health")
+    end
+
+    print(#self.boostedSkills .. " skills reset")
 end

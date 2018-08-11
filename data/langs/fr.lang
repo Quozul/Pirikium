@@ -66,6 +66,7 @@ accuracy=précision
 recoil=rechargement
 use=vitesse utilisation
 health=vie maximum
+regen=régénération
 
 # classes
 
@@ -74,3 +75,4 @@ warrior=guerrier
 survivor=survivant
 tank=tank
 assassin=assassin
+soldier=soldat
