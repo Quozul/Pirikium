@@ -133,8 +133,9 @@ function G:enter()
             o.amount = rf(2, 6, 1)
         elseif type == "skill" then
             o.type = "skill"
-            o.skill = skills.list[math.random(1, #skills.list)]
-            o.amount = rf(1.1, 1.5, 1)
+            local choosenSkill = skills.orb_list[math.random(1, #skills.orb_list)]
+            o.skill = choosenSkill
+            o.amount = rf(skills.skills[choosenSkill].amount.min, skills.skills[choosenSkill].amount.max, 2)
         end
 
         o.age = 2
@@ -208,9 +209,11 @@ function G:enter()
     function entities:update(dt)
         if table.length(entities.entities) <= config.ai.limit and warmup == 0 then addEnnemy() end
 
+        -- update entities
         for id, ent in pairs(self.entities) do
             local px, py = ent.bod:getPosition()
 
+            -- cooldowns
             ent.cooldown.attack = math.max(ent.cooldown.attack - dt * ent.skills.recoil, 0) -- cooldown for primary attack
             ent.cooldown.special = math.max(ent.cooldown.special - dt * ent.skills.recoil, 0) -- cooldown for special attack
             ent.cooldown.dodge = math.max(ent.cooldown.dodge - dt * ent.skills.recoil, 0) -- cooldown for rolling
@@ -220,6 +223,18 @@ function G:enter()
                 ent.cooldown.sprint = math.min(ent.cooldown.sprint + dt, ent.skills.stamina)
             end
 
+            -- regen skill
+            if ent.skills.regen ~= 0 then
+                ent:addHealth(ent.skills.regen * dt)
+            end
+            if ent.skills.recoil < 1 then
+                error([[Recoil skill is too low, please report this bug with the console's output\n
+                To copy the console output, press CTRL+A to select everything, right-click to copy.\n
+                (Or screenshot :p)]])
+                --ent.skills.recoil = 0.1
+            end
+
+            -- ai
             if id ~= playerUUID then
                 if not config.ai.disable then ai.update(ent, self.entities[playerUUID], id) end
 
@@ -245,12 +260,14 @@ function G:enter()
             end
         end
 
+        -- update bullets
         for id, bullet in pairs(bullets) do
             if bullet.bod:isDestroyed() then
                 table.remove(bullets, id)
             end
         end
 
+        -- update orbs
         for id, orb in pairs(self.orbs) do
             local isInside = orb.fixture:testPoint(cmx, cmy) and sl(cmx, cmy, px, py) <= 64
             local speed = 1
@@ -393,8 +410,10 @@ function G:enter()
             love.graphics.pop()
         end
 
+        -- draw items
         items.draw()
 
+        -- draw entities
         for id, ent in pairs(self.entities) do
             love.graphics.push("transform")
 
@@ -405,7 +424,7 @@ function G:enter()
             love.graphics.translate(x, y)
             if id ~= playerUUID then
                 love.graphics.setColor(1, 1, 1, (255 - sl(cmx, cmy, x, y)) / 255)
-                love.graphics.print(ent.name, -hudFont:getWidth(ent.name) / 2, -25)
+                love.graphics.print(ent.name .. " - " .. ent:getLevel(), -hudFont:getWidth(ent.name) / 2, -25)
             end
 
             love.graphics.setColor(1, 1, 1, 1)
@@ -434,7 +453,7 @@ function G:enter()
             end
         end
 
-        particles.draw()
+        --particles.draw() -- particles are not used yet
     end
 
     tree.init()
@@ -628,7 +647,7 @@ function G:update(dt)
     items.update(dt)
 
     map:update(dt)
-    particles.update(dt)
+    --particles.update(dt)
     timer.update(dt)
     world:update(dt)
     cam:zoomTo(config.ratio)
