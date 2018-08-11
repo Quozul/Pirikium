@@ -16,7 +16,9 @@ end
 
 local function spread(weapon, ent)
     -- must add spread based on ent's speed
-    return rf(-weapon.spread, weapon.spread, 4), rf(-weapon.spread, weapon.spread, 4)
+    local minSpread = math.min(-weapon.spread + ent.skills.accuracy / 100, 0)
+    local maxSpread = math.max(weapon.spread - ent.skills.accuracy / 100, 0)
+    return rf(minSpread, maxSpread, 4), rf(minSpread, maxSpread, 4)
 end
 
 function attack(attacker, attacker_id)
@@ -83,7 +85,10 @@ function attack(attacker, attacker_id)
 
             local spreadx, spready = spread(wep, attacker)
             local speed = wep.bullet.speed or 10
-            b.bod:applyLinearImpulse(math.cos(aa + (spreadx - attacker.skills.accuracy / 100)) * speed, math.sin(aa + (spready - attacker.skills.accuracy / 100)) * speed)
+            b.bod:applyLinearImpulse(
+                math.cos(aa + (spreadx)) * speed,
+                math.sin(aa + (spready)) * speed
+            )
 
             b.age = wep.bullet.life
 

@@ -572,11 +572,18 @@ function controls(dt)
 
     local speed = love.physics.getMeter() * (4 + ply.skills.speed)
 
-    if key(config.controls.sprint) and cooldown.sprint ~= ply.skills.stamina and math.abs(vx + vy) > 1 then
+    if key(config.controls.sprint) and not key(config.controls.sneak) and cooldown.sprint ~= ply.skills.stamina and math.abs(vx + vy) > 1 then
         speed = speed * 2
         ply.sprinting = true
     elseif not key(config.controls.sprint) or math.abs(vx + vy) <= 1 then
         ply.sprinting = false
+    end
+
+    if key(config.controls.sneak) and not key(config.controls.sprint) then
+        speed = speed / 2
+        ply.sneaking = true
+    elseif not key(config.controls.sneak) or math.abs(vx + vy) <= 1 then
+        ply.sneaking = false
     end
 
     if key(config.controls.forward) then
