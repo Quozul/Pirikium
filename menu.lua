@@ -90,7 +90,7 @@ function M:init()
     load = gspot:group(lang.print("load"), {unit*10, unit, unit*8, unit*15})
     updatePlayerList()
 
-    settings = gspot:group(lang.print("settings"), {unit*19, unit, unit*8, unit*15})
+    settings = gspot:group(lang.print("settings"), {unit*19, unit, unit*8, unit*18})
     settings.shader = gspot:button("", {0, unit*2, unit*8, unit*2}, settings)
     settings.shader.click = function(this)
         config.shader = not config.shader
@@ -100,14 +100,36 @@ function M:init()
         createConfig()
     end
     settings.forward = gspot:input(lang.print("forward"), {unit*5, unit*6, unit*3, unit*1}, settings, config.controls.forward)
-    settings.left = gspot:input(lang.print("left"), {unit*5, unit*7, unit*3, unit*1}, settings, config.controls.left)
-    settings.back = gspot:input(lang.print("backward"), {unit*5, unit*8, unit*3, unit*1}, settings, config.controls.backward)
-    settings.right = gspot:input(lang.print("right"), {unit*5, unit*9, unit*3, unit*1}, settings, config.controls.right)
-    settings.use = gspot:input(lang.print("use"), {unit*5, unit*10, unit*3, unit*1}, settings, config.controls.use)
-    settings.drop = gspot:input(lang.print("drop"), {unit*5, unit*11, unit*3, unit*1}, settings, config.controls.drop)
-    settings.skills = gspot:input(lang.print("skill tree"), {unit*5, unit*12, unit*3, unit*1}, settings, config.controls.skill_tree)
+    settings.forward.keyinput = true
 
-    settings.save = gspot:button(lang.print("save controls"), {0, unit*13, unit*8, unit*2}, settings)
+    settings.left = gspot:input(lang.print("left"), {unit*5, unit*7, unit*3, unit*1}, settings, config.controls.left)
+    settings.left.keyinput = true
+
+    settings.back = gspot:input(lang.print("backward"), {unit*5, unit*8, unit*3, unit*1}, settings, config.controls.backward)
+    settings.back.keyinput = true
+
+    settings.right = gspot:input(lang.print("right"), {unit*5, unit*9, unit*3, unit*1}, settings, config.controls.right)
+    settings.right.keyinput = true
+
+    settings.use = gspot:input(lang.print("use"), {unit*5, unit*10, unit*3, unit*1}, settings, config.controls.use)
+    settings.use.keyinput = true
+
+    settings.drop = gspot:input(lang.print("drop"), {unit*5, unit*11, unit*3, unit*1}, settings, config.controls.drop)
+    settings.drop.keyinput = true
+
+    settings.skills = gspot:input(lang.print("skill tree"), {unit*5, unit*12, unit*3, unit*1}, settings, config.controls.skill_tree)
+    settings.skills.keyinput = true
+
+    settings.sprint = gspot:input(lang.print("sprint"), {unit*5, unit*13, unit*3, unit*1}, settings, config.controls.sprint)
+    settings.sprint.keyinput = true
+
+    settings.sneak = gspot:input(lang.print("sneak"), {unit*5, unit*14, unit*3, unit*1}, settings, config.controls.sneak)
+    settings.sneak.keyinput = true
+
+    settings.dash = gspot:input(lang.print("dash"), {unit*5, unit*15, unit*3, unit*1}, settings, config.controls.dodge)
+    settings.dash.keyinput = true
+
+    settings.save = gspot:button(lang.print("save controls"), {0, unit*16, unit*8, unit*2}, settings)
     settings.save.click = function(this)
         config.controls.forward = settings.forward.value
         config.controls.left = settings.left.value
@@ -115,7 +137,11 @@ function M:init()
         config.controls.right = settings.right.value
         config.controls.use = settings.use.value
         config.controls.drop = settings.drop.value
+        config.controls.sprint = settings.sprint.value
+        config.controls.sneak = settings.sneak.value
+        config.controls.dodge = settings.dash.value
     end
+    settings.save.borderradius = 5
 
     languages_group = gspot:group(lang.print("languages"), {unit*28, unit, unit*8, unit*15})
     local pos = 1
@@ -126,28 +152,6 @@ function M:init()
             love.event.quit("restart")
         end
         pos = pos + 1
-    end
-
-    scale = gspot:group(lang.print("scale"), {unit*37, unit, unit*8, unit*15})
-    scale[0] = gspot:option("853×480 (broken)", {0, unit*2, unit*8, unit}, scale, 0.5)
-    scale[0].click = function(this)
-        config.ratio = this.value
-        updateScreenSize()
-    end
-    scale[1] = gspot:option("1280×720", {0, unit*3, unit*8, unit}, scale, 1)
-    scale[1].click = function(this)
-        config.ratio = this.value
-        updateScreenSize()
-    end
-    scale[2] = gspot:option("1366×768 (broken)", {0, unit*4, unit*8, unit}, scale, 768/720)
-    scale[2].click = function(this)
-        config.ratio = this.value
-        updateScreenSize()
-    end
-    scale[3] = gspot:option("1920×1080", {0, unit*5, unit*8, unit}, scale, 1.5)
-    scale[3].click = function(this)
-        config.ratio = this.value
-        updateScreenSize()
     end
 end
 

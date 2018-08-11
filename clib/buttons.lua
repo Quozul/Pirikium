@@ -8,6 +8,7 @@ width, height = love.window.getMode()
 
 function NewButton(type, x, y, w, h, click, text, color, style, value)
     if style == nil then style = {} end
+    if value == nil then value = "" end
 
     local b = {}
     b.type = type
@@ -16,7 +17,7 @@ function NewButton(type, x, y, w, h, click, text, color, style, value)
     b.click = click
     b.defaultText = text or ""
     b.text = b.defaultText
-    if type == "key input" then
+    if type == "key input" or type == "input" then
         b.text = b.defaultText .. ": " .. value
     end
     b.r, b.g, b.b = unpack(color)
@@ -63,12 +64,17 @@ function button:update(dt)
     
     if self.isDown then
         self.border = math.min(self.border + dt * 2, 2)
+        if self.type == "input" then
+            self.text = self.defaultText .. ": " .. self.value
+        end
     else
         self.border = math.max(self.border - dt, 1)
     end
 end
 
 function button:draw() -- also act as update
+    if self.type == "popup" and not value then return end
+
     local font = love.graphics.getFont()
 
     --[[local shape = {
@@ -115,18 +121,37 @@ function button:draw() -- also act as update
     love.graphics.rectangle("line", self.x, self.y, self.w, self.h, 5)
 
     love.graphics.setColor(0, 0, 0)
-    love.graphics.print(self.text, self.x + self.w / 2 - font:getWidth(self.text) / 2,  self.y + self.h / 2 - font:getHeight(self.text) / 2)
+    if self.type ~= "popup" then
+        love.graphics.print(self.text, self.x + self.w / 2 - font:getWidth(self.text) / 2,  self.y + self.h / 2 - font:getHeight(self.text) / 2)
+    else
+        love.graphics.setColor(self.r / 255 - .5 / 4, self.g / 255 - .5 / 4, self.b / 255 - .5 / 4, .5)
+        love.graphics.rectangle("fill", self.x + self.w / 2 - 32, self.y + self.h - 48, 64, 32, 2.5)
+        love.graphics.setColor(0, 0, 0)
+        love.graphics.print(self.text.button, self.x + self.w / 2 - font:getWidth(self.text.button) / 2, self.y + self.h - 40)
+        
+        love.graphics.print(self.text.text, self.x + 16, self.y + 16)
+    end
+end
+
+function button:saveInput()
+    self.text = self.defaultText .. ": " .. self.value
+    self.isDown = false
 end
 
 function button:mousepressed(x, y, button)
     if button == 1 and self.type ~= "group" then
         if self:isIn() then
             click_sound:play()
-            self.isDown = true
             
             if self.type == "key input" then
-                self.text = "..."
+                self.text = self.defaultText .. ": ..."
+                
+                if self.isDown then
+                    self:saveInput()
+                end
             end
+            
+            self.isDown = true
         end
     end
 end
@@ -134,21 +159,49 @@ end
 function button:mousereleased(x, y, button)
     if button == 1 and self.type == "button" then
         self.isDown = false
+        if self.type == "popup" and self.value then
+            self.value = false
+            print(false)
+            return
+        end
+        
         if self:isIn() then
             self.click()
         end
     end
 end
 
-function button:keypressed( key, scancode, isrepeat )
-    if self.type == "key input" and self.isDown then
-        self.isDown = false
-        self.value = key
-        self.text = self.defaultText .. ": " .. self.value
-        self.click(key)
+function button:keypressed(key, scancode, isrepeat)
+    if self.isDown then 
+        if self.type == "key input" then
+            if key ~= "return" and key ~= "escape" then
+                self.value = key
+                self.click(key)
+            end
+            
+            self:saveInput()
+        elseif self.type == "input" then
+            if key == "backspace" then
+                self.value = self.value:sub(1, -2)
+            elseif key == "return" or key == "escape" then
+                self:saveInput()
+                self.click(self.value)
+            end
+        end
+    end
+end
+
+function button:textinput(key)
+    if self.type == "input" and self.isDown then
+        self.value = self.value .. key
     end
 end
 
 function button:getPos()
     return self.x, self.y
+end
+
+function button:setValue(value)
+    self.value = value
+    print(value)
 end

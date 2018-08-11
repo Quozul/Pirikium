@@ -71,6 +71,7 @@ end
 
 loots = json:decode( love.filesystem.read( "data/loots.json" ) )
 skills = json:decode( love.filesystem.read( "data/skills.json" ) )
+classes = json:decode( love.filesystem.read( "data/classes.json" ) )
 
 math.randomseed( os.time() )
 

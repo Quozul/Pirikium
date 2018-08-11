@@ -506,21 +506,22 @@ Gspot.util = {
 		if this.shape == 'circle' and not this.pos.r then this.pos.r = this.pos.w / 2 end
 	end,
 
-	drawshape = function(this, pos)
+	drawshape = function(this, pos, corner)
 		pos = pos or this:getpos()
 		if this.shape == 'circle' then
 			local segments = this.segments or math.max(pos.r, 8)
 			love.graphics.circle('fill', pos.x + pos.r, pos.y + pos.r, pos.r, segments)
 		else
-			this:rect(pos)
+			this:rect(pos, mode, corner)
 		end
 	end,
 
-	rect = function(this, pos, mode)
+	rect = function(this, pos, mode, corner)
 		pos = this.Gspot:pos(pos.pos or pos or this.pos)
 		assert(pos:type() == 'Gspot.pos')
 		mode = mode or 'fill'
-		love.graphics.rectangle(mode, pos.x, pos.y, pos.w, pos.h)
+		corner = corner or 0
+		love.graphics.rectangle(mode, pos.x, pos.y, pos.w, pos.h, corner)
 	end,
 
 	setimage = function(this, img)
@@ -748,7 +749,7 @@ Gspot.group = {
 	end,
 	draw = function(this, pos)
 		setColor(this.style.bg)
-		this:drawshape(pos)
+		this:drawshape(pos, 5)
 		if this.label then
 			setColor(this.style.labelfg or this.style.fg)
 			lgprint(this.label, pos.x + ((pos.w - this.style.font:getWidth(this.label)) / 2), pos.y + ((this.style.unit - this.style.font:getHeight()) / 2))
@@ -860,7 +861,7 @@ Gspot.button = {
 			if this == this.Gspot.mousein then setColor(this.style.hilite)
 			else setColor(this.style.default) end
 		end
-		this:drawshape(pos)
+		this:drawshape(pos, this.borderradius)
 		setColor(this.style.labelfg or this.style.fg)
 		if this.shape == 'circle' then
 			if this.img then this:drawimg(pos) end
@@ -965,7 +966,7 @@ Gspot.input = {
 			end
 			-- print the whole text and let the scissor do the clipping
 			lgprint(str, pos.x + this.style.unit / 4 + this.textorigin, pos.y + (pos.h - this.style.font:getHeight()) / 2)
-			if this == this.Gspot.focus and this.cursorlife < 0.5 then
+			if not this.keyinput and this == this.Gspot.focus and this.cursorlife < 0.5 then
 				love.graphics.rectangle("fill", pos.x + this.style.unit / 4 + cursorx, pos.y + this.style.unit / 8, 1, pos.h - this.style.unit / 4)
 			end
 			-- restore current scissor
@@ -982,37 +983,43 @@ Gspot.input = {
 		local save_cursorlife = this.cursorlife
 		this.cursorlife = 0
 		-- fragments attributed to vrld's Quickie : https://github.com/vrld/Quickie
-		if key == 'backspace' then
+		if not this.keyinput and key == 'backspace' then
 			local cur = this.cursor
 			if cur > 0 then
 				this.cursor = utf8char_begin(this.value, cur) - 1
 				this.value = this.value:sub(1, this.cursor)..this.value:sub(cur + 1)
 			end
-		elseif key == 'delete' then
+		elseif not this.keyinput and key == 'delete' then
 			local cur = utf8char_after(this.value, this.cursor + 1)
 			this.value = this.value:sub(1, this.cursor)..this.value:sub(cur)
-		elseif key == 'left' then
+		elseif not this.keyinput and key == 'left' then
 			if this.cursor > 0 then
 				this.cursor = utf8char_begin(this.value, this.cursor) - 1
 			end
-		elseif key == 'right' then
+		elseif not this.keyinput and key == 'right' then
 			this.cursor = utf8char_after(this.value, this.cursor + 1) - 1
-		elseif key == 'home' then
+		elseif not this.keyinput and key == 'home' then
 			this.cursor = 0
-		elseif key == 'end' then
+		elseif not this.keyinput and key == 'end' then
 			this.cursor = this.value:len()
-		elseif key == 'tab' and this.next and this.next.elementtype then
+		elseif not this.keyinput and key == 'tab' and this.next and this.next.elementtype then
 			this.next:focus()
-		elseif key == 'escape' then
+		elseif key == 'escape' or key == 'return' then
 			this.Gspot:unfocus()
 		else
 			-- all of the above reset the blink timer, but otherwise it's retained
 			this.cursorlife = save_cursorlife
+
+			if this.keyinput then
+				this.value = key
+				this.Gspot:unfocus()
+			end
 		end
 		-- /fragments
 	end,
 
 	textinput = function(this, key)
+		if this.keyinput then return end
 		this.value = this.value:sub(1, this.cursor) .. key .. this.value:sub(this.cursor + 1)
 		this.cursor = this.cursor + #key
 		-- reset blink timer
