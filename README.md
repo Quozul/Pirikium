@@ -2,15 +2,9 @@
 **Pirikium** is a top-down adventure game, written in lua with the [Löve 2D](https://love2d.org/) (version 11.1) game engine. The game is currently in early stages.  
 
 <div align="center">
-    <a href="https://discord.gg/UZy8rCY"><img src="https://discordapp.com/api/guilds/472820911955902465/embed.png" alt="Discord server" title="Join our Discord server now!"/></a>
+    <a href="https://discord.gg/UZy8rCY"><img src="https://discordapp.com/api/guilds/472820911955902465/embed.png" alt="Discord server" title="Join our Discord server now!"/></a></br>
+    E-mail me at <a href="mailto:quozul@outlook.com" alt="quozul@outlook.com" title="Send me an e-mail">quozul@outlook.com</a>
 </div>
-
-## Team
-* **Quôzul** main developper
-* **Katrtlen** main artist
-
-### Known bugs
-* When inventory gets empty → crash
 
 ### Default controls
 Some controls can be changed in the config file.
@@ -33,7 +27,15 @@ You don't have to compile the game in order to play it.
 * Extract them and drag the folder onto Löve's executable *love.exe*.  
 For more informations about *compiling it* refer on the [Löve's wiki](https://love2d.org/wiki/Game_Distribution) or the [forum](https://love2d.org/forums/viewtopic.php?f=4&t=451).
 
-Some of the sounds used are from [Freesound.org](https://freesound.org/)
+---
+
+## Team
+* **Quôzul** :computer:
+* **Katrtlen** main artist
+
+### Credits
+* Some of the sounds used are from [Freesound.org](https://freesound.org/)
+* [Iceland Font](https://fonts.google.com/specimen/Iceland) is from Google Fonts
 
 ---
 

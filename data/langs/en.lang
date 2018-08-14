@@ -3,6 +3,7 @@ author=Quozul
 # menu
 
 new=new character
+play=play
 name=name
 class=class
 create=create
@@ -29,7 +30,7 @@ backward=backward
 right=right
 use=use
 drop=drop
-skill tree=skill tree
+skill_tree=skill tree
 sprint=sprint
 sneak=sneak
 dash=dash
