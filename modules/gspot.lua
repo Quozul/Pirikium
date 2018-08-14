@@ -749,7 +749,7 @@ Gspot.group = {
 	end,
 	draw = function(this, pos)
 		setColor(this.style.bg)
-		this:drawshape(pos, 5)
+		this:drawshape(pos)
 		if this.label then
 			setColor(this.style.labelfg or this.style.fg)
 			lgprint(this.label, pos.x + ((pos.w - this.style.font:getWidth(this.label)) / 2), pos.y + ((this.style.unit - this.style.font:getHeight()) / 2))

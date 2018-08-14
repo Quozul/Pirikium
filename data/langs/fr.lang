@@ -3,6 +3,7 @@ author=Quozul
 # menu
 
 new=nouveau
+play=jouer
 name=nom
 class=classes
 create=créer
@@ -29,7 +30,7 @@ backward=reculer
 right=droite
 use=utiliser
 drop=lâcher
-skill tree=arbre de compétences
+skill_tree=arbre de compétences
 sprint=courrir
 sneak=furtif
 dash=charger

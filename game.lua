@@ -48,7 +48,7 @@ function G:enter()
     
     lightWorld = LightWorld:new()
     lightWorld:SetColor(50, 50, 50, 255)
-    lightWorld:Resize(1280 * config.ratio, 720 * config.ratio)
+    lightWorld:Resize(window_width, window_height)
     print("Created light world")
     
     lightWorld:InitFromPhysics(world)
@@ -475,9 +475,7 @@ end
 function G:resize(w, h)
     print("Window got resized")
 	map:resize(w, h)
-    --lightWorld:Resize(w, h)
-
-    window_width, window_height = w, h
+    lightWorld:Resize(w, h)
 end
 
 function G:keypressed(key, scancode, isrepeat)

@@ -3,6 +3,7 @@ author=Katrtlen
 # menu
 
 new=nowa postac
+play=play
 name=nazwa
 class=klasa
 create=stworz
@@ -29,7 +30,7 @@ backward=do tylu
 right=w prawo
 use=interakcja
 drop=upusc
-skill tree=drzewo umiejetnosci
+skill_tree=drzewo umiejetnosci
 sprint=sprint
 sneak=sneak
 dash=dash

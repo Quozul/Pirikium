@@ -28,6 +28,7 @@ function NewButton(type, x, y, w, h, click, text, color, style, value)
     b.isDown = false
     b.border = 1
     b.value = value
+    b.font = style.font or nil
 
     return setmetatable(b, button)
 end
@@ -75,7 +76,8 @@ end
 function button:draw() -- also act as update
     if self.type == "popup" and not value then return end
 
-    local font = love.graphics.getFont()
+    local font = self.font or love.graphics.getFont()
+    if self.font then love.graphics.setFont(font) end
 
     --[[local shape = {
         self.x + 5, self.y + 5,

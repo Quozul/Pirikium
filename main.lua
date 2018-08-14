@@ -11,6 +11,9 @@ loading.setText("Loading modules...")
 loading.draw()
 love.graphics.present()
 
+icon = love.image.newImageData("data/icon.png")
+love.window.setIcon(icon)
+
 gamestate = require "modules/hump.gamestate"
 loader = require "modules/love-loader"
 camera = require "modules/hump.camera"
@@ -131,30 +134,30 @@ lang.decrypt(("data/langs/%s.lang"):format(config.lang))
 function love.load()
     finishedLoading = false
 
-    hudFont = love.graphics.newFont(12)
-    menuFont = love.graphics.newFont(24)
+    hudFont = love.graphics.newFont("data/font/Iceland.ttf", 16)
+    menuFont = love.graphics.newFont("data/font/Iceland.ttf", 32)
+    titleFont = love.graphics.newFont("data/font/Iceland.ttf", 48)
     print("Loaded font")
 
     love.graphics.setDefaultFilter("nearest", "nearest")
-
-    icon = love.image.newImageData("data/icon.png")
-    love.window.setIcon(icon)
 
     images.orbs = {}
     images.player = {}
     sounds = {}
 
-    loader.newImage(images, "cursor", "data/cursor.png")
-    loader.newImage(images, "dot", "data/cursor_small.png")
-    loader.newImage(images, "slot", "data/inv_slot.png")
-    loader.newImage(images, "bar", "data/bar.png")
+    loader.newImage(images, "cursor", "data/ui/cursor.png")
+    loader.newImage(images, "dot", "data/ui/cursor_small.png")
+    loader.newImage(images, "slot", "data/ui/inv_slot.png")
+    loader.newImage(images, "bar", "data/ui/bar.png")
+    loader.newImage(images, "skull", "data/ui/death_icon.png")
+    loader.newImage(images, "level", "data/ui/level_icon.png")
+    loader.newImage(images, "exit", "data/ui/exit_icon.png")
+
     loader.newImage(images, "crate", "data/crate.png")
     loader.newImage(images.orbs, "health", "data/orbs/health.png")
     loader.newImage(images.orbs, "skill", "data/orbs/skill.png")
     loader.newImage(images.player, "stand", "data/player/bald/stand.png")
     loader.newImage(images.player, "walk", "data/player/bald/walking.png")
-    loader.newImage(images, "skull", "data/death_icon.png")
-    loader.newImage(images, "level", "data/level_icon.png")
     loader.newImage(images, "exp_orb", "data/exp_orb.png")
 
     -- game sounds
@@ -199,6 +202,10 @@ function love.update(dt)
         loadTime = loadTime + dt
         loader.update()
     end
+end
+
+function love.resize(w, h)
+    window_width, window_height = w, h
 end
 
 function love.draw()
