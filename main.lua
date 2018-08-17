@@ -51,6 +51,9 @@ ai = require "ai"
 lang = require "clib/lang"
 require "clib/transition"
 require "deathscreen"
+local update_checking_code = love.filesystem.read("update_check.lua")
+update_checking_thread = love.thread.newThread(update_checking_code)
+update_channel = love.thread.newChannel()
 
 lang.decrypt("data/langs/en.lang")
 
@@ -105,7 +108,8 @@ function createConfig()
         lang = "en",
         warmup = 10,
         ratio = 1,
-        play_music = true
+        play_music = true,
+        dev_version = false
     }
 
     love.filesystem.write(configFile, json:encode_pretty( config )) -- create a config file

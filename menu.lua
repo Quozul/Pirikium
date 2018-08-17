@@ -102,8 +102,12 @@ function M:init()
     
     buttons.main.update = NewButton(
         "button", 0, unit*6, unit*18, unit*2,
-        function() end,
-        "Update", {203, 67, 53}, {shape = "sharp", easing = "bounce", font = hudFont}, false
+        function()
+            print("Checking for updates...")
+            buttons.main.update:setText("Checking for updates...")
+            update_checking_thread:start()
+        end,
+        "Update", {203, 67, 53}, {shape = "sharp", easing = "bounce", font = hudFont}
     )
     buttons.main.mods = NewButton(
         "button", unit*20, unit*6, unit*18, unit*2,
@@ -129,7 +133,13 @@ function M:init()
         this.value = not this.value
         config.shader = this.value
     end
-    settings.reset = gspot:button(lang.print("reset"), {unit, unit*4, unit*8, unit*2}, settings.group)
+    settings.dev_updates = gspot:checkbox(lang.print("dev version"), {unit, unit*4}, settings.group, config.dev_version)
+    settings.dev_updates.click = function(this)
+        this.value = not this.value
+        config.dev_version = this.value
+    end
+
+    settings.reset = gspot:button(lang.print("reset"), {unit, unit*6, unit*8, unit*2}, settings.group)
     settings.reset.click = function()
         print("Resetting config")
         createConfig()
@@ -232,6 +242,20 @@ function M:update(dt)
         element:update(dt)
     end
     gspot:update(dt)
+
+    version = love.thread.getChannel( "update_channel" ):pop()
+    if version then
+        print(("Online version: %s.\nCurrent version: %s."):format(version.online_ver, version.current_ver))
+
+        if version.online_ver > version.current_ver then
+            print("New version available!")
+            buttons.main.update:setText("New version is out!")
+        else
+            buttons.main.update:setText("No update found.")
+        end
+
+
+    end
 end
 
 local title = "Pirikium"
