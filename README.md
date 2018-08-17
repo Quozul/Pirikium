@@ -30,8 +30,8 @@ For more informations about *compiling it* refer on the [Löve's wiki](https://l
 ---
 
 ## Team
-* **Quôzul** :computer:
-* **Katrtlen** main artist
+* **Quôzul** <span title="Developer">:computer:</span>
+* **Katrtlen** <span title="Artist">:pencil2:</span>
 
 ### Credits
 * Some of the sounds used are from [Freesound.org](https://freesound.org/)
@@ -46,7 +46,7 @@ Use | Modules
 ---|---
 JSON encoder/decoder | [JSON](http://regex.info/blog/lua/json)
 Camara & more | [hump](https://github.com/vrld/hump/)
-Serialisation | [Ser](https://github.com/gvx/Ser) (may be removed) & [Bitser](https://github.com/gvx/bitser)
+Serialisation | [Ser](https://github.com/gvx/Ser) & [Bitser](https://github.com/gvx/bitser)
 GUI | [Gspöt](https://github.com/pgimeno/Gspot)
 Physics | [Box2D](https://love2d.org/wiki/love.physics) (*included in Löve2D*)
 Unique IDs generator | [UUID](https://github.com/Tieske/uuid)
