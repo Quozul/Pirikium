@@ -1,5 +1,11 @@
 local M = {}
 
+local buttons = {
+    none = {},
+    main = {},
+    selection = {}
+}
+local menu = "main"
 local mainMenu = {}
 settings = {}
 selection = {}
@@ -72,12 +78,38 @@ end
 
 function M:init()
     -- main buttons
-    mainMenu.play = NewButton("button", 0, 0, unit*12, unit*5, function() selection.group:show() end, "Play", {241, 196, 15}, {shape = "sharp", easing = "bounce", font = menuFont})
-    mainMenu.settings = NewButton("button", unit*13, 0, unit*12, unit*5, function() settings.group:show() end, "Settings", {84, 153, 199}, {shape = "sharp", easing = "bounce", font = menuFont})
-    --mainMenu.progress = NewButton("button", unit*26, 0, unit*12, unit*5, function() end, "Progress", {136, 78, 160}, {shape = "sharp", easing = "bounce", font = menuFont})
+    buttons.main.play = NewButton(
+        "button", 0, 0, unit*12, unit*5,
+        function()
+            menu = "none"
+            selection.group:show()
+        end,
+        "Play", {241, 196, 15}, {shape = "sharp", easing = "bounce", font = menuFont}
+    )
+    buttons.main.settings = NewButton(
+        "button", unit*13, 0, unit*12, unit*5,
+        function()
+            menu = "none"
+            settings.group:show()
+        end,
+        "Settings", {84, 153, 199}, {shape = "sharp", easing = "bounce", font = menuFont}
+    )
+    buttons.main.progress = NewButton(
+        "button", unit*26, 0, unit*12, unit*5,
+        function() end,
+        "Progress", {136, 78, 160}, {shape = "sharp", easing = "bounce", font = menuFont}, false
+    )
     
-    --mainMenu.update = NewButton("button", 0, unit*6, unit*18, unit*2, function() end, "Update", {203, 67, 53}, {shape = "sharp", easing = "bounce", font = hudFont})
-    --mainMenu.mods = NewButton("button", unit*20, unit*6, unit*18, unit*2, function() end, "Mod workshop", {74, 35, 90}, {shape = "sharp", easing = "bounce", font = hudFont})
+    buttons.main.update = NewButton(
+        "button", 0, unit*6, unit*18, unit*2,
+        function() end,
+        "Update", {203, 67, 53}, {shape = "sharp", easing = "bounce", font = hudFont}, false
+    )
+    buttons.main.mods = NewButton(
+        "button", unit*20, unit*6, unit*18, unit*2,
+        function() end,
+        "Mod workshop", {74, 35, 90}, {shape = "sharp", easing = "bounce", font = hudFont}, false
+    )
 
     -- all groups are childs of this group, used to keep everything centered on screen
     mainMenuGroup = gspot:group("", {0, 0, 0, 0})
@@ -89,6 +121,7 @@ function M:init()
     settings.close.style.bg = {1, 0, 0}
     settings.close.click = function(this)
         settings.group:hide()
+        menu = "main"
     end
 
     settings.shader = gspot:checkbox(lang.print("enable light"), {unit, unit*2}, settings.group, config.shader)
@@ -137,6 +170,7 @@ function M:init()
     selection.close.style.bg = {1, 0, 0}
     selection.close.click = function(this)
         selection.group:hide()
+        menu = "main"
     end
 
     updatePlayerList()
@@ -148,6 +182,7 @@ function M:init()
     new.close.style.bg = {1, 0, 0}
     new.close.click = function(this)
         new.group:hide()
+        menu = "main"
     end
     new.name = gspot:input("", {unit, unit*2, unit*8, unit*2}, new.group, lang.print("name"), false)
     new.create = gspot:button(lang.print("create"), {unit, unit*6, unit*8, unit*2}, new.group)
@@ -186,13 +221,14 @@ function M:enter()
     love.mouse.setVisible(true)
     love.mouse.setGrabbed(false)
     print("Entered menu")
+    menu = "main"
 
     if config.play_music then sounds.menu_theme:play() end
 end
 function M:leave() sounds.menu_theme:stop() end
 
 function M:update(dt)
-    for index, element in pairs(mainMenu) do
+    for index, element in pairs(buttons[menu]) do
         element:update(dt)
     end
     gspot:update(dt)
@@ -205,7 +241,7 @@ function M:draw()
     local cx, cy = basicCamera(center[1], center[2], function()
         love.graphics.setFont(titleFont)
         love.graphics.print(title, unit*19 - titleFont:getWidth(title) / 2, -paddingy * 2)
-        for index, element in pairs(mainMenu) do
+        for index, element in pairs(buttons[menu]) do
             element:draw()
         end
     end)
@@ -225,7 +261,7 @@ function M:keypressed(key, code, isrepeat)
 	end
 end
 function M:mousepressed(x, y, button, isTouch)
-    for index, element in pairs(mainMenu) do
+    for index, element in pairs(buttons[menu]) do
         element:mousepressed(x, y, button)
     end
     gspot:mousepress(x, y, button)
@@ -236,7 +272,7 @@ function M:mousepressed(x, y, button, isTouch)
     end
 end
 function M:mousereleased(x, y, button)
-    for index, element in pairs(mainMenu) do
+    for index, element in pairs(buttons[menu]) do
         element:mousereleased(x, y, button)
     end
     gspot:mouserelease(x, y, button)

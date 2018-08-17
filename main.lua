@@ -14,6 +14,8 @@ love.graphics.present()
 icon = love.image.newImageData("data/icon.png")
 love.window.setIcon(icon)
 
+require "errorhandler"
+
 gamestate = require "modules/hump.gamestate"
 loader = require "modules/love-loader"
 camera = require "modules/hump.camera"
@@ -24,7 +26,6 @@ uuid = require "modules/uuid"
 json = require "modules/json"
 ser = require "modules/ser"
 namegen = require "namegen.namegen"
-
 sti = require "modules/sti"
 grid = require "modules/jumper.grid"
 pathfinder = require "modules/jumper.pathfinder"
@@ -120,7 +121,7 @@ end
 
 if config.lang == nil then createConfig() end
 
-function updateScreenSize()
+function updateScreenSize() -- the screen size scaling must be reworked
     love.window.setMode(1280*config.ratio, 720*config.ratio)
     window_width, window_height = 1280*config.ratio, 720*config.ratio
 end
@@ -133,6 +134,9 @@ lang.decrypt(("data/langs/%s.lang"):format(config.lang))
 
 function love.load()
     finishedLoading = false
+
+    local logical_processors = love.system.getProcessorCount()
+    if logical_processors < 2 then love.window.showMessageBox("Processors count too low", "You don't have enough logical processors in your computer, the game may struggle sometimes.", "warning") end
 
     hudFont = love.graphics.newFont("data/font/Iceland.ttf", 16)
     menuFont = love.graphics.newFont("data/font/Iceland.ttf", 32)
@@ -148,7 +152,6 @@ function love.load()
     loader.newImage(images, "cursor", "data/ui/cursor.png")
     loader.newImage(images, "dot", "data/ui/cursor_small.png")
     loader.newImage(images, "slot", "data/ui/inv_slot.png")
-    loader.newImage(images, "bar", "data/ui/bar.png")
     loader.newImage(images, "skull", "data/ui/death_icon.png")
     loader.newImage(images, "level", "data/ui/level_icon.png")
     loader.newImage(images, "exit", "data/ui/exit_icon.png")

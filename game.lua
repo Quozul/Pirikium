@@ -227,11 +227,9 @@ function G:enter()
             if ent.skills.regen ~= 0 then
                 ent:addHealth(ent.skills.regen * dt)
             end
+
             if ent.skills.recoil < 1 then
-                error([[Recoil skill is too low, please report this bug with the console's output\n
-                To copy the console output, press CTRL+A to select everything, right-click to copy.\n
-                (Or screenshot :p)]])
-                --ent.skills.recoil = 0.1
+                error("This save is corrupted :(")
             end
 
             -- ai
@@ -470,6 +468,7 @@ function G:enter()
     ratio = 1
     pause = false
     deathscreen.init()
+    SetTranslation(0, 0)
 end
 
 function G:resize(w, h)
@@ -778,8 +777,10 @@ function G:draw()
         5 + percentage, 30 - padding
     )
 
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.setLineWidth(3) -- make a bigger line for stats bars
+    love.graphics.rectangle("line", 5, 5, 200, 25, 5)
     love.graphics.setColor(1, 1, 1)
-    love.graphics.draw(images.bar, 5, 5)
     local text = math.max(round(health, 1), 0) .. " hp"
     love.graphics.print(text, (5 + 200 - padding - hudFont:getWidth(text)) / 2, 25 - padding - hudFont:getHeight(text))
 
@@ -792,11 +793,13 @@ function G:draw()
         5 - padding + math.min(5 + percentage + math.min(percentage, 20), 200), 32,
         5 + percentage, 57 - padding
     )
-    
+
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.rectangle("line", 5, 32, 200, 25, 5)
     love.graphics.setColor(1, 1, 1)
-    love.graphics.draw(images.bar, 5, 32)
     local percentage = round(percentage / 2, 0) .. "%"
     love.graphics.print(percentage, (5 + 200 - padding - hudFont:getWidth(percentage)) / 2, 30 + round((25 - padding - hudFont:getHeight(percentage) / 1.5) / 2, 0))
+    love.graphics.setLineWidth(0) -- reset line size
 
     -- kills and level
     love.graphics.setColor(1, 1, 1)
