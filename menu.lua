@@ -13,41 +13,33 @@ load = {}
 new = {}
 local unit = gspot.style.unit
 
-local function resavePlayerList()
-    print(tableToString(players, ";"))
-    love.filesystem.write( "player_list", tableToString(players, ";") )
-end
-
 local function updatePlayerList()
-    if not love.filesystem.getInfo("player_list") then return end
-
-    local player_list = love.filesystem.read( "player_list" )
-    players = player_list:split(";")
-    print(#players .. " saves")
+    if not love.filesystem.getInfo("saves") then error("Save directory not found! Try restarting the game.") end
+    players = love.filesystem.getDirectoryItems("saves")
+    print("Updating save list... " .. #players .. " saves found")
 
     if players ~= nil then
         for index, name in pairs(players) do
-            local info = name:split(",")
-
             if load[index] then
                 gspot:rem(load[index].player)
                 gspot:rem(load[index].rem)
             end
             load[index] = {}
 
-            load[index].player = gspot:button(index .. ". " .. info[1], {unit, unit * index * 2 + unit, unit*8, unit*2}, selection.group)
-            load[index].player.tip = lang.print(info[2])
+            load[index].player = gspot:button(index .. ". " .. name, {unit, unit * index * 2 + unit, unit*8, unit*2}, selection.group)
             load[index].player.click = function(this)
-                playerUUID = info[1]
+                playerUUID = name
                 gamestate.switch(game)
             end
             load[index].rem = gspot:button("-", {unit*9, unit * index * 2 + unit, unit*2, unit*2}, selection.group)
-            load[index].rem.tip = lang.print("remove", {info[1]})
+            load[index].rem.tip = lang.print("remove", {name})
             load[index].rem.click = function(this)
-                love.filesystem.remove(info[1])
-                players[index] = nil
-                resavePlayerList()
-                updatePlayerList()
+                print("Removing " .. name .. "'s save")
+                local succes = love.filesystem.remove("saves/" .. name)
+                gspot:rem(load[index].player) -- remove this save buttons
+                gspot:rem(load[index].rem)
+                load[index] = nil
+                load.newCharacter.pos.y = unit * #load * 2 + unit*4 -- update new char button pos
             end
         end
 
@@ -64,6 +56,8 @@ local function updatePlayerList()
 end
 
 local function createPlayer(name)
+    if not love.filesystem.getInfo("saves") then error("Save directory not found! Try restarting the game.") end
+
     print("Name of new player: " .. name)
     local s = {}
     s.defaultWeapon = classes[class.value].weapon
@@ -72,8 +66,7 @@ local function createPlayer(name)
     s.skills = classes[class.value].skills
     s.highScore = 0
 
-    local succes, error = love.filesystem.write( tostring(name), bitser.dumps( s ) )
-    print(succes, error)
+    love.filesystem.write( "saves/" .. tostring(name), bitser.dumps( s ) )
 end
 
 function M:init()
@@ -84,7 +77,7 @@ function M:init()
             menu = "none"
             selection.group:show()
         end,
-        "Play", {241, 196, 15}, {shape = "sharp", easing = "bounce", font = menuFont}
+        lang.print("play"), {241, 196, 15}, {shape = "sharp", easing = "bounce", font = menuFont}
     )
     buttons.main.settings = NewButton(
         "button", unit*13, 0, unit*12, unit*5,
@@ -92,27 +85,27 @@ function M:init()
             menu = "none"
             settings.group:show()
         end,
-        "Settings", {84, 153, 199}, {shape = "sharp", easing = "bounce", font = menuFont}
+        lang.print("settings"), {84, 153, 199}, {shape = "sharp", easing = "bounce", font = menuFont}
     )
     buttons.main.progress = NewButton(
         "button", unit*26, 0, unit*12, unit*5,
         function() end,
-        "Progress", {136, 78, 160}, {shape = "sharp", easing = "bounce", font = menuFont}, false
+        lang.print("progress"), {136, 78, 160}, {shape = "sharp", easing = "bounce", font = menuFont}, false
     )
     
     buttons.main.update = NewButton(
         "button", 0, unit*6, unit*18, unit*2,
         function()
             print("Checking for updates...")
-            buttons.main.update:setText("Checking for updates...")
-            update_checking_thread:start()
+            buttons.main.update:setText(lang.print("update checking"))
+            update_checking_thread:start(config.dev_version)
         end,
-        "Update", {203, 67, 53}, {shape = "sharp", easing = "bounce", font = hudFont}
+        lang.print("update"), {203, 67, 53}, {shape = "sharp", easing = "bounce", font = hudFont}
     )
     buttons.main.mods = NewButton(
         "button", unit*20, unit*6, unit*18, unit*2,
         function() end,
-        "Mod workshop", {74, 35, 90}, {shape = "sharp", easing = "bounce", font = hudFont}, false
+        lang.print("mods"), {74, 35, 90}, {shape = "sharp", easing = "bounce", font = hudFont}, false
     )
 
     -- all groups are childs of this group, used to keep everything centered on screen
@@ -188,10 +181,12 @@ function M:init()
 
     -- character creation group
     new.group = gspot:group(lang.print("new"), {0, 0, unit*38, unit*22}, mainMenuGroup)
+    new.group.style.bg = {108 / 255, 52 / 255, 131 / 255}
     new.close = gspot:button("×", {unit*37, 0, unit, unit}, new.group)
     new.close.style.bg = {1, 0, 0}
     new.close.click = function(this)
         new.group:hide()
+        selection.group:show()
         menu = "main"
     end
     new.name = gspot:input("", {unit, unit*2, unit*8, unit*2}, new.group, lang.print("name"), false)
@@ -208,6 +203,7 @@ function M:init()
         createPlayer(new.name.value)
         updatePlayerList()
         new.group:hide()
+        selection.group:show()
     end
 
     class = gspot:scrollgroup(lang.print("class"), {unit*27, unit, unit*10, unit*20}, new.group, "horizontal")
@@ -232,6 +228,7 @@ function M:enter()
     love.mouse.setGrabbed(false)
     print("Entered menu")
     menu = "main"
+    buttons.main.update:setText(lang.print("update"))
 
     if config.play_music then sounds.menu_theme:play() end
 end
@@ -245,16 +242,31 @@ function M:update(dt)
 
     version = love.thread.getChannel( "update_channel" ):pop()
     if version then
-        print(("Online version: %s.\nCurrent version: %s."):format(version.online_ver, version.current_ver))
+        if version == "error" then
+            buttons.main.update:setText(lang.print("error"))
+            return
+        end
+
+        print(("Online version:  %s.\nCurrent version: %s."):format(version.online_ver, version.current_ver))
 
         if version.online_ver > version.current_ver then
             print("New version available!")
-            buttons.main.update:setText("New version is out!")
+
+            buttons.main.update:setText(lang.print("update found"))
+            local window_buttons = { "Yes", "No" }
+
+            pressedbutton = love.window.showMessageBox(
+                lang.print("update found"),
+                lang.print("update download"),
+                window_buttons
+            )
+
+            if pressedbutton == 1 then
+                love.system.openURL("https://github.com/Quozul/Pirikium")
+            end
         else
-            buttons.main.update:setText("No update found.")
+            buttons.main.update:setText(lang.print("update not found"))
         end
-
-
     end
 end
 
@@ -271,7 +283,7 @@ function M:draw()
     end)
     gspot:draw()
     SetTranslation(cx, cy)
-    mainMenuGroup.pos.x, mainMenuGroup.pos.y = cx, cy - paddingy
+    mainMenuGroup.pos.x, mainMenuGroup.pos.y = cx, cy - unit*22 / 3
 
     love.graphics.draw(images.exit, window_width - 36, 4)
 end

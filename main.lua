@@ -11,9 +11,6 @@ loading.setText("Loading modules...")
 loading.draw()
 love.graphics.present()
 
-icon = love.image.newImageData("data/icon.png")
-love.window.setIcon(icon)
-
 require "errorhandler"
 
 gamestate = require "modules/hump.gamestate"
@@ -82,10 +79,11 @@ classes = json:decode( love.filesystem.read( "data/classes.json" ) )
 
 math.randomseed( os.time() )
 
+-- create config
 local configFile = "config.json"
 function createConfig()
     config = {
-        shader = true,
+        shader = true, -- enable shader
         controls = {
             forward = "w",
             left = "a",
@@ -100,16 +98,16 @@ function createConfig()
             sneak = "lctrl"
         },
         ai = {
-            disable = false,
-            debug = false,
-            limit = 2
+            disable = false, -- disable the ai's brain
+            debug = false, -- display ai path and more
+            limit = 2, -- maximum bots at once
         },
-        debug = false,
-        lang = "en",
-        warmup = 10,
-        ratio = 1,
-        play_music = true,
-        dev_version = false
+        debug = false, -- display extra informations to screen
+        lang = "en", -- selected language of the game
+        warmup = 10, -- time before enemies spawns
+        ratio = 1, -- zomm in-game
+        play_music = true, -- play background music in main-menu
+        dev_version = false, -- check for developement versions
     }
 
     love.filesystem.write(configFile, json:encode_pretty( config )) -- create a config file
@@ -125,12 +123,20 @@ end
 
 if config.lang == nil then createConfig() end
 
+-- create folder for player saves if not existing
+local save_folder = love.filesystem.getInfo("saves")
+if not save_folder or save_folder.type ~= "directory" then
+    love.filesystem.createDirectory("saves")
+    print("Save directory created")
+end
+
 function updateScreenSize() -- the screen size scaling must be reworked
     love.window.setMode(1280*config.ratio, 720*config.ratio)
     window_width, window_height = 1280*config.ratio, 720*config.ratio
 end
 if config.ratio ~= 1 then updateScreenSize() end
 
+-- load language
 languages_list = love.filesystem.load( "data/languages_list.lua" )()
 print(#languages_list .. " available")
 
@@ -221,7 +227,7 @@ function love.draw()
         local percent = 0
         if loader.resourceCount ~= 0 then
             percent = loader.loadedCount / loader.resourceCount
-            loading.setText("Loading .. " .. round(percent * 100, 0) .. "%")
+            loading.setText(lang.print("loading") .. " " .. round(percent * 100, 0) .. "%")
         end
     end
 end
