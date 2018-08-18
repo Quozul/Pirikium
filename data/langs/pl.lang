@@ -22,6 +22,20 @@ score=you can do better... %g
 best score=your best score is %g
 new score=this is your best score so far! %g
 dev version=look for developement updates
+yes=yes
+no=no
+error=an error has occured...
+update=update
+mods=mods
+progress=progress
+loading=loading...
+
+# updates
+
+update not found=no update found...
+update found=new version is out!
+update download=A new version of Pirikium is available, would you like to download it?
+update checking=Checking for updates...
 
 # controls
 

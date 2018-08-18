@@ -39,8 +39,8 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
     
     p.boostedSkills = {}
 
-    if love.filesystem.getInfo( id ) then
-        local l = bitser.loads(love.filesystem.read( id ))
+    if love.filesystem.getInfo( "saves/" .. id ) then
+        local l = bitser.loads(love.filesystem.read( "saves/" .. id ))
         print("Player save found")
 
         if l.defaultWeapon == nil then error("No weapon found in the save!") end

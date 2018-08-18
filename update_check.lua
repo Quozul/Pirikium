@@ -1,6 +1,9 @@
 local request = require "luajit-request"
 require "clib/utility"
 
+local check_dev = ...
+print(("Check developement version? %s"):format(check_dev))
+
 function versionWeight(numVer)
     local preTypes = {"dev", "alpha", "beta", "rc", "release"}
 
@@ -23,7 +26,7 @@ function versionWeight(numVer)
     local preMajor, preMinor = table.find(preTypes, preVer[1]) or 4, string.format("%03d", preVer[2] or 0)
     print( ("Release type: %s, worth %s.  Minor: %s.\n"):format(preVer[1], preMajor, preMinor) )
 
-    return tonumber(
+    return {tonumber(
         "0x" ..
         string.format("%02x", major) ..
         string.format("%02x", minor) ..
@@ -35,15 +38,24 @@ function versionWeight(numVer)
         string.format("%02x", patch) .. "." ..
         string.format("%02x", preMajor) ..
         string.format("%02x", preMinor)
-    )
+    )}
 end
 
 local response = request.send("https://github.com/Quozul/Pirikium/raw/master/version")
+
 if response then
-    love.thread.getChannel( "update_channel" ):push(
-        {
-            online_ver = versionWeight(response.body),
-            current_ver = versionWeight( love.filesystem.read("version") ),
+    if check_dev then
+        send = {
+            online_ver = versionWeight(response.body)[2],
+            current_ver = versionWeight( love.filesystem.read("version") )[2]
         }
-)
+    else
+        send = {
+            online_ver = versionWeight(response.body)[1],
+            current_ver = versionWeight( love.filesystem.read("version") )[1]
+        }
+    end
+    love.thread.getChannel( "update_channel" ):push( send )
+else
+    love.thread.getChannel( "update_channel" ):push( "error" )
 end
