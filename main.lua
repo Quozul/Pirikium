@@ -35,13 +35,13 @@ print("Loaded modules")
 
 require "clib/buttons"
 require "clib/utility"
-require "clib/players"
+require "players"
 require "clib/animation"
-world_utility = require "clib/world"
 particles = require "clib/particles"
 items = require "items"
 menu = require "menu"
 game = require "game"
+require "hud"
 require "attack"
 tree = require "skills"
 ai = require "ai"
@@ -169,9 +169,9 @@ function love.load()
     loader.newImage(images, "crate", "data/crate.png")
     loader.newImage(images.orbs, "health", "data/orbs/health.png")
     loader.newImage(images.orbs, "skill", "data/orbs/skill.png")
+    loader.newImage(images.orbs, "exp", "data/exp_orb.png")
     loader.newImage(images.player, "stand", "data/player/bald/stand.png")
     loader.newImage(images.player, "walk", "data/player/bald/walking.png")
-    loader.newImage(images, "exp_orb", "data/exp_orb.png")
 
     -- game sounds
     loader.newSource( sounds, "explosion", "data/sounds/explosion.mp3", "static")

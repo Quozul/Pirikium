@@ -4,7 +4,7 @@ player.__index = player
 local defaultWeapon = "fists"     -- default weapon to spawn with
 local maxInventory = 2         -- maximum items the player can have
 
-function newPlayer(x, y, id, weapon, level) -- creates a new player
+function newPlayer(x, y, id, class, level) -- creates a new player
     if x == nil or y == nil then error("You must give coordinates for the new player to spawn") return end
 
     if not level then level = 0 end
@@ -13,10 +13,13 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
 
     local p = {}
 
-    if weapon == nil then
+    if class == nil then
         weapon = defaultWeapon
-        print("Entity spawn with " .. weapon)
+    else
+        weapon = class.weapon
     end
+    print("Entity spawn with " .. weapon)
+    
     p.inventory = { weapon }
     p.selectedSlot = 1
     p.cooldown = {
@@ -30,6 +33,9 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
 
     for name, value in pairs(skills.skills) do
         p.skills[name] = value.default + level
+        if class ~= nil and class.skills ~= nil and class.skills[name] then
+            p.skills[name] = class.skills[name] + level
+        end
     end
     
     p.kills = 0
@@ -70,7 +76,7 @@ function newPlayer(x, y, id, weapon, level) -- creates a new player
     p.health = p.skills.health
     p.previous_health = p.health
 
-    p.bod = love.physics.newBody( world, x * 64, y * 64, "dynamic" ) -- creates a body for the player
+    p.bod = love.physics.newBody( world, x * 64 - 32, y * 64 - 32, "dynamic" ) -- creates a body for the player
     p.bod:setLinearDamping(16)
     p.bod:setAngularDamping(16)
 
@@ -105,7 +111,7 @@ function player:save()
         s.highScore = self.highScore
     end
 
-    love.filesystem.write( self.id, bitser.dumps( s ) )
+    love.filesystem.write( "saves/" .. self.id, bitser.dumps( s ) )
 end
 
 -- health related functions
