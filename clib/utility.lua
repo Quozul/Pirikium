@@ -47,3 +47,16 @@ function updateWatching(name, value) -- to remove a value, juste send nil as a v
     end
     return false
 end
+
+function sharpRectangle(mode, x, y, width, height, maxWidth)
+    local r, g, b = love.graphics.getColor()
+    love.graphics.setColor(.25, .25, .25)
+    love.graphics.rectangle("fill", x, y, maxWidth, height)
+    love.graphics.setColor(r, g, b)
+    love.graphics.polygon(mode,
+        x, y + height,
+        x, y,
+        x + math.min(width + math.min(width, 20), maxWidth), y,
+        x + width, y + height
+    )
+end

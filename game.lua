@@ -1,7 +1,5 @@
 local G = {}
 local spawns = {}
-spawns.friendly = {}
-spawns.hostile = {}
 local key = love.keyboard.isDown
 local cooldown = {
     attack = 0,
@@ -17,7 +15,7 @@ function G:enter()
     love.physics.setMeter(64)
 
     -- Load a map exported to Lua from Tiled
-    map = sti("data/maps/brick_arena.lua", { "box2d" })
+    map = sti("data/maps/brick_arena_2.lua", { "box2d" })
     print(#map.layers["Map Entities"].data .. " tiles")
 
     if config.debug then map.layers["Map Entities"].visible = true end
@@ -92,7 +90,7 @@ function G:enter()
         table.insert(entities.doors, d)
     end
 
-    local function addChest(x, y, r)
+    local function addChest(x, y)
         local c = {}
 
         c.time = math.random(10, 25)
@@ -136,6 +134,9 @@ function G:enter()
             local choosenSkill = skills.orb_list[math.random(1, #skills.orb_list)]
             o.skill = choosenSkill
             o.amount = rf(skills.skills[choosenSkill].amount.min, skills.skills[choosenSkill].amount.max, 2)
+        elseif type == "exp" then
+            o.type = "exp"
+            o.amount = rf(2, 6, 1)
         end
 
         o.age = 2
@@ -153,15 +154,16 @@ function G:enter()
             local id = #lights+1
             if t ~= nil and t.id ~= 0 then
                 if t.id == 2 then -- friendly spawn
-                    table.insert(spawns.friendly, {y, x})
-                elseif t.id == 3 then -- hostile spawn
-                    table.insert(spawns.hostile, {y, x})
+                    table.insert(spawns, {y, x})
+                --elseif t.id == 3 then -- hostile spawn
+                    --table.insert(spawns.hostile, {y, x})
                 --elseif t.id == 4 then print("One way")
                 --elseif t.id == 5 then print("Hinge")
                 elseif t.id == 6 then -- door
-                    addDoor(y, x, t.r)
+                    if (t.sx and t.sy) == -1 then r = math.pi else r = t.r end -- fix a bug
+                    addDoor(y, x, r)
                 elseif t.id == 7 then -- chest/weapon spawn
-                    addChest(y, x, t.r)
+                    addChest(y, x)
                 elseif t.id == 8 then -- lights
                     lights[id] = Light:new(lightWorld, 300)
                     lights[id]:SetColor(0, 0, 155)
@@ -185,22 +187,24 @@ function G:enter()
         end
     end
 
-    print(#spawns.friendly .. " player spawns found")
-    print(#spawns.hostile .. " ennemy spawns found")
-    local x, y = unpack( spawns.friendly[math.random(1, #spawns.friendly)] )
+    print(#spawns .. " spawns found")
+    local x, y = unpack( spawns[math.random(1, #spawns)] )
 
     entities.entities[playerUUID] = newPlayer(x, y, playerUUID)
     lights.player = Light:new(lightWorld, 200)
     lights.player:SetColor(155, 155, 155)
     print("Added player light")
 
-    local function addEnnemy()
-        local x, y = unpack( spawns.hostile[math.random(1, #spawns.hostile)] )
-        local uid = uuid()
+    function addEnnemy()
+        local x, y = unpack( spawns[math.random(1, #spawns)] )
+        local dist = sl(x, y, px / 64, py / 64)
+        if dist <= 10.5 then return end -- prevent the enemies from spawning to close
+
+        local uid = uuid() -- choose a random unique id for the enemy
         local level = rf(0, ply.kills / 10, 1)
         print("Ennemy level is " .. level)
-        local weapon = loots.ai[math.random(1, #loots.ai)]
-        entities.entities[uid] = newPlayer(x, y, uid, weapon, level)
+        local class = classes.list[math.random(1, #classes.list)]
+        entities.entities[uid] = newPlayer(x, y, uid, classes[class], level)
         ai.set(entities.entities[uid], uid)
 
         print("Added one ennemy")
@@ -211,8 +215,6 @@ function G:enter()
 
         -- update entities
         for id, ent in pairs(self.entities) do
-            local px, py = ent.bod:getPosition()
-
             -- cooldowns
             ent.cooldown.attack = math.max(ent.cooldown.attack - dt * ent.skills.recoil, 0) -- cooldown for primary attack
             ent.cooldown.special = math.max(ent.cooldown.special - dt * ent.skills.recoil, 0) -- cooldown for special attack
@@ -239,16 +241,17 @@ function G:enter()
                 if ent:getHealth() <= 0 then
                     print(ent.lastAttacker .. " killed " .. id)
 
-                    local pa = ent.bod:getAngle()
+                    local ex, ey = ent.bod:getPosition() -- get the position of the current entity
+                    local ea = ent.bod:getAngle()
 
                     if math.random(1, 4) == 1 then
-                        addOrb(px, py, pa, "health")
+                        addOrb(ex, ey, ea, "health")
                     elseif math.random(1, 4) == 1 then
-                        addOrb(px, py, pa, "skill")
+                        addOrb(ex, ey, ea, "skill")
                     end
                     
                     if math.random(1, 6) == 1 then
-                        items.drop(px, py, pa, ent:getWeapon(true))
+                        items.drop(ex, ey, ea, ent:getWeapon(true))
                     end
 
                     ent.bod:destroy()
@@ -403,6 +406,8 @@ function G:enter()
                 love.graphics.draw(images.orbs.health, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 32)
             elseif orb.type == "skill" then
                 love.graphics.draw(images.orbs.skill, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 32)
+            elseif orb.type == "exp" then
+                love.graphics.draw(images.orbs.exp, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 24)
             end
 
             love.graphics.pop()
@@ -437,7 +442,7 @@ function G:enter()
                 love.graphics.draw(images.player.stand, -12, -12)
             end
 
-            local img = images.weapons.hold[ent:getWeapon(true)]
+            local img = images.weapons.hold[ent:getWeapon(true)] -- true make the function return only the name of the weapon
             if img ~= nil then
                 --love.graphics.rotate(math.pi/2)
                 love.graphics.translate(0, -32)
@@ -446,8 +451,8 @@ function G:enter()
 
             love.graphics.pop()
 
-            if id ~= playerUUID then
-                if config.ai.debug then ai.draw(ent, self.entities[playerUUID]) end -- show the brain of the ai (debug)
+            if config.ai.debug and id ~= playerUUID then
+                ai.draw(ent, self.entities[playerUUID]) -- show the brain of the ai (debug)
             end
         end
 
@@ -458,14 +463,13 @@ function G:enter()
 
     cam = camera(0, 0)
     smoother = cam.smooth.damped(5)
-    love.graphics.setBackgroundColor(0, .25, .5)
+    love.graphics.setBackgroundColor(.25, .25, .25)
 
     dotCursor = false
     skillTreeIsOpen = false
 
     warmup = config.warmup
 
-    ratio = 1
     pause = false
     deathscreen.init()
     SetTranslation(0, 0)
@@ -533,6 +537,11 @@ function G:keypressed(key, scancode, isrepeat)
         ply:drop(ply.selectedSlot)
     elseif key == "escape" then
         gamestate.switch(menu)
+        if not pause and skillTreeIsOpen then
+            skillTreeIsOpen = false
+        elseif not pause then
+            pause = true
+        end
     elseif key == "f3" then
         config.debug = not config.debug
         love.mouse.setGrabbed(not love.mouse.isGrabbed())
@@ -654,7 +663,6 @@ function G:update(dt)
     --particles.update(dt)
     timer.update(dt)
     world:update(dt)
-    cam:zoomTo(config.ratio)
 
     local pa = math.atan2(cmy - py, cmx - px) -- angle of the player
     ply.bod:setAngle( pa )
@@ -662,7 +670,7 @@ function G:update(dt)
 
     if config.shader then
         lightWorld:Update(dt)
-        lightWorld:SetPosition((cpx - pcx + (px - cpx)) / config.ratio, (cpy - pcy + (py - cpy)) / config.ratio, config.ratio)
+        lightWorld:SetPosition(cpx - pcx + (px - cpx), cpy - pcy + (py - cpy))
 
         lights.player:SetPosition(px, py, 1)
     end
@@ -692,7 +700,7 @@ function G:update(dt)
     end]]
 
     if pause and skillTreeIsOpen then
-        skillTreeIsOpen = false
+        skillTreeIsOpen = false -- close skill tree if pause mode is activated
     end
 
     if skillTreeIsOpen then tree.update(dt) end
@@ -707,123 +715,24 @@ function G:draw()
     -- draw the map
     love.graphics.setColor(1, 1, 1)
 
-    dotCursor = false
-    map:draw(cx / config.ratio, cy / config.ratio, config.ratio, config.ratio)
+    dotCursor = false -- reset cursor mode
+    map:draw(cx, cy) -- draw map
 
-    --cam:draw(function() end)
+    --cam:draw(function() end) -- unused
 
     -- draw collision map (debug)
     if config.debug then
         love.graphics.setColor(1, 0, 0)
-        map:box2d_draw(cx / config.ratio, cy / config.ratio, config.ratio, config.ratio)
+        map:box2d_draw(cx, cy) -- draw debug map if enabled
     end
 
-    if config.shader then lightWorld:Draw() end
+    if config.shader then lightWorld:Draw() end -- draw light world if enabled
 
-    love.graphics.setFont(hudFont)
-    for index, item in pairs(entities.entities[playerUUID].inventory) do
-        if item ~= nil then
-            local x = (index - ((#ply.inventory + 1) / 2)) * 64 + window_width / 2
-            if entities.entities[playerUUID].selectedSlot == index then
-                love.graphics.setColor(0, 1, 0)
-            else
-                love.graphics.setColor(1, 1, 1)
-            end
-            local startx, starty = x - 24, window_height - 64
+    hud()
 
-            love.graphics.draw(images.slot, startx, starty)
-            love.graphics.setColor(1, 1, 1)
-            love.graphics.print(lang.print(item), startx, starty + 48)
+    if ply:getHealth() <= 0 then deathscreen.draw() end -- draw death screen
 
-            if images.weapons.side[item] then love.graphics.draw(images.weapons.side[item], startx + 8, starty + 8) end
-
-            if inSquare(mx, my, startx, starty, 48, 48) then
-                dotCursor = true
-                attackIsDown = true
-                if love.mouse.isDown(1) then
-                    ply:setSlot(index)
-                end
-            end
-        end
-    end
-
-    for index, skill in pairs(ply.boostedSkills) do
-        local x = window_width - index * 64
-        love.graphics.draw(images.slot, x, 16)
-
-        love.graphics.print(lang.print(skill.name), x, 16)
-        love.graphics.print("+" .. skill.amount, x, 32)
-    end
-
-    if config.debug then love.graphics.print("Framerate: " .. love.timer.getFPS(), 5, 59) end
-
-    if ply:getWeapon() then maxCooldown = ply:getWeapon().cooldown
-    else maxCooldown = 1 end
-    local percentage = math.min(ply.cooldown.attack / maxCooldown * 100, 100)
-
-    love.graphics.line(mx - 20, my + 24, (mx - 20) + percentage / 100 * 40, my + 24)
-
-    -- health bar
-    local padding = 2
-
-    love.graphics.setColor(1, 0, 0)
-    local health, maxHealth = ply:getHealth()
-
-    local percentage = health / maxHealth * 200
-    love.graphics.polygon("fill",
-        5 + padding, 30 - padding,
-        5 + padding, 5 + padding,
-        5 - padding + math.min( 5 + percentage + math.min(percentage, 20), 200), 5,
-        5 + percentage, 30 - padding
-    )
-
-    love.graphics.setColor(0, 0, 0)
-    love.graphics.setLineWidth(3) -- make a bigger line for stats bars
-    love.graphics.rectangle("line", 5, 5, 200, 25, 5)
-    love.graphics.setColor(1, 1, 1)
-    local text = math.max(round(health, 1), 0) .. " hp"
-    love.graphics.print(text, (5 + 200 - padding - hudFont:getWidth(text)) / 2, 25 - padding - hudFont:getHeight(text))
-
-    -- stamina bar
-    love.graphics.setColor(0, 0, 1)
-    percentage = (ply.skills.stamina - ply.cooldown.sprint) / ply.skills.stamina * 200
-    love.graphics.polygon("fill",
-        5 + padding, 57 - padding,
-        5 + padding, 32 + padding,
-        5 - padding + math.min(5 + percentage + math.min(percentage, 20), 200), 32,
-        5 + percentage, 57 - padding
-    )
-
-    love.graphics.setColor(0, 0, 0)
-    love.graphics.rectangle("line", 5, 32, 200, 25, 5)
-    love.graphics.setColor(1, 1, 1)
-    local percentage = round(percentage / 2, 0) .. "%"
-    love.graphics.print(percentage, (5 + 200 - padding - hudFont:getWidth(percentage)) / 2, 30 + round((25 - padding - hudFont:getHeight(percentage) / 1.5) / 2, 0))
-    love.graphics.setLineWidth(0) -- reset line size
-
-    -- kills and level
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.draw(images.skull, 5, 64)
-    love.graphics.print(ply.kills, 32, 68)
-    love.graphics.draw(images.level, 64, 64)
-    love.graphics.print(round(ply:getLevel(), 1), 96, 68)
-
-    -- skill tree (if opened)
-    if skillTreeIsOpen then
-        tree.draw()
-        love.graphics.setLineWidth(1)
-    end
-
-    -- warmup message
-    if warmup ~= 0 then
-        text = lang.print("warmup", {round(warmup, 1)})
-        love.graphics.setFont(menuFont)
-        love.graphics.setColor(1, 1, 1, warmup / 5)
-        love.graphics.print(text, window_width / 2 - round(menuFont:getWidth(text) / 2, 0), window_height / 2 + window_height / 4, 0)
-    end
-
-    if ply:getHealth() <= 0 then deathscreen.draw() end
-
+    -- draw cursor
     love.graphics.setColor(1, 1, 1)
     if dotCursor then
         love.graphics.draw(images.dot, mx - 16, my - 16)

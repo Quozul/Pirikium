@@ -117,5 +117,7 @@ function button:mousereleased(x, y, button)
 end
 
 function button:getPos() return self.x, self.y end
+function button:setPos(x, y) self.x, self.y = x, y end
 function button:setValue(value) self.value = value end
+function button:getValue() return self.value end
 function button:setText(value) self.text = value end

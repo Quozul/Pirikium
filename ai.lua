@@ -4,14 +4,17 @@ local function getPath(start, goal)
     local ax, ay = start.bod:getPosition()
     local vx, vy = goal.bod:getPosition()
 
-    local path = finder:getPath(math.floor(ax / 64 + 1), math.floor(ay / 64 + 1), math.floor(vx / 64 + 1), math.floor(vy / 64 + 1))
+    local path = finder:getPath(
+        math.floor(ax / 64 + 1),
+        math.floor(ay / 64 + 1),
+        math.floor(vx / 64 + 1),
+        math.floor(vy / 64 + 1)
+    )
 
     return path
 end
 
-local function nodeToMap(node)
-    return (node - 1) * 64
-end
+local function nodeToMap(node) return (node - 1) * 64 end
 
 function ai.set(ent, ent_id) -- add a view fixture to the ent, usefull for ai as they can see if there is a wall or not
     ent.view = {}
