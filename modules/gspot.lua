@@ -1012,6 +1012,7 @@ Gspot.input = {
 
 			if this.keyinput then
 				this.value = key
+				this:done()
 				this.Gspot:unfocus()
 			end
 		end

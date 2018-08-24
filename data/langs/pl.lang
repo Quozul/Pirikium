@@ -97,3 +97,9 @@ survivor=ocalaly
 tank=czolg
 assassin=zabojca
 soldier=soldier
+
+# languages
+
+en=english
+fr=french
+pl=polish

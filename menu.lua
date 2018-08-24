@@ -28,6 +28,10 @@ local function updatePlayerList()
 
             load[index].player = gspot:button(index .. ". " .. name, {unit, unit * index * 2 + unit, unit*8, unit*2}, selection.group)
             load[index].player.click = function(this)
+                if not selectedMap then
+                    gspot:feedback("Please select a map")
+                    return
+                end
                 playerUUID = name
                 gamestate.switch(game)
             end
@@ -145,7 +149,8 @@ function M:init()
             settings[control] = gspot:input(lang.print(control), {unit*35, unit*(position+1), unit*3, unit*1}, settings.group, key)
             settings[control].keyinput = true
             settings[control].done = function(this)
-                config[control] = this.value
+                print("Control saved")
+                config.controls[control] = this.value
             end
             position = position + 1
         end
@@ -154,11 +159,12 @@ function M:init()
     -- languages selection
     local position = 1
     languages = {}
-    for value, name in pairs(languages_list) do
-        languages[value] = gspot:button(upper(name), {unit*20, unit*(position * 2), unit*5, unit*2}, settings.group)
-        languages[value].click = function(this)
+    for index, name in pairs(languages_list) do
+        name = string.gsub(name, ".lang", "")
+        languages[index] = gspot:button(lang.print(name), {unit*20, unit*(position * 2), unit*5, unit*2}, settings.group)
+        languages[index].click = function(this)
             print("Changing language to " .. name)
-            config.lang = value
+            config.lang = name
             love.event.quit("restart")
         end
         position = position + 1
@@ -177,6 +183,18 @@ function M:init()
     end
 
     updatePlayerList()
+
+    local maps = love.filesystem.getDirectoryItems("data/maps")
+    selection.maps = {}
+    for index, name in pairs(maps) do
+        if not string.match(name, ".tmx") then
+            selection.maps[index] = gspot:button(lang.print(string.gsub(name, ".lua", "")), {unit*14, unit * index * 2 + unit, unit*10, unit*2}, selection.group)
+            selection.maps[index].click = function(this)
+                selectedMap = name
+            end
+        end
+    end
+
     selection.group:hide()
 
     -- character creation group
@@ -199,7 +217,6 @@ function M:init()
             gspot:feedback("This name is invalid")
             return
         end
-        love.filesystem.append( "player_list", ";" .. new.name.value .. "," .. class.value )
         createPlayer(new.name.value)
         updatePlayerList()
         new.group:hide()
@@ -228,6 +245,7 @@ function M:enter()
     love.mouse.setGrabbed(false)
     print("Entered menu")
     menu = "main"
+    selectedMap = nil
     buttons.main.update:setText(lang.print("update"))
 
     if config.play_music then sounds.menu_theme:play() end

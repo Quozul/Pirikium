@@ -22,13 +22,18 @@ local function spread(weapon, ent)
 end
 
 function attack(attacker, attacker_id)
-    if attacker:getHealth() <= 0 then return end
-
-    if attacker.cooldown.attack > 0 then return end
+    if attacker:getHealth() <= 0 then return false end
+    if attacker.cooldown.attack > 0 then return false end
 
     local wep = attacker:getWeapon()
 
-    attacker.cooldown.attack = wep.cooldown
+    if wep.firetype == "burst" and attacker.burst < wep.bullet.amount then
+        attacker.cooldown.attack = wep.burst
+        attacker.burst = attacker.burst + 1
+    else
+        attacker.cooldown.attack = wep.cooldown
+        attacker.burst = 0
+    end
     
     local ax, ay = attacker.bod:getPosition()
     local aa = attacker.bod:getAngle()
@@ -62,7 +67,7 @@ function attack(attacker, attacker_id)
             end
         end
     elseif wep.type == "firearm" then
-        local fire = wep.bullet.amount or 1
+        local fire = (ply:getWeapon().firetype ~= "burst" and wep.bullet.amount) or 1
 
         sounds.fire:stop()
         sounds.fire:play()
@@ -97,6 +102,8 @@ function attack(attacker, attacker_id)
 
         print(#bullets .. " bullets in the world")
     end
+
+    return true
 end
 
 function bulletDamage(weapon, victim_id, angle, owner_id)

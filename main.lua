@@ -40,7 +40,7 @@ require "clib/animation"
 particles = require "clib/particles"
 items = require "items"
 menu = require "menu"
-game = require "game"
+require "game"
 require "hud"
 require "attack"
 tree = require "skills"
@@ -58,24 +58,6 @@ images = {}
 images.weapons = {}
 images.weapons.side = {}
 images.weapons.hold = {}
-
-weapons = json:decode( love.filesystem.read( "data/weapons.json" ) ) -- load game content
-print(#weapons .. " weapons loaded")
-for name, wep in pairs(weapons) do
-    if wep.texture ~= nil then
-        print("Loaded image for weapon " .. name)
-        if wep.texture.side ~= nil then
-            loader.newImage(images.weapons.side, name, wep.texture.side)
-        end
-        if wep.texture.hold ~= nil then
-            loader.newImage(images.weapons.hold, name, wep.texture.hold)
-        end
-    end
-end
-
-loots = json:decode( love.filesystem.read( "data/loots.json" ) )
-skills = json:decode( love.filesystem.read( "data/skills.json" ) )
-classes = json:decode( love.filesystem.read( "data/classes.json" ) )
 
 math.randomseed( os.time() )
 
@@ -100,7 +82,6 @@ function createConfig()
         ai = {
             disable = false, -- disable the ai's brain
             debug = false, -- display ai path and more
-            limit = 2, -- maximum bots at once
         },
         debug = false, -- display extra informations to screen
         lang = "en", -- selected language of the game
@@ -108,6 +89,9 @@ function createConfig()
         ratio = 1, -- zomm in-game
         play_music = true, -- play background music in main-menu
         dev_version = false, -- check for developement versions
+        content = {
+            Pirikium = "folder", -- load the default content
+        }
     }
 
     love.filesystem.write(configFile, json:encode_pretty( config )) -- create a config file
@@ -121,7 +105,58 @@ else
     print("Config file loaded")
 end
 
-if config.lang == nil then createConfig() end
+loading.setText("Loading content...")
+loading.draw()
+love.graphics.present()
+
+weapons, loots, classes = {}, {}, {}
+skills = json:decode( love.filesystem.read( "data/skills.json" ) ) -- skills can't be customized by players
+
+for name, type in pairs(config.content) do
+    print("Loading " .. name .. " content pack...")
+
+    if type == "folder" then
+        local file = "content/" .. name .. "/loots.json"
+        if love.filesystem.getInfo(file) then
+            loots, overwritten = mergeTables(
+                loots,
+                json:decode( love.filesystem.read(file) )
+            )
+            print(("Overwritten %d loots"):format(overwritten))
+        end
+
+        local file = "content/" .. name .. "/classes.json"
+        if love.filesystem.getInfo(file) then
+            classes, overwritten = mergeTables(
+                classes,
+                json:decode( love.filesystem.read(file) )
+            )
+            print(("Overwritten %d classes"):format(overwritten))
+        end
+
+        local file = "content/" .. name .. "/weapons.json"
+        if love.filesystem.getInfo(file) then
+            weapons, overwritten = mergeTables(
+                weapons,
+                json:decode( love.filesystem.read(file) )
+            )
+            print(("Overwritten %d weapons"):format(overwritten))
+        end
+    end
+end
+
+print(#weapons .. " weapons loaded")
+for name, wep in pairs(weapons) do
+    if wep.texture ~= nil then
+        print("Loaded image for weapon " .. name)
+        if wep.texture.side ~= nil then
+            loader.newImage(images.weapons.side, name, wep.texture.side)
+        end
+        if wep.texture.hold ~= nil then
+            loader.newImage(images.weapons.hold, name, wep.texture.hold)
+        end
+    end
+end
 
 -- create folder for player saves if not existing
 local save_folder = love.filesystem.getInfo("saves")
@@ -137,10 +172,11 @@ end
 if config.ratio ~= 1 then updateScreenSize() end
 
 -- load language
-languages_list = love.filesystem.load( "data/languages_list.lua" )()
+languages_list = love.filesystem.getDirectoryItems( "data/langs" )
 print(#languages_list .. " available")
 
-lang.decrypt(("data/langs/%s.lang"):format(config.lang))
+local selectedLanguage = string.gsub(config.lang, ".lang", "")
+lang.decrypt( ("data/langs/%s.lang"):format(selectedLanguage) )
 
 function love.load()
     finishedLoading = false
@@ -198,6 +234,8 @@ function love.load()
         print("Game loaded in " .. round(loadTime, 1) .. " seconds")
 
         SetSounds(sounds.hover, sounds.click) -- set the sounds for the buttons
+
+        love.window.requestAttention()
 
         gamestate.registerEvents()
         gamestate.switch(menu)

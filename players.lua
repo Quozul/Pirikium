@@ -75,6 +75,7 @@ function newPlayer(x, y, id, class, level) -- creates a new player
 
     p.health = p.skills.health
     p.previous_health = p.health
+    p.burst = 0
 
     p.bod = love.physics.newBody( world, x * 64 - 32, y * 64 - 32, "dynamic" ) -- creates a body for the player
     p.bod:setLinearDamping(16)

@@ -1,4 +1,4 @@
-local G = {}
+game = {} -- gamestate
 local spawns = {}
 local key = love.keyboard.isDown
 local cooldown = {
@@ -8,14 +8,21 @@ local cooldown = {
     sprint = 0
 }
 
-function G:enter()
+function game:enter()
+    love.graphics.clear()
+    love.graphics.setBackgroundColor(29 / 255, 29 / 255, 29 / 255)
+
+    loading.setText(lang.print("loading"))
+    loading.draw()
+    love.graphics.present()
+
     love.mouse.setVisible(false)
     if not config.debug then love.mouse.setGrabbed(true) end
 
     love.physics.setMeter(64)
 
     -- Load a map exported to Lua from Tiled
-    map = sti("data/maps/brick_arena_2.lua", { "box2d" })
+    map = sti("data/maps/" .. selectedMap, { "box2d" })
     print(#map.layers["Map Entities"].data .. " tiles")
 
     if config.debug then map.layers["Map Entities"].visible = true end
@@ -210,8 +217,9 @@ function G:enter()
         print("Added one ennemy")
     end
 
+    maxAIs = 2 -- maximum amount of ai at start
     function entities:update(dt)
-        if table.length(entities.entities) <= config.ai.limit and warmup == 0 then addEnnemy() end
+        if table.length(entities.entities) <= maxAIs and warmup == 0 then addEnnemy() end
 
         -- update entities
         for id, ent in pairs(self.entities) do
@@ -231,7 +239,7 @@ function G:enter()
             end
 
             if ent.skills.recoil < 1 then
-                error("This save is corrupted :(")
+                error("This save is corrupted")
             end
 
             -- ai
@@ -473,15 +481,19 @@ function G:enter()
     pause = false
     deathscreen.init()
     SetTranslation(0, 0)
+
+    scalex, scaley = 1, 1
 end
 
-function G:resize(w, h)
+function game:resize(w, h)
     print("Window got resized")
 	map:resize(w, h)
     lightWorld:Resize(w, h)
+    scalex = h / 480
+    scalex = w / 853
 end
 
-function G:keypressed(key, scancode, isrepeat)
+function game:keypressed(key, scancode, isrepeat)
     if isIn(key, {"1", "2", "3", "4", "5", "6", "7", "8", "9"}) and not pause then
         local slot = tonumber(key)
         if slot <= #ply.inventory then
@@ -551,7 +563,7 @@ function G:keypressed(key, scancode, isrepeat)
     end
 end
 
-function G:wheelmoved(x, y)
+function game:wheelmoved(x, y)
     if pause then return end
 
     local ply = entities.entities[playerUUID]
@@ -562,11 +574,11 @@ function G:wheelmoved(x, y)
     else ply:setSlot(newSlot) end
 end
 
-function G:mousepressed(x, y, button, isTouch)
+function game:mousepressed(x, y, button, isTouch)
     if skillTreeIsOpen then tree.mousepressed(x, y, button) end
 end
 
-function G:mousereleased(x, y, button, isTouch)
+function game:mousereleased(x, y, button, isTouch)
     if skillTreeIsOpen then tree.mousereleased(x, y, button) end
 end
 
@@ -611,9 +623,11 @@ function controls(dt)
     end
 
     if love.mouse.isDown(1) and not skillTreeIsOpen and warmup <= 9 then
-        if ply:getWeapon().firetype == "auto" then
+        local wep = ply:getWeapon()
+        local firetype = wep.firetype
+        if firetype == "auto" or firetype == "burst" then -- full-auto weps
             attack(entities.entities[playerUUID], playerUUID)
-        elseif not attackIsDown then
+        elseif not attackIsDown then -- semi-auto weps
             attack(entities.entities[playerUUID], playerUUID)
             attackIsDown = true
         end
@@ -622,7 +636,7 @@ function controls(dt)
     end
 end
 
-function G:update(dt)
+function game:update(dt)
     -- get cam info
     cx, cy = cam:cameraCoords(0, 0)
     cpx, cpy = cam:position()
@@ -646,6 +660,8 @@ function G:update(dt)
     px, py = ply.bod:getPosition()
     pcx, pcy = cam:cameraCoords(px, py)
 
+    maxAIs = 2 + (round(ply.kills / 2, 0) - 1)
+
     if ply.inventory == nil or ply.inventory == {} or #ply.inventory == 0 then
         error("Inventory is empty!")
     elseif #ply.inventory < 0 then
@@ -667,6 +683,7 @@ function G:update(dt)
     local pa = math.atan2(cmy - py, cmx - px) -- angle of the player
     ply.bod:setAngle( pa )
     cam:lockPosition( px + math.cos(pa) * 20, py + math.sin(pa) * 20, smoother )
+    cam:zoomTo(scalex)
 
     if config.shader then
         lightWorld:Update(dt)
@@ -711,12 +728,12 @@ function G:update(dt)
     end
 end
 
-function G:draw()
+function game:draw()
     -- draw the map
     love.graphics.setColor(1, 1, 1)
 
     dotCursor = false -- reset cursor mode
-    map:draw(cx, cy) -- draw map
+    map:draw(cx / scalex + scalex / 2, cy / scalex + scalex / 2, scalex, scalex) -- draw map
 
     --cam:draw(function() end) -- unused
 
@@ -741,7 +758,7 @@ function G:draw()
     end
 end
 
-function G:leave()
+function game:leave()
     ply:save()
     timer.clear()
 
@@ -752,7 +769,7 @@ function G:leave()
     world = nil
 end
 
-function G:quit()
+function game:quit()
     ply:save()
 end
 
@@ -784,4 +801,4 @@ end
 function postSolve(a, b, coll, normalimpulse, tangentimpulse)
 end
 
-return G
+return game
