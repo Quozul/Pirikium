@@ -98,3 +98,9 @@ survivor=survivor
 tank=tank
 assassin=assassin
 soldier=soldier
+
+# languages
+
+en=english
+fr=french
+pl=polish

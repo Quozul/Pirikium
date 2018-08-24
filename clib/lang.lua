@@ -10,6 +10,8 @@ function L.decrypt(file)
     for index, msg in pairs( msgs ) do
         if not msg:match("=") then
             table.remove(msgs, index)
+        else
+            msgs[index] = string.gsub(msg, "\r", "")
         end
     end
 

@@ -6,16 +6,10 @@
         "sniper",
         "bow",
         "assault_riffle",
+        "burst_assault_riffle",
         "smg",
         "dagger",
         "crossbow"
-    ],
-    "ai": [
-        "fists",
-        "sword",
-        "gun",
-        "shotgun",
-        "bow"
     ],
     "black_list": [
         "fists"

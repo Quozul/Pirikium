@@ -9,6 +9,16 @@ function table.length(table) count = 0 for _ in pairs(table) do count = count + 
 function inSquare(x1, y1, x2, y2, w2, h2) return x1 >= x2 and x1 <= x2 + w2 and y1 >= y2 and y1 <= y2 + h2 end
 function upper(str) return str:gsub("^%l", string.upper) end
 function printTable(table) for index, value in pairs(table) do print(index, value) end end
+function mergeTables(t1, t2)
+    local overwritten = 0
+    for k, v in pairs(t2) do
+        if t2[k] and t1[k] then
+            overwritten = overwritten + 1
+        end
+        t1[k] = v
+    end
+    return t1, overwritten
+end
 function string:split(sep)
     local sep, fields = sep or ":", {}
     local pattern = string.format("([^%s]+)", sep)
