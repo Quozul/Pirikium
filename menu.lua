@@ -1,11 +1,11 @@
-local M = {}
+menu = {}
 
 local buttons = {
     none = {},
     main = {},
     selection = {}
 }
-local menu = "main"
+local menuState = "main"
 local mainMenu = {}
 settings = {}
 selection = {}
@@ -16,7 +16,7 @@ local unit = gspot.style.unit
 local function updatePlayerList()
     if not love.filesystem.getInfo("saves") then error("Save directory not found! Try restarting the game.") end
     players = love.filesystem.getDirectoryItems("saves")
-    print("Updating save list... " .. #players .. " saves found")
+    print("MENU INFO: Updating save list... " .. #players .. " saves found")
 
     if players ~= nil then
         for index, name in pairs(players) do
@@ -32,13 +32,14 @@ local function updatePlayerList()
                     gspot:feedback("Please select a map")
                     return
                 end
+                selection.group:hide()
                 playerUUID = name
                 gamestate.switch(game)
             end
             load[index].rem = gspot:button("-", {unit*9, unit * index * 2 + unit, unit*2, unit*2}, selection.group)
             load[index].rem.tip = lang.print("remove", {name})
             load[index].rem.click = function(this)
-                print("Removing " .. name .. "'s save")
+                print("MENU INFO: Removing " .. name .. "'s save")
                 local succes = love.filesystem.remove("saves/" .. name)
                 gspot:rem(load[index].player) -- remove this save buttons
                 gspot:rem(load[index].rem)
@@ -62,7 +63,7 @@ end
 local function createPlayer(name)
     if not love.filesystem.getInfo("saves") then error("Save directory not found! Try restarting the game.") end
 
-    print("Name of new player: " .. name)
+    print("MENU INFO: Name of new player: " .. name)
     local s = {}
     s.defaultWeapon = classes[class.value].weapon
     s.kills = 0
@@ -73,7 +74,7 @@ local function createPlayer(name)
     love.filesystem.write( "saves/" .. tostring(name), bitser.dumps( s ) )
 end
 
-function M:init()
+function menu:init()
     -- main buttons
     buttons.main.play = NewButton(
         "button", 0, 0, unit*12, unit*5,
@@ -135,10 +136,17 @@ function M:init()
         this.value = not this.value
         config.dev_version = this.value
     end
+    settings.fullscreen = gspot:checkbox(lang.print("fullscreen"), {unit, unit*6}, settings.group, config.fullscreen)
+    settings.fullscreen.click = function(this)
+        this.value = not this.value
+        config.fullscreen = this.value
+        love.window.setFullscreen(this.value)
+        window_width, window_height = love.window.getMode()
+    end
 
-    settings.reset = gspot:button(lang.print("reset"), {unit, unit*6, unit*8, unit*2}, settings.group)
+    settings.reset = gspot:button(lang.print("reset"), {unit, unit*8, unit*8, unit*2}, settings.group)
     settings.reset.click = function()
-        print("Resetting config")
+        print("MENU INFO: Resetting config")
         createConfig()
     end
 
@@ -149,7 +157,7 @@ function M:init()
             settings[control] = gspot:input(lang.print(control), {unit*35, unit*(position+1), unit*3, unit*1}, settings.group, key)
             settings[control].keyinput = true
             settings[control].done = function(this)
-                print("Control saved")
+                print("MENU INFO: Control saved")
                 config.controls[control] = this.value
             end
             position = position + 1
@@ -163,7 +171,7 @@ function M:init()
         name = string.gsub(name, ".lang", "")
         languages[index] = gspot:button(lang.print(name), {unit*20, unit*(position * 2), unit*5, unit*2}, settings.group)
         languages[index].click = function(this)
-            print("Changing language to " .. name)
+            print("MENU INFO: Changing language to " .. name)
             config.lang = name
             love.event.quit("restart")
         end
@@ -240,20 +248,20 @@ function M:init()
     new.group:hide()
 end
 
-function M:enter()
+function menu:enter()
     love.mouse.setVisible(true)
     love.mouse.setGrabbed(false)
-    print("Entered menu")
+    print("MENU INFO: Entered menu")
     menu = "main"
     selectedMap = nil
     buttons.main.update:setText(lang.print("update"))
 
-    if config.play_music then sounds.menu_theme:play() end
+    if config.music then sounds.menu_theme:play() end
 end
-function M:leave() sounds.menu_theme:stop() end
+function menu:leave() sounds.menu_theme:stop() end
 
-function M:update(dt)
-    for index, element in pairs(buttons[menu]) do
+function menu:update(dt)
+    for index, element in pairs(buttons[menuState]) do
         element:update(dt)
     end
     gspot:update(dt)
@@ -265,10 +273,10 @@ function M:update(dt)
             return
         end
 
-        print(("Online version:  %s.\nCurrent version: %s."):format(version.online_ver, version.current_ver))
+        print(("MENU INFO: Online version:  %s.\nCurrent version: %s."):format(version.online_ver, version.current_ver))
 
         if version.online_ver > version.current_ver then
-            print("New version available!")
+            print("MENU INFO: New version available!")
 
             buttons.main.update:setText(lang.print("update found"))
             local window_buttons = { "Yes", "No" }
@@ -290,12 +298,12 @@ end
 
 local title = "Pirikium"
 local center = {unit*19, unit*4}
-function M:draw()
+function menu:draw()
     local paddingy = titleFont:getHeight(title)
     local cx, cy = basicCamera(center[1], center[2], function()
         love.graphics.setFont(titleFont)
         love.graphics.print(title, unit*19 - titleFont:getWidth(title) / 2, -paddingy * 2)
-        for index, element in pairs(buttons[menu]) do
+        for index, element in pairs(buttons[menuState]) do
             element:draw()
         end
     end)
@@ -304,8 +312,11 @@ function M:draw()
     mainMenuGroup.pos.x, mainMenuGroup.pos.y = cx, cy - unit*22 / 3
 
     love.graphics.draw(images.exit, window_width - 36, 4)
+    if config.music then love.graphics.draw(images.music, music_on, window_width - 36, window_height - 36)
+    else love.graphics.draw(images.music, music_off, window_width - 36, window_height - 36) end
 end
-function M:keypressed(key, code, isrepeat)
+
+function menu:keypressed(key, code, isrepeat)
 	if gspot.focus then
 		gspot:keypress(key) -- only sending input to the gui if we're not using it for something else
 	else
@@ -314,24 +325,35 @@ function M:keypressed(key, code, isrepeat)
 		end
 	end
 end
-function M:mousepressed(x, y, button, isTouch)
-    for index, element in pairs(buttons[menu]) do
+
+function menu:mousepressed(x, y, button, isTouch)
+    for index, element in pairs(buttons[menuState]) do
         element:mousepressed(x, y, button)
     end
     gspot:mousepress(x, y, button)
 
     -- quit button
-    if button == 1 and between(x, window_width - 36, window_width - 4) and between(y, 4, 36) then
-        love.event.quit()
+    if button == 1 then
+        if between(x, window_width - 36, window_width - 4) and between(y, 4, 36) then
+            love.event.quit()
+        elseif between(x, window_width - 36, window_width - 4) and between(y, window_height - 36, window_height - 4) then
+            config.music = not config.music
+            if config.music then sounds.menu_theme:play()
+            else sounds.menu_theme:stop()
+            end
+        end
     end
 end
-function M:mousereleased(x, y, button)
-    for index, element in pairs(buttons[menu]) do
+
+function menu:mousereleased(x, y, button)
+    for index, element in pairs(buttons[menuState]) do
         element:mousereleased(x, y, button)
     end
     gspot:mouserelease(x, y, button)
 end
-function M:textinput(key) gspot:textinput(key) end
-function M:wheelmoved(x, y) gspot:mousewheel(x, y) end
+
+function menu:textinput(key) gspot:textinput(key) end
+
+function menu:wheelmoved(x, y) gspot:mousewheel(x, y) end
 
 return M

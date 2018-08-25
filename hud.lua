@@ -1,16 +1,21 @@
-function hud()
+function draw_hud()
     love.graphics.setFont(hudFont)
+    preventAttack = false
+
     for index, item in pairs(entities.entities[playerUUID].inventory) do
         if item ~= nil then
             local x = (index - ((#ply.inventory + 1) / 2)) * 64 + window_width / 2
             if entities.entities[playerUUID].selectedSlot == index then
-                love.graphics.setColor(0, 1, 0)
+                love.graphics.setColor(0, 1, 0, .5)
             else
-                love.graphics.setColor(1, 1, 1)
+                love.graphics.setColor(1, 1, 1, .5)
             end
             local startx, starty = x - 24, window_height - 64
 
-            love.graphics.draw(images.slot, startx, starty)
+            love.graphics.rectangle("fill", startx, starty, 48, 48, 5)
+            love.graphics.setColor(0, 0, 0)
+            love.graphics.setLineWidth(3)
+            love.graphics.rectangle("line", startx, starty, 48, 48, 5)
             love.graphics.setColor(1, 1, 1)
             love.graphics.print(lang.print(item), startx, starty + 48)
 
@@ -18,17 +23,21 @@ function hud()
 
             if inSquare(mx, my, startx, starty, 48, 48) then
                 dotCursor = true
-                attackIsDown = true
                 if love.mouse.isDown(1) then
                     ply:setSlot(index)
                 end
+                preventAttack = true
             end
         end
     end
 
     for index, skill in pairs(ply.boostedSkills) do
         local x = window_width - index * 64
-        love.graphics.draw(images.slot, x, 16)
+        love.graphics.setColor(1, 1, 1, .5)
+        love.graphics.rectangle("fill", x, 16, 48, 48, 5)
+        love.graphics.setColor(0, 0, 0)
+        love.graphics.setLineWidth(3)
+        love.graphics.rectangle("line", x, 16, 48, 48, 5)
 
         love.graphics.print(lang.print(skill.name), x, 16)
         love.graphics.print("+" .. skill.amount, x, 32)
@@ -36,7 +45,10 @@ function hud()
 
     if config.debug then love.graphics.print("Framerate: " .. love.timer.getFPS(), 5, 59) end
 
-    if ply:getWeapon() then maxCooldown = ply:getWeapon().cooldown
+    -- cooldown bar
+    love.graphics.setLineWidth(1)
+    local wep = ply:getWeapon()
+    if wep then maxCooldown = (ply.enable_burst and wep.cooldown * 1.5) or wep.cooldown
     else maxCooldown = 1 end
     local percentage = math.min(ply.cooldown.attack / maxCooldown * 100, 100)
 
@@ -74,7 +86,7 @@ function hud()
     love.graphics.print(percentage, (4 + 200 - hudFont:getWidth(percentage)) / 2, 34 + round((24 - hudFont:getHeight(percentage) / 1.5) / 2, 0))
 
     -- score bar
-    local percentage = ply.score / ply.highScore * 300
+    local percentage = math.min(ply.score / ply.highScore * 300, 300)
     local x = window_width / 2 - 300 / 2
     love.graphics.setColor(0.3, 0.4, 0.45)
     sharpRectangle("fill", x, 4, percentage, 24, 300)
@@ -85,7 +97,7 @@ function hud()
 
     -- draw percentage text
     love.graphics.setColor(1, 1, 1)
-    if percentage < 100 then
+    if percentage < 300 then
         percentage = lang.print("score", {round(ply.score, 0)})
     else
         percentage = lang.print("new score", {round(ply.score, 0)})

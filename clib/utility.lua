@@ -49,7 +49,7 @@ function updateWatching(name, value) -- to remove a value, juste send nil as a v
     if not watchings[name] then
         watchings[name] = value
     elseif value ~= watchings[name] then
-        print(("Value %q as changed to %g"):format(name, value))
+        --print(("VARIABLE WATCHING: Value %q as changed to %g"):format(name, value))
         watchings[name] = value
         return true
     else

@@ -189,6 +189,7 @@
             "speed": 5,
             "radius": 2,
             "amount": 1,
+            "burst": 2,
             "life": 0.2,
             "type": "normal"
         },
@@ -218,41 +219,12 @@
             "speed": 5,
             "radius": 2,
             "amount": 1,
+            "burst": 3,
             "life": 0.3,
             "type": "normal"
         },
         "weight": 0.04,
         "cooldown": 0.3
-    },
-    "burst_assault_riffle": {
-        "type": "firearm",
-        "firetype": "burst",
-        "damage": {
-            "min": 2,
-            "max": 5
-        },
-        "knockback": {
-            "self": 2,
-            "victim": 4
-        },
-        "critic": {
-            "chance": 15,
-            "mult": {
-                "min": 2,
-                "max": 4
-            }
-        },
-        "spread": 0.15,
-        "bullet": {
-            "speed": 5,
-            "radius": 2,
-            "amount": 3,
-            "life": 0.2,
-            "type": "normal"
-        },
-        "weight": 0.03,
-        "cooldown": 0.4,
-        "burst": 0.05
     },
     "shotgun": {
         "type": "firearm",
