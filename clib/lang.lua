@@ -3,7 +3,7 @@ words = {}
 local strict = false
 
 function L.decrypt(file)
-    if not love.filesystem.getInfo(file) then error(("Lang file %q cannot found!"):format(file)) end
+    if not love.filesystem.getInfo(file) then error(("Lang file %q cannot be found!"):format(file)) end
 
     local msgs = love.filesystem.read(file):split("\n")
 

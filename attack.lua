@@ -27,11 +27,11 @@ function attack(attacker, attacker_id)
 
     local wep = attacker:getWeapon()
 
-    if wep.firetype == "burst" and attacker.burst < wep.bullet.amount then
-        attacker.cooldown.attack = wep.burst
+    if wep.firetype == "auto" and wep.type == "firearm" and attacker.enable_burst and attacker.burst < wep.bullet.burst then
+        attacker.cooldown.attack = wep.cooldown / 4
         attacker.burst = attacker.burst + 1
     else
-        attacker.cooldown.attack = wep.cooldown
+        attacker.cooldown.attack = (attacker.enable_burst and wep.firetype == "auto" and wep.type == "firearm" and wep.cooldown * 1.5) or wep.cooldown
         attacker.burst = 0
     end
     

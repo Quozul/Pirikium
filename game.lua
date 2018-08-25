@@ -10,7 +10,6 @@ local cooldown = {
 
 function game:enter()
     love.graphics.clear()
-    love.graphics.setBackgroundColor(29 / 255, 29 / 255, 29 / 255)
 
     loading.setText(lang.print("loading"))
     loading.draw()
@@ -23,7 +22,7 @@ function game:enter()
 
     -- Load a map exported to Lua from Tiled
     map = sti("data/maps/" .. selectedMap, { "box2d" })
-    print(#map.layers["Map Entities"].data .. " tiles")
+    print("GAME INFO: " .. #map.layers["Map Entities"].data .. " tiles")
 
     if config.debug then map.layers["Map Entities"].visible = true end
 
@@ -67,92 +66,6 @@ function game:enter()
     map.layers["Entities Layer"].orbs = {}
     entities = map.layers["Entities Layer"]
 
-    local function addDoor(x, y, r)
-        local d = {}
-
-        d.bod = love.physics.newBody( world, x * 64 - 32, y * 64 - 30, "dynamic" )
-        d.bod:setLinearDamping(4)
-        d.bod:setAngularDamping(4)
-        d.bod:setAngle(r)
-        d.bod:setBullet(true)
-        d.shape = love.physics.newRectangleShape(54, 8)
-        d.fixture = love.physics.newFixture(d.bod, d.shape)
-        d.fixture:setRestitution(.5)
-        d.fixture:setUserData({"Door"})
-
-        d.shadow = Body:new(lightWorld):InitFromPhysics(d.bod)
-
-        d.hinge = love.physics.newBody(world, x * 64 - 32 + math.cos(r) * 32, y * 64 - 32 + math.sin(r) * 32, "static")
-        d.hinge:setLinearDamping(16)
-        d.hinge:setAngularDamping(16)
-        d.hingeShape = love.physics.newRectangleShape(8, 8)
-        d.hingeFixture = love.physics.newFixture(d.hinge, d.hingeShape)
-        d.hingeFixture:setUserData({"Hinge"})
-        d.hingeFixture:setSensor(true)
-
-        d.joint = love.physics.newRevoluteJoint( d.bod, d.hinge,  x * 64 - 32 + math.cos(r) * 28, y * 64 - 32 + math.sin(r) * 26 )
-
-        print("Added one door")
-
-        table.insert(entities.doors, d)
-    end
-
-    local function addChest(x, y)
-        local c = {}
-
-        c.time = math.random(10, 25)
-
-        c.bod = love.physics.newBody( world, x * 64 - 32, y * 64 - 32, "dynamic" )
-        c.bod:setLinearDamping(16)
-        c.bod:setAngularDamping(16)
-        c.bod:setAngle( rf(0, 2 * math.pi, 4) )
-        c.shape = love.physics.newRectangleShape(48, 48)
-        c.fixture = love.physics.newFixture(c.bod, c.shape)
-        c.fixture:setRestitution(.1)
-        c.fixture:setUserData({"Chest"})
-
-        c.shadow = Body:new(lightWorld):InitFromPhysics(c.bod)
-
-        c.light = Light:new(lightWorld, 150)
-        c.light:SetColor(155, 155, 0, 155)
-
-        print("Added one chest")
-
-        table.insert(entities.chests, c)
-    end
-
-    local function addOrb(x, y, r, type)
-        local o = {}
-
-        o.bod = love.physics.newBody( world, x, y, "dynamic" )
-        o.bod:setLinearDamping(1)
-        o.bod:setAngularDamping(1)
-        o.shape = love.physics.newCircleShape(16)
-        o.fixture = love.physics.newFixture(o.bod, o.shape)
-        o.fixture:setRestitution(.8)
-        o.fixture:setUserData({"Orb"})
-        o.fixture:setSensor(true)
-
-        if type == "health" then
-            o.type = "health"
-            o.amount = rf(2, 6, 1)
-        elseif type == "skill" then
-            o.type = "skill"
-            local choosenSkill = skills.orb_list[math.random(1, #skills.orb_list)]
-            o.skill = choosenSkill
-            o.amount = rf(skills.skills[choosenSkill].amount.min, skills.skills[choosenSkill].amount.max, 2)
-        elseif type == "exp" then
-            o.type = "exp"
-            o.amount = rf(2, 6, 1)
-        end
-
-        o.age = 2
-
-        print("Added one " .. type .. " orb")
-
-        table.insert(entities.orbs, o)
-    end
-
     lights = {}
 
     for x=1, map.layers["Map Entities"].width do
@@ -168,9 +81,9 @@ function game:enter()
                 --elseif t.id == 5 then print("Hinge")
                 elseif t.id == 6 then -- door
                     if (t.sx and t.sy) == -1 then r = math.pi else r = t.r end -- fix a bug
-                    addDoor(y, x, r)
+                    doors.add(y, x, r)
                 elseif t.id == 7 then -- chest/weapon spawn
-                    addChest(y, x)
+                    chest.add(y, x)
                 elseif t.id == 8 then -- lights
                     lights[id] = Light:new(lightWorld, 300)
                     lights[id]:SetColor(0, 0, 155)
@@ -194,13 +107,21 @@ function game:enter()
         end
     end
 
-    print(#spawns .. " spawns found")
+    print("GAME INFO: " .. #spawns .. " spawns found")
     local x, y = unpack( spawns[math.random(1, #spawns)] )
 
     entities.entities[playerUUID] = newPlayer(x, y, playerUUID)
+
+    ply = entities.entities[playerUUID]
+    
+    if (ply.skills.recoil and ply.skills.recoil < 1) or not ply.skills.recoil then error("This save is corrupted") end
+
+    if ply.skills.regen and ply.skills.regen < 0 then ply.skills.regen = -ply.skills.regen -- fix a bug
+    elseif not ply.skills.regen then error("This save is corrupted") end
+
     lights.player = Light:new(lightWorld, 200)
     lights.player:SetColor(155, 155, 155)
-    print("Added player light")
+    print("GAME INFO: Added player light")
 
     function addEnnemy()
         local x, y = unpack( spawns[math.random(1, #spawns)] )
@@ -208,13 +129,13 @@ function game:enter()
         if dist <= 10.5 then return end -- prevent the enemies from spawning to close
 
         local uid = uuid() -- choose a random unique id for the enemy
-        local level = rf(0, ply.kills / 10, 1)
-        print("Ennemy level is " .. level)
+        local level = rf(0, ply:getLevel() / 100, 2)
+        print("GAME INFO: Ennemy level is " .. level)
         local class = classes.list[math.random(1, #classes.list)]
         entities.entities[uid] = newPlayer(x, y, uid, classes[class], level)
         ai.set(entities.entities[uid], uid)
 
-        print("Added one ennemy")
+        print("GAME INFO: Added one ennemy")
     end
 
     maxAIs = 2 -- maximum amount of ai at start
@@ -234,28 +155,22 @@ function game:enter()
             end
 
             -- regen skill
-            if ent.skills.regen ~= 0 then
-                ent:addHealth(ent.skills.regen * dt)
-            end
-
-            if ent.skills.recoil < 1 then
-                error("This save is corrupted")
-            end
+            if ent.skills.regen ~= 0 then ent:addHealth(ent.skills.regen * dt) end
 
             -- ai
             if id ~= playerUUID then
                 if not config.ai.disable then ai.update(ent, self.entities[playerUUID], id) end
 
                 if ent:getHealth() <= 0 then
-                    print(ent.lastAttacker .. " killed " .. id)
+                    print("GAME INFO: " .. ent.lastAttacker .. " killed " .. id)
 
                     local ex, ey = ent.bod:getPosition() -- get the position of the current entity
                     local ea = ent.bod:getAngle()
 
                     if math.random(1, 4) == 1 then
-                        addOrb(ex, ey, ea, "health")
+                        orb.add(ex, ey, ea, "health")
                     elseif math.random(1, 4) == 1 then
-                        addOrb(ex, ey, ea, "skill")
+                        orb.add(ex, ey, ea, "skill")
                     end
                     
                     if math.random(1, 6) == 1 then
@@ -276,43 +191,8 @@ function game:enter()
             end
         end
 
-        -- update orbs
-        for id, orb in pairs(self.orbs) do
-            local isInside = orb.fixture:testPoint(cmx, cmy) and sl(cmx, cmy, px, py) <= 64
-            local speed = 1
-            if isInside then
-                if orb.type == "health" then
-                    local health, maxHealth = ply:getHealth()
-                    if health < maxHealth then
-                        ply:addHealth( rf(3, 6, 1) )
-
-                        orb.shape:setRadius(8)
-                        sounds.orb:play()
-                    end
-                elseif orb.type == "skill" then
-                    if key(config.controls.use) then
-                        ply:skillBoost(orb.skill, orb.amount)
-                        orb.shape:setRadius(8)
-                        sounds.orb:play()
-                    end
-                end
-            end
-
-            orb.shape:setRadius( math.max(orb.shape:getRadius() - dt, 8) )
-
-            if orb.shape:getRadius() <= 8 then
-                orb.bod:destroy()
-                entities.orbs[id] = nil
-            end
-        end
-
-        for id, chest in pairs(self.chests) do
-            if not chest.bod:isActive() then
-                local r, g, b, a = chest.light:GetColor()
-                a = math.max(a - dt * 155, 0)
-                chest.light:SetColor(r, g, b, a)
-            end
-        end
+        orb.update(self, dt)
+        chest.update(self, dt)
     end
 
     function entities:draw()
@@ -336,90 +216,10 @@ function game:enter()
                 end
             end
         end
-    
-        -- draw doors
-        for index, door in pairs(self.doors) do
-            local isInside = door.fixture:testPoint(cmx, cmy)
-            if isInside then dotCursor = true end
 
-            love.graphics.push("transform")
-
-            local x, y = door.bod:getPosition()
-            local a = door.bod:getAngle()
-
-            love.graphics.setColor(1, 1, 1, 1)
-
-            love.graphics.translate(x, y)
-            love.graphics.rotate(a)
-            love.graphics.rectangle("fill", -64/2, -8/2, 64, 8)
-
-            love.graphics.pop()
-
-            if config.debug then -- draw door's hinge
-                love.graphics.push("transform")
-
-                local x, y = door.hinge:getPosition()
-                local a = door.hinge:getAngle()
-
-                love.graphics.setColor(1, 0, 0, .5)
-
-                love.graphics.translate(x, y)
-                love.graphics.rotate(a)
-                love.graphics.rectangle("fill", -8/2, -8/2, 8, 8)
-
-                love.graphics.pop()
-            end
-        end
-        
-        -- draw crates
-        for index, chest in pairs(self.chests) do
-            if chest.bod:isActive() then
-                local isInside = chest.fixture:testPoint(cmx, cmy)
-                if isInside then dotCursor = true end
-
-                local x, y = chest.bod:getPosition()
-                local a = chest.bod:getAngle()
-
-                chest.light:SetPosition(x, y)
-                love.graphics.setColor(1, 1, 1, 1)
-
-                love.graphics.push("transform")
-
-                love.graphics.translate(x, y)
-                love.graphics.rotate(a)
-
-                local spriteNum = math.floor(crate_animation.currentTime / crate_animation.duration * #crate_animation.quads) + 1
-                love.graphics.draw(crate_animation.spriteSheet, crate_animation.quads[spriteNum], -24, -24)
-
-                love.graphics.pop()
-            end
-        end
-
-        -- draw orbs
-        for id, orb in pairs(self.orbs) do
-            if orb.bod:isDestroyed() then return end
-
-            local isInside = orb.fixture:testPoint(cmx, cmy)
-            if isInside then dotCursor = true end
-
-            local x, y = orb.bod:getPosition()
-            local a = orb.bod:getAngle()
-
-            love.graphics.push("transform")
-            
-            love.graphics.translate(x, y)
-            love.graphics.rotate(a)
-
-            if orb.type == "health" then
-                love.graphics.draw(images.orbs.health, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 32)
-            elseif orb.type == "skill" then
-                love.graphics.draw(images.orbs.skill, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 32)
-            elseif orb.type == "exp" then
-                love.graphics.draw(images.orbs.exp, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 24)
-            end
-
-            love.graphics.pop()
-        end
+        doors.draw(self)
+        chest.draw(self)
+        orb.draw(self)
 
         -- draw items
         items.draw()
@@ -471,7 +271,6 @@ function game:enter()
 
     cam = camera(0, 0)
     smoother = cam.smooth.damped(5)
-    love.graphics.setBackgroundColor(.25, .25, .25)
 
     dotCursor = false
     skillTreeIsOpen = false
@@ -486,7 +285,7 @@ function game:enter()
 end
 
 function game:resize(w, h)
-    print("Window got resized")
+    print("GAME INFO: Window got resized")
 	map:resize(w, h)
     lightWorld:Resize(w, h)
     scalex = h / 480
@@ -518,7 +317,7 @@ function game:keypressed(key, scancode, isrepeat)
                         sounds.crate:play()
 
                         timer.after(chest.time, function()
-                            print("Respawning chest")
+                            print("GAME INFO: Respawning chest")
                             chest.bod:setActive(true)
                             chest.shadow = Body:new(lightWorld):InitFromPhysics(chest.bod)
                             
@@ -560,6 +359,9 @@ function game:keypressed(key, scancode, isrepeat)
         map.layers["Map Entities"].visible = not map.layers["Map Entities"].visible
     elseif key == config.controls.skill_tree and not pause then
         skillTreeIsOpen = not skillTreeIsOpen
+    elseif key== config.controls.burst then
+        ply.enable_burst = not ply.enable_burst -- toggle burst mode
+        print("GAME INFO: Toggled burst mode for automatic weapons")
     end
 end
 
@@ -622,7 +424,7 @@ function controls(dt)
         cooldown.sprint = cooldown.sprint + dt * 10
     end
 
-    if love.mouse.isDown(1) and not skillTreeIsOpen and warmup <= 9 then
+    if love.mouse.isDown(1) and not skillTreeIsOpen and warmup <= 9 and not preventAttack then
         local wep = ply:getWeapon()
         local firetype = wep.firetype
         if firetype == "auto" or firetype == "burst" then -- full-auto weps
@@ -682,12 +484,13 @@ function game:update(dt)
 
     local pa = math.atan2(cmy - py, cmx - px) -- angle of the player
     ply.bod:setAngle( pa )
+
     cam:lockPosition( px + math.cos(pa) * 20, py + math.sin(pa) * 20, smoother )
     cam:zoomTo(scalex)
 
     if config.shader then
         lightWorld:Update(dt)
-        lightWorld:SetPosition(cpx - pcx + (px - cpx), cpy - pcy + (py - cpy))
+        lightWorld:SetPosition(cam.x - window_width / 2, cam.y - window_height / 2, cam.scale)
 
         lights.player:SetPosition(px, py, 1)
     end
@@ -733,7 +536,7 @@ function game:draw()
     love.graphics.setColor(1, 1, 1)
 
     dotCursor = false -- reset cursor mode
-    map:draw(cx / scalex + scalex / 2, cy / scalex + scalex / 2, scalex, scalex) -- draw map
+    map:draw(cx / cam.scale, cy / cam.scale, cam.scale, cam.scale) -- draw map
 
     --cam:draw(function() end) -- unused
 
@@ -743,9 +546,9 @@ function game:draw()
         map:box2d_draw(cx, cy) -- draw debug map if enabled
     end
 
-    if config.shader then lightWorld:Draw() end -- draw light world if enabled
+    if config.shader and cam.scale == 1 then lightWorld:Draw() end -- draw light world if enabled
 
-    hud()
+    draw_hud()
 
     if ply:getHealth() <= 0 then deathscreen.draw() end -- draw death screen
 
@@ -767,6 +570,7 @@ function game:leave()
     lights = {}
     lightWorld = nil
     world = nil
+    spawns = {}
 end
 
 function game:quit()

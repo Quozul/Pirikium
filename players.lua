@@ -9,7 +9,7 @@ function newPlayer(x, y, id, class, level) -- creates a new player
 
     if not level then level = 0 end
 
-    print("The level of this entity is " .. level)
+    print("PLAYER INFO: The level of this entity is " .. level)
 
     local p = {}
 
@@ -18,7 +18,7 @@ function newPlayer(x, y, id, class, level) -- creates a new player
     else
         weapon = class.weapon
     end
-    print("Entity spawn with " .. weapon)
+    print("PLAYER INFO: Entity spawn with " .. weapon)
     
     p.inventory = { weapon }
     p.selectedSlot = 1
@@ -47,7 +47,7 @@ function newPlayer(x, y, id, class, level) -- creates a new player
 
     if love.filesystem.getInfo( "saves/" .. id ) then
         local l = bitser.loads(love.filesystem.read( "saves/" .. id ))
-        print("Player save found")
+        print("PLAYER INFO: Player save found")
 
         if l.defaultWeapon == nil then error("No weapon found in the save!") end
         p.inventory = { l.defaultWeapon }
@@ -63,12 +63,12 @@ function newPlayer(x, y, id, class, level) -- creates a new player
 
         p.name = id
 
-        print("High score for this player is " .. l.highScore)
+        print("PLAYER INFO: High score for this player is " .. l.highScore)
     else
         p.name = namegen.generate("human male")
     end
 
-    print("Skill values:")
+    print("PLAYER INFO: Skill values:")
     for name, value in pairs(p.skills) do
         print(name, value)
     end
@@ -76,6 +76,7 @@ function newPlayer(x, y, id, class, level) -- creates a new player
     p.health = p.skills.health
     p.previous_health = p.health
     p.burst = 0
+    p.enable_burst = false
 
     p.bod = love.physics.newBody( world, x * 64 - 32, y * 64 - 32, "dynamic" ) -- creates a body for the player
     p.bod:setLinearDamping(16)
@@ -93,7 +94,7 @@ function newPlayer(x, y, id, class, level) -- creates a new player
 
     p.id = id
 
-    print("New player created")
+    print("GAME INFO: New player created")
     return setmetatable(p, player)
 end
 
@@ -150,20 +151,20 @@ function player:setSlot(slot)
 end
 
 function player:addItem(item)
-    print("Picking up " .. item)
+    print("PLAYER INFO: Picking up " .. item)
     if #self.inventory <= maxInventory then
         table.insert(self.inventory, item)
         sounds.pickup:play()
         return true
     elseif #self.inventory > maxInventory then
-        print("Inventory is full")
+        print("PLAYER INFO: Inventory is full")
         return false
     end
 end
 
 function player:drop(item)
-    print("Dropping " .. item)
-    if #self.inventory <= 1 then print("Can't drop that") return end
+    print("PLAYER INFO: Dropping " .. item)
+    if #self.inventory <= 1 then print("PLAYER INFO: Can't drop that") return end
     local a = self.bod:getAngle()
     items.drop(px, py, a, self.inventory[item])
     table.remove(self.inventory, item)
@@ -181,7 +182,7 @@ function player:addKill(amount, victim)
     self.exp = self.exp + xp
     sounds.exp:setPitch(rf(.8, 1.2, 2))
     sounds.exp:play()
-    print("Gain " .. xp .. " exp")
+    print("PLAYER INFO: Gain " .. xp .. " exp")
 end
 
 function player:increaseSkill(name)
@@ -189,14 +190,14 @@ function player:increaseSkill(name)
 
     print("Cost for upgrading " .. name .. " to level " .. ply.skills[name] + 1 .. " is " .. cost .. "exp")
     if self.exp < cost then
-        print("Not enough exp")
+        print("PLAYER INFO: Not enough exp")
         return
     end
 
     self.exp = self.exp - cost
-    print("Current level: " .. self.skills[name])
+    print("PLAYER INFO: Current level: " .. self.skills[name])
     self.skills[name] = self.skills[name] + skills.skills[name].amount.upgrade
-    print("New level: " .. self.skills[name])
+    print("PLAYER INFO: New level: " .. self.skills[name])
 end
 
 function player:skillBoost(skill, amount)
@@ -210,11 +211,11 @@ function player:skillBoost(skill, amount)
 
     table.insert(self.boostedSkills, index, {name = skill, amount = delta})
 
-    print(("Skill %s boosted by %g (previous value was: %g)"):format(skill, amount, currentSkill))
+    print(("PLAYER INFO: Skill %s boosted by %g (previous value was: %g)"):format(skill, amount, currentSkill))
 
     timer.after(math.random(10, 20), function()
         self.skills[skill] = self.skills[skill] - delta
-        print(("Skill %s back to %g"):format(skill, self.skills[skill]))
+        print(("PLAYER INFO: Skill %s back to %g"):format(skill, self.skills[skill]))
 
         if skill == "health" and self.health > self.skills.health then
             self:setHealth(self.skills.health)
@@ -225,16 +226,16 @@ function player:skillBoost(skill, amount)
 end
 
 function player:resetSkills()
-    print("Forcing skill reset...")
+    print("PLAYER INFO: Forcing skill reset...")
     for index, skill in pairs(self.boostedSkills) do
         self.skills[skill.name] = self.skills[skill.name] - skill.amount
-        print(("Skill %s back to %g"):format(skill.name, self.skills[skill.name]))
+        print(("PLAYER INFO: Skill %s back to %g"):format(skill.name, self.skills[skill.name]))
     end
 
     if self.health > self.skills.health then
         self:setHealth(self.skills.health)
-        print("Fixing health")
+        print("PLAYER INFO: Fixing health")
     end
 
-    print(#self.boostedSkills .. " skills reset")
+    print("PLAYER INFO: " .. #self.boostedSkills .. " skills reset")
 end

@@ -39,8 +39,9 @@ require "players"
 require "clib/animation"
 particles = require "clib/particles"
 items = require "items"
-menu = require "menu"
+require "menu"
 require "game"
+require "entities"
 require "hud"
 require "attack"
 tree = require "skills"
@@ -77,7 +78,8 @@ function createConfig()
             sprint = "lshift",
             drop = "r",
             skill_tree = "c",
-            sneak = "lctrl"
+            sneak = "lctrl",
+            burst = "a",
         },
         ai = {
             disable = false, -- disable the ai's brain
@@ -87,11 +89,12 @@ function createConfig()
         lang = "en", -- selected language of the game
         warmup = 10, -- time before enemies spawns
         ratio = 1, -- zomm in-game
-        play_music = true, -- play background music in main-menu
+        music = true, -- play background music in main-menu
         dev_version = false, -- check for developement versions
         content = {
             Pirikium = "folder", -- load the default content
-        }
+        },
+        fullscreen = false,
     }
 
     love.filesystem.write(configFile, json:encode_pretty( config )) -- create a config file
@@ -189,7 +192,7 @@ function love.load()
     titleFont = love.graphics.newFont("data/font/Iceland.ttf", 48)
     print("Loaded font")
 
-    love.graphics.setDefaultFilter("nearest", "nearest")
+    --love.graphics.setDefaultFilter("nearest", "nearest")
 
     images.orbs = {}
     images.player = {}
@@ -197,10 +200,11 @@ function love.load()
 
     loader.newImage(images, "cursor", "data/ui/cursor.png")
     loader.newImage(images, "dot", "data/ui/cursor_small.png")
-    loader.newImage(images, "slot", "data/ui/inv_slot.png")
     loader.newImage(images, "skull", "data/ui/death_icon.png")
     loader.newImage(images, "level", "data/ui/level_icon.png")
     loader.newImage(images, "exit", "data/ui/exit_icon.png")
+    loader.newImage(images, "volume", "data/ui/volume.png")
+    loader.newImage(images, "music", "data/ui/music.png")
 
     loader.newImage(images, "crate", "data/crate.png")
     loader.newImage(images.orbs, "health", "data/orbs/health.png")
@@ -227,19 +231,26 @@ function love.load()
 
     loader.newSource( sounds, "menu_theme", "data/sounds/menu_music.mp3", "stream")
 
-    loader.start(function()
+    loader.start(function() -- this function is executed when the loading is done
         finishedLoading = true
         crate_animation = newAnimation(images.crate, 48, 48, 0.8) -- crate animation
         player_animation = newAnimation(images.player.walk, 24, 24, 0.5) -- walking player animation
-        print("Game loaded in " .. round(loadTime, 1) .. " seconds")
+        music_on = love.graphics.newQuad( 0, 0, 24, 24, images.music:getDimensions() )
+        music_off = love.graphics.newQuad( 24, 0, 24, 24, images.music:getDimensions() )
 
         SetSounds(sounds.hover, sounds.click) -- set the sounds for the buttons
 
+        print("Game loaded in " .. round(loadTime, 1) .. " seconds")
         love.window.requestAttention()
 
         gamestate.registerEvents()
         gamestate.switch(menu)
     end)
+
+    if config.fullscreen then 
+        love.window.setFullscreen(config.fullscreen)
+        window_width, window_height = love.window.getMode()
+    end
 end
 
 function love.quit()
