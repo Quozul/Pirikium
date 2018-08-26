@@ -359,9 +359,17 @@ function game:keypressed(key, scancode, isrepeat)
         map.layers["Map Entities"].visible = not map.layers["Map Entities"].visible
     elseif key == config.controls.skill_tree and not pause then
         skillTreeIsOpen = not skillTreeIsOpen
-    elseif key== config.controls.burst then
+    elseif key == config.controls.burst then
         ply.enable_burst = not ply.enable_burst -- toggle burst mode
         print("GAME INFO: Toggled burst mode for automatic weapons")
+    end
+
+    if config.debug then
+        if key == "p" then
+            scalex = scalex + 0.1
+        elseif key == "m" then
+            scalex = scalex - 0.1
+        end
     end
 end
 
@@ -488,11 +496,13 @@ function game:update(dt)
     cam:lockPosition( px + math.cos(pa) * 20, py + math.sin(pa) * 20, smoother )
     cam:zoomTo(scalex)
 
-    if config.shader then
-        lightWorld:Update(dt)
-        lightWorld:SetPosition(cam.x - window_width / 2, cam.y - window_height / 2, cam.scale)
+    tx, ty = -(cx / cam.scale), -(cy / cam.scale)
 
-        lights.player:SetPosition(px, py, 1)
+    if config.shader then
+        lights.player:SetPosition((-cx + pcx) / cam.scale, (-cy + pcy) / cam.scale, 1)
+
+        lightWorld:SetPosition(-cx, -cy, cam.scale)
+        lightWorld:Update(dt)
     end
 
     for index, bullet in pairs(bullets) do
@@ -536,17 +546,18 @@ function game:draw()
     love.graphics.setColor(1, 1, 1)
 
     dotCursor = false -- reset cursor mode
-    map:draw(cx / cam.scale, cy / cam.scale, cam.scale, cam.scale) -- draw map
+    map:draw(-tx, -ty, cam.scale, cam.scale) -- draw map
 
     --cam:draw(function() end) -- unused
 
     -- draw collision map (debug)
     if config.debug then
         love.graphics.setColor(1, 0, 0)
-        map:box2d_draw(cx, cy) -- draw debug map if enabled
+        map:box2d_draw(-tx, -ty, cam.scale, cam.scale) -- draw debug map if enabled
     end
 
-    if config.shader and cam.scale == 1 then lightWorld:Draw() end -- draw light world if enabled
+	love.graphics.origin()
+    if config.shader then lightWorld:Draw() end -- draw light world if enabled
 
     draw_hud()
 

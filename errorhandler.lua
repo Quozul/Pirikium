@@ -21,6 +21,8 @@ function love.errhand(error_message)
     local message = string.format(dialog_message, app_name, full_error)
     local buttons = {"No", "Yes, on GitHub", "Yes, by email", "Yes, copy it"}
 
+    love.filesystem.write(string.format("crash_%s.txt", love.timer.getTime()), string.format("%s\n\n---\nVersion: %s\nSystem: %s\n", full_error, version, edition))
+
     local pressedbutton = love.window.showMessageBox(title, message, buttons)
 
     local function url_encode(text)
