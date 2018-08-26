@@ -31,7 +31,7 @@ Shadows = require("shadows")
 LightWorld = require("shadows.LightWorld")
 Light = require("shadows.Light")
 Body = require("shadows.Body")
-print("Loaded modules")
+print("MAIN: Loaded modules")
 
 require "clib/buttons"
 require "clib/utility"
@@ -64,48 +64,55 @@ math.randomseed( os.time() )
 
 -- create config
 local configFile = "config.json"
-function createConfig()
-    config = {
-        shader = true, -- enable shader
-        controls = {
-            forward = "w",
-            left = "a",
-            backward = "s",
-            right = "d",
-            fire = "1",
-            dodge = "space",
-            use = "e",
-            sprint = "lshift",
-            drop = "r",
-            skill_tree = "c",
-            sneak = "lctrl",
-            burst = "a",
-        },
-        ai = {
-            disable = false, -- disable the ai's brain
-            debug = false, -- display ai path and more
-        },
-        debug = false, -- display extra informations to screen
-        lang = "en", -- selected language of the game
-        warmup = 10, -- time before enemies spawns
-        ratio = 1, -- zomm in-game
-        music = true, -- play background music in main-menu
-        dev_version = false, -- check for developement versions
-        content = {
-            Pirikium = "folder", -- load the default content
-        },
-        fullscreen = false,
+local default_config = {
+    shader = true, -- enable shader
+    controls = {
+        forward = "w",
+        left = "a",
+        backward = "s",
+        right = "d",
+        fire = "1",
+        dodge = "space",
+        use = "e",
+        sprint = "lshift",
+        drop = "r",
+        skill_tree = "c",
+        sneak = "lctrl",
+        burst = "q",
+    },
+    ai = {
+        disable = false, -- disable the ai's brain
+        debug = false, -- display ai path and more
+    },
+    debug = false, -- display extra informations to screen
+    lang = "en", -- selected language of the game
+    warmup = 10, -- time before enemies spawns
+    ratio = 1, -- zomm in-game
+    music = true, -- play background music in main-menu
+    dev = false, -- check for developement versions
+    fullscreen = false, -- toggle fullscreen mode
+    content = {
+        Pirikium = "folder", -- load the default content
     }
+}
+
+function createConfig()
+    config = default_config
 
     love.filesystem.write(configFile, json:encode_pretty( config )) -- create a config file
-    print("Config file not found, creating it")
+    print("MAIN: Config file not found, creating it")
 end
 
 if not love.filesystem.getInfo( configFile ) then
     createConfig()
 else
     config = json:decode( love.filesystem.read( configFile ) ) -- loads the existing config file
-    print("Config file loaded")
+    local integrity = verifyTable(default_config, config)
+    if not integrity then
+        print("MAIN: Recreating config file")
+        createConfig()
+    end
+    print("MAIN: Config file loaded")
 end
 
 loading.setText("Loading content...")
@@ -116,7 +123,7 @@ weapons, loots, classes = {}, {}, {}
 skills = json:decode( love.filesystem.read( "data/skills.json" ) ) -- skills can't be customized by players
 
 for name, type in pairs(config.content) do
-    print("Loading " .. name .. " content pack...")
+    print("MAIN: Loading " .. name .. " content pack...")
 
     if type == "folder" then
         local file = "content/" .. name .. "/loots.json"
@@ -125,7 +132,7 @@ for name, type in pairs(config.content) do
                 loots,
                 json:decode( love.filesystem.read(file) )
             )
-            print(("Overwritten %d loots"):format(overwritten))
+            print(("MAIN: Overwritten %d loots"):format(overwritten))
         end
 
         local file = "content/" .. name .. "/classes.json"
@@ -134,7 +141,7 @@ for name, type in pairs(config.content) do
                 classes,
                 json:decode( love.filesystem.read(file) )
             )
-            print(("Overwritten %d classes"):format(overwritten))
+            print(("MAIN: Overwritten %d classes"):format(overwritten))
         end
 
         local file = "content/" .. name .. "/weapons.json"
@@ -143,15 +150,15 @@ for name, type in pairs(config.content) do
                 weapons,
                 json:decode( love.filesystem.read(file) )
             )
-            print(("Overwritten %d weapons"):format(overwritten))
+            print(("MAIN: Overwritten %d weapons"):format(overwritten))
         end
     end
 end
 
-print(#weapons .. " weapons loaded")
+print("MAIN: " .. #weapons .. " weapons loaded")
 for name, wep in pairs(weapons) do
     if wep.texture ~= nil then
-        print("Loaded image for weapon " .. name)
+        print("MAIN: Loaded image for weapon " .. name)
         if wep.texture.side ~= nil then
             loader.newImage(images.weapons.side, name, wep.texture.side)
         end
@@ -165,7 +172,7 @@ end
 local save_folder = love.filesystem.getInfo("saves")
 if not save_folder or save_folder.type ~= "directory" then
     love.filesystem.createDirectory("saves")
-    print("Save directory created")
+    print("MAIN: Save directory created")
 end
 
 function updateScreenSize() -- the screen size scaling must be reworked
@@ -176,7 +183,7 @@ if config.ratio ~= 1 then updateScreenSize() end
 
 -- load language
 languages_list = love.filesystem.getDirectoryItems( "data/langs" )
-print(#languages_list .. " available")
+print("MAIN: " .. #languages_list .. " available")
 
 local selectedLanguage = string.gsub(config.lang, ".lang", "")
 lang.decrypt( ("data/langs/%s.lang"):format(selectedLanguage) )
@@ -190,7 +197,7 @@ function love.load()
     hudFont = love.graphics.newFont("data/font/Iceland.ttf", 16)
     menuFont = love.graphics.newFont("data/font/Iceland.ttf", 32)
     titleFont = love.graphics.newFont("data/font/Iceland.ttf", 48)
-    print("Loaded font")
+    print("MAIN: Loaded font")
 
     --love.graphics.setDefaultFilter("nearest", "nearest")
 
@@ -240,7 +247,7 @@ function love.load()
 
         SetSounds(sounds.hover, sounds.click) -- set the sounds for the buttons
 
-        print("Game loaded in " .. round(loadTime, 1) .. " seconds")
+        print("MAIN: Game loaded in " .. round(loadTime, 1) .. " seconds")
         love.window.requestAttention()
 
         gamestate.registerEvents()

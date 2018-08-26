@@ -4,6 +4,4 @@
 *.tmx
 *.tsx
 .vscode
-data/logo.png
-tests.md
 compile

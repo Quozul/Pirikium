@@ -70,3 +70,14 @@ function sharpRectangle(mode, x, y, width, height, maxWidth)
         x + width, y + height
     )
 end
+
+function verifyTable(base, verify)
+    for value in pairs(base) do
+        if verify[value] == nil then
+            print("TABLE VERIFICATION: " .. value .. " is missing from table to verify")
+            return false
+        end
+    end
+    print("TABLE VERIFICATION: Nothing is missing")
+    return true
+end

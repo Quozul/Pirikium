@@ -32,7 +32,6 @@ local function updatePlayerList()
                     gspot:feedback("Please select a map")
                     return
                 end
-                selection.group:hide()
                 playerUUID = name
                 gamestate.switch(game)
             end
@@ -79,7 +78,7 @@ function menu:init()
     buttons.main.play = NewButton(
         "button", 0, 0, unit*12, unit*5,
         function()
-            menu = "none"
+            menuState = "none"
             selection.group:show()
         end,
         lang.print("play"), {241, 196, 15}, {shape = "sharp", easing = "bounce", font = menuFont}
@@ -87,7 +86,7 @@ function menu:init()
     buttons.main.settings = NewButton(
         "button", unit*13, 0, unit*12, unit*5,
         function()
-            menu = "none"
+            menuState = "none"
             settings.group:show()
         end,
         lang.print("settings"), {84, 153, 199}, {shape = "sharp", easing = "bounce", font = menuFont}
@@ -123,7 +122,7 @@ function menu:init()
     settings.close.style.bg = {1, 0, 0}
     settings.close.click = function(this)
         settings.group:hide()
-        menu = "main"
+        menuState = "main"
     end
 
     settings.shader = gspot:checkbox(lang.print("enable light"), {unit, unit*2}, settings.group, config.shader)
@@ -187,7 +186,7 @@ function menu:init()
     selection.close.style.bg = {1, 0, 0}
     selection.close.click = function(this)
         selection.group:hide()
-        menu = "main"
+        menuState = "main"
     end
 
     updatePlayerList()
@@ -213,7 +212,7 @@ function menu:init()
     new.close.click = function(this)
         new.group:hide()
         selection.group:show()
-        menu = "main"
+        menuState = "main"
     end
     new.name = gspot:input("", {unit, unit*2, unit*8, unit*2}, new.group, lang.print("name"), false)
     new.create = gspot:button(lang.print("create"), {unit, unit*6, unit*8, unit*2}, new.group)
@@ -252,13 +251,15 @@ function menu:enter()
     love.mouse.setVisible(true)
     love.mouse.setGrabbed(false)
     print("MENU INFO: Entered menu")
-    menu = "main"
     selectedMap = nil
     buttons.main.update:setText(lang.print("update"))
 
     if config.music then sounds.menu_theme:play() end
 end
-function menu:leave() sounds.menu_theme:stop() end
+
+function menu:leave()
+    sounds.menu_theme:stop()
+end
 
 function menu:update(dt)
     for index, element in pairs(buttons[menuState]) do

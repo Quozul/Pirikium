@@ -1,5 +1,5 @@
 # Pirikium
-**Pirikium** is a top-down adventure game, written in lua with the [Löve 2D](https://love2d.org/) framework (version 11.1). If you need more informations, you can check the [wiki](https://github.com/Quozul/Pirikium/wiki).  
+**Pirikium** is a top-down shooter game, written in lua with the [Löve 2D](https://love2d.org/) framework (version 11.1). If you need more informations, you can check the [wiki](https://github.com/Quozul/Pirikium/wiki).  
 
 <div align="center">
     <a href="https://discord.gg/UZy8rCY"><img src="https://discordapp.com/api/guilds/472820911955902465/embed.png" alt="Discord server" title="Join our Discord server now!"/></a><br>
