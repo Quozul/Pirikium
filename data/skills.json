@@ -19,7 +19,7 @@
     "skills": {
         "speed": {
             "default": 0,
-            "mult": 2.5,
+            "mult": 2,
             "amount": {
                 "upgrade": 0.05,
                 "min": 0.1,
@@ -28,7 +28,7 @@
         },
         "stamina": {
             "default": 2,
-            "mult": 2.5,
+            "mult": 1.75,
             "amount": {
                 "upgrade": 0.1,
                 "min": 0.5,
@@ -55,7 +55,7 @@
         },
         "recoil": {
             "default": 1,
-            "mult": 5,
+            "mult": 3.5,
             "amount": {
                 "upgrade": 0.05,
                 "min": 0.1,
@@ -82,7 +82,7 @@
         },
         "health": {
             "default": 10,
-            "mult": 1.5,
+            "mult": 1.05,
             "amount": {
                 "upgrade": 0.5,
                 "min": 1.0,

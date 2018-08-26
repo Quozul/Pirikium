@@ -2,7 +2,7 @@ local button = {}
 button.__index = button
 local anim = .5
 
-tx, ty = 0, 0
+translation_x, translation_y = 0, 0
 
 width, height = love.window.getMode()
 
@@ -39,11 +39,11 @@ function SetSounds(hover, click)
 end
 
 function SetTranslation(x, y)
-    tx, ty = x or 0, y or 0
+    translation_x, translation_y = x or 0, y or 0
 end
 
 function button:isIn()
-    return between(love.mouse.getX() - tx, self.x, self.x + self.w) and between(love.mouse.getY() - ty, self.y, self.y + self.h)
+    return between(love.mouse.getX() - translation_x, self.x, self.x + self.w) and between(love.mouse.getY() - translation_y, self.y, self.y + self.h)
 end
 
 function button:update(dt)

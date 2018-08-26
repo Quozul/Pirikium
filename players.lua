@@ -26,7 +26,7 @@ function newPlayer(x, y, id, class, level) -- creates a new player
         attack = 0,
         sprint = 0,
         special = 0,
-        dodge = 0
+        dash = 0
     }
 
     p.skills = {}
@@ -185,8 +185,17 @@ function player:addKill(amount, victim)
     print("PLAYER INFO: Gain " .. xp .. " exp")
 end
 
+function player:getSkillUpgradeCost(name)
+    local defaultLevel = 0
+    for index, skill in pairs(self.boostedSkills) do
+        if skill.name == name then defaultLevel = defaultLevel + skill.amount end
+    end
+
+    return math.max((ply.skills[name] - defaultLevel) * skills.skills[name].mult + skills.skills[name].mult, skills.skills[name].mult)
+end
+
 function player:increaseSkill(name)
-    local cost = math.max(ply.skills[name] * skills.skills[name].mult, skills.skills[name].mult)
+    local cost = self:getSkillUpgradeCost(name)
 
     print("Cost for upgrading " .. name .. " to level " .. ply.skills[name] + 1 .. " is " .. cost .. "exp")
     if self.exp < cost then
@@ -230,6 +239,7 @@ function player:resetSkills()
     for index, skill in pairs(self.boostedSkills) do
         self.skills[skill.name] = self.skills[skill.name] - skill.amount
         print(("PLAYER INFO: Skill %s back to %g"):format(skill.name, self.skills[skill.name]))
+        table.remove(self.boostedSkills, index)
     end
 
     if self.health > self.skills.health then

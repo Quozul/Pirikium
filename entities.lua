@@ -1,6 +1,7 @@
 doors = {}
 chest = {}
 orb = {}
+local key = love.keyboard.isDown
 
 function doors.add(x, y, r)
     local d = {}
@@ -67,6 +68,22 @@ function doors.draw(self)
     end
 end
 
+function doors.interact(x, y)
+    for id, door in pairs(entities.doors) do
+        if love.physics.getDistance(door.fixture, ply.fixture) <= 250 then
+            local isInside = door.fixture:testPoint(x, y)
+            if isInside then
+                local dx, dy = door.bod:getPosition()
+                local a = math.atan2(py - dy, px - dx)
+                local speed = love.physics.getMeter() * -25
+                door.bod:applyForce(math.cos(a) * speed, math.sin(a) * speed, cmx, cmy)
+                sounds.door:play()
+                return
+            end
+        end
+    end
+end
+
 
 
 function chest.add(x, y)
@@ -124,6 +141,38 @@ function chest.draw(self)
             love.graphics.draw(crate_animation.spriteSheet, crate_animation.quads[spriteNum], -24, -24)
 
             love.graphics.pop()
+        end
+    end
+end
+
+function chest.interact(x, y)
+    for id, chest in pairs(entities.chests) do
+        if chest.bod:isActive() then
+            if love.physics.getDistance(chest.fixture, ply.fixture) <= 250 then
+                local isInside = chest.fixture:testPoint(x, y)
+                if isInside then
+                    local cratex, cratey = chest.bod:getPosition()
+                    local crateAngle = chest.bod:getAngle()
+                    items.drop(cratex, cratey, crateAngle, loots.chest[math.random(1, #loots.chest)])
+                    -- destroy crate
+                    chest.bod:setActive(false)
+                    chest.shadow:Remove()
+
+                    sounds.crate:play()
+                    for i=1, math.random( 4, 8 ) do
+                        particles.emit(cratex, cratey, {min = 0, max = 2 * math.pi}, 200, 1.2, 15, 4, 5, {r = .6, g = .6, b = 0, a = .6})
+                    end
+
+                    timer.after(chest.time, function()
+                        print("GAME INFO: Respawning chest")
+                        chest.bod:setActive(true)
+                        chest.shadow = Body:new(lightWorld):InitFromPhysics(chest.bod)
+                        
+                        chest.light:SetColor(155, 155, 0, 155)
+                    end)
+                    return
+                end
+            end
         end
     end
 end

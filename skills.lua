@@ -19,6 +19,7 @@ function T.init()
 end
 
 function T.draw()
+    love.graphics.setFont(hudFont)
     love.graphics.setColor(0.25, 0.25, 0.25, 0.75)
     love.graphics.rectangle("fill", centerX / 4, centerY / 4, centerX * 1.5, height, 5)
     love.graphics.setLineWidth(8)
@@ -36,7 +37,7 @@ function T.draw()
         if skills_buttons[index]:isIn() then dotCursor = true end
 
         local x, y = skills_buttons[index]:getPos()
-        local cost = round(math.max(ply.skills[name] * skills.skills[name].mult, skills.skills[name].mult), 2)
+        local cost = round(ply:getSkillUpgradeCost(name), 1)
         local text = lang.print("skill level", {ply.skills[name]}) .. "\n" .. lang.print("skill cost", {cost})
 
         love.graphics.print(text, x + 128 + 16, y)
