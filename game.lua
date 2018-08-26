@@ -49,6 +49,9 @@ function game:enter()
     world:setCallbacks(beginContact, endContact, preSolve, postSolve)
     map:box2d_init(world)
     print("World created")
+
+    window_width, window_height = love.window.getMode()
+    scalex, scaley = window_height / 480, window_width / 853
     
     lightWorld = LightWorld:new()
     lightWorld:SetColor(50, 50, 50, 255)
@@ -235,7 +238,8 @@ function game:enter()
             love.graphics.translate(x, y)
             if id ~= playerUUID then
                 love.graphics.setColor(1, 1, 1, (255 - sl(cmx, cmy, x, y)) / 255)
-                love.graphics.print(ent.name .. " - " .. ent:getLevel(), -hudFont:getWidth(ent.name) / 2, -25)
+                local tag = ent.name .. " - " .. removeDecimal(ent:getLevel())
+                love.graphics.print(tag, -hudFont:getWidth(tag) / 2, -25)
             end
 
             love.graphics.setColor(1, 1, 1, 1)
@@ -280,8 +284,6 @@ function game:enter()
     pause = false
     deathscreen.init()
     SetTranslation(0, 0)
-
-    scalex, scaley = 1, 1
 end
 
 function game:resize(w, h)
@@ -363,14 +365,6 @@ function game:keypressed(key, scancode, isrepeat)
         ply.enable_burst = not ply.enable_burst -- toggle burst mode
         print("GAME INFO: Toggled burst mode for automatic weapons")
     end
-
-    if config.debug then
-        if key == "p" then
-            scalex = scalex + 0.1
-        elseif key == "m" then
-            scalex = scalex - 0.1
-        end
-    end
 end
 
 function game:wheelmoved(x, y)
@@ -427,7 +421,7 @@ function controls(dt)
     end
 
     if key(config.controls.dodge) and cooldown.dodge == 0 and cooldown.sprint < ply.skills.stamina then
-        ply.bod:applyLinearImpulse(vx, vy)
+        ply.bod:applyLinearImpulse(math.cos(pa) * 200, math.sin(pa) * 200)
         cooldown.dodge = 1
         cooldown.sprint = cooldown.sprint + dt * 10
     end
