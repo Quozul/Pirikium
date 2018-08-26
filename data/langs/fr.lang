@@ -32,6 +32,9 @@ update=mettre à jour
 mods=mods
 progress=progrès
 loading=chargement...
+movements=mouvements
+other=autre
+fullscreen=plein écran
 
 # updates
 
@@ -47,11 +50,12 @@ left=gauche
 backward=reculer
 right=droite
 use=utiliser
-drop=lâcher
+drop=jeter
 skill_tree=arbre de compétences
 sprint=courrir
 sneak=furtif
 dash=charger
+burst=mode rafale
 
 # messages
 
@@ -86,7 +90,6 @@ stamina=energie
 strength=force
 accuracy=précision
 recoil=rechargement
-use=vitesse utilisation
 health=vie maximum
 regen=régénération
 
@@ -104,3 +107,8 @@ soldier=soldat
 en=anglais
 fr=français
 pl=polonais
+
+# maps
+
+brick_arena=Terrain de jeu de briques
+brick_arena_2=champ de bataille de briques

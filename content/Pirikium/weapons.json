@@ -189,7 +189,7 @@
             "speed": 5,
             "radius": 2,
             "amount": 1,
-            "burst": 2,
+            "burst": 3,
             "life": 0.2,
             "type": "normal"
         },

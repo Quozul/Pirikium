@@ -72,7 +72,7 @@ local default_config = {
         backward = "s",
         right = "d",
         fire = "1",
-        dodge = "space",
+        dash = "space",
         use = "e",
         sprint = "lshift",
         drop = "r",
@@ -225,11 +225,14 @@ function love.load()
     loader.newSource( sounds, "hit", "data/sounds/hit_ennemy.mp3", "static")
     loader.newSource( sounds, "exp", "data/sounds/pickup_exp.mp3", "static")
     loader.newSource( sounds, "pickup", "data/sounds/pickup.mp3", "static")
-    loader.newSource( sounds, "fire", "data/sounds/shoot.mp3", "static")
+    loader.newSource( sounds, "fire", "data/sounds/bird-man_gun_shot.mp3", "static")
     loader.newSource( sounds, "missed", "data/sounds/empty_hit.mp3", "static")
     loader.newSource( sounds, "door", "data/sounds/door_kick.mp3", "static")
     loader.newSource( sounds, "crate", "data/sounds/srehpog_crate_smash_2.mp3", "static")
     loader.newSource( sounds, "orb", "data/sounds/conarb13_pop.mp3", "static")
+    -- melee weapons
+    loader.newSource( sounds, "sword_swing", "data/sounds/xxchr0nosxx_sword_swing.mp3", "static")
+    loader.newSource( sounds, "sword_hit", "data/sounds/black-snow_sword_slice.mp3", "static")
     
     -- gui sounds
     loader.newSource( sounds, "hover", "data/sounds/nenadsimic_menu_selection.mp3", "static")

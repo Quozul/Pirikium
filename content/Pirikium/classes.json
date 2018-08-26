@@ -30,7 +30,6 @@
     "tank": {
         "weapon": "shotgun",
         "skills": {
-            "speed": -0.5,
             "accuracy": 1.5,
             "health": 12,
             "stamina": 1
@@ -40,7 +39,7 @@
         "weapon": "dagger",
         "skills": {
             "speed": 1.5,
-            "strength": -2,
+            "strength": -0.5,
             "health": 8,
             "stamina": 2
         }

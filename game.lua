@@ -1,5 +1,6 @@
 game = {} -- gamestate
 local spawns = {}
+local teleporters = {}
 local key = love.keyboard.isDown
 local cooldown = {
     attack = 0,
@@ -78,8 +79,10 @@ function game:enter()
             if t ~= nil and t.id ~= 0 then
                 if t.id == 2 then -- friendly spawn
                     table.insert(spawns, {y, x})
-                --elseif t.id == 3 then -- hostile spawn
-                    --table.insert(spawns.hostile, {y, x})
+                elseif t.id == 3 then -- teleporter
+                    table.insert(teleporters, {y, x})
+                    lights[id] = Light:new(lightWorld, 300)
+                    lights[id]:SetColor(155, 0, 155)
                 --elseif t.id == 4 then print("One way")
                 --elseif t.id == 5 then print("Hinge")
                 elseif t.id == 6 then -- door
@@ -110,6 +113,7 @@ function game:enter()
         end
     end
 
+    print("GAME INFO: " .. #teleporters .. " teleporters found")
     print("GAME INFO: " .. #spawns .. " spawns found")
     local x, y = unpack( spawns[math.random(1, #spawns)] )
 
@@ -118,9 +122,6 @@ function game:enter()
     ply = entities.entities[playerUUID]
     
     if (ply.skills.recoil and ply.skills.recoil < 1) or not ply.skills.recoil then error("This save is corrupted") end
-
-    if ply.skills.regen and ply.skills.regen < 0 then ply.skills.regen = -ply.skills.regen -- fix a bug
-    elseif not ply.skills.regen then error("This save is corrupted") end
 
     lights.player = Light:new(lightWorld, 200)
     lights.player:SetColor(155, 155, 155)
@@ -150,7 +151,7 @@ function game:enter()
             -- cooldowns
             ent.cooldown.attack = math.max(ent.cooldown.attack - dt * ent.skills.recoil, 0) -- cooldown for primary attack
             ent.cooldown.special = math.max(ent.cooldown.special - dt * ent.skills.recoil, 0) -- cooldown for special attack
-            ent.cooldown.dodge = math.max(ent.cooldown.dodge - dt * ent.skills.recoil, 0) -- cooldown for rolling
+            ent.cooldown.dash = math.max(ent.cooldown.dash - dt * ent.skills.recoil, 0) -- cooldown for rolling
             if not ent.sprinting then
                 ent.cooldown.sprint = math.max(ent.cooldown.sprint - dt * ent.skills.recoil, 0)
             else
@@ -187,10 +188,33 @@ function game:enter()
             end
         end
 
+        -- update teleporters
+        for id, pos in pairs(teleporters) do
+            local x, y = (pos[1] - 1) * 64, (pos[2] - 1) * 64
+            local x, y = math.random(x, x + 64), math.random(y, y + 64)
+            particles.emit(x, y, {min = 0, max = 2 * math.pi}, 2, 1, 7, 1, 3, {r = 1, g = 0, b = 1}, true)
+            particles.emit(x, y, {min = 0, max = 2 * math.pi}, 2, 1, 7, 1, 3, {r = 1, g = 0, b = .5}, true)
+
+            local x, y = (pos[1] - 1) * 64, (pos[2] - 1) * 64
+            for id, ent in pairs(self.entities) do
+                local ex, ey = ent.bod:getPosition()
+                if inSquare(ex, ey, x + 8, y + 8, 48, 48) then
+                    local randomTp = teleporters[math.random(1, #teleporters)]
+                    print("GAME INFO: Teleporting entity")
+                    local x, y = (randomTp[1] - 1) * 64, (randomTp[2] - 1) * 64
+                    local ea = ent.bod:getAngle()
+                    ent.bod:setPosition((x + 32) + math.cos(ea) * 48, (y + 32) + math.sin(ea) * 48)
+                end
+            end
+        end
+
         -- update bullets
         for id, bullet in pairs(bullets) do
             if bullet.bod:isDestroyed() then
                 table.remove(bullets, id)
+            else
+                local bx, by = bullet.bod:getPosition()
+                particles.emit(bx, by, {min = 0, max = 2 * math.pi}, 5, 1.1, 7, 1, 3, {r = .75, g = .75, b = .75}, true)
             end
         end
 
@@ -220,12 +244,24 @@ function game:enter()
             end
         end
 
+        -- draw teleporters
+        for id, pos in pairs(teleporters) do
+            love.graphics.setColor(.25, 0, .25)
+            love.graphics.rectangle("fill", (pos[1] - 1) * 64 + 8, (pos[2] - 1) * 64 + 8, 48, 48, 5)
+            love.graphics.setColor(0, 0, 0)
+            love.graphics.setLineWidth(4)
+            love.graphics.rectangle("line", (pos[1] - 1) * 64 + 8, (pos[2] - 1) * 64 + 8, 48, 48, 5)
+            love.graphics.setLineWidth(1)
+        end
+
         doors.draw(self)
         chest.draw(self)
         orb.draw(self)
 
         -- draw items
         items.draw()
+        -- draw particles
+        particles.draw()
 
         -- draw entities
         for id, ent in pairs(self.entities) do
@@ -267,8 +303,6 @@ function game:enter()
                 ai.draw(ent, self.entities[playerUUID]) -- show the brain of the ai (debug)
             end
         end
-
-        --particles.draw() -- particles are not used yet
     end
 
     tree.init()
@@ -283,7 +317,11 @@ function game:enter()
 
     pause = false
     deathscreen.init()
-    SetTranslation(0, 0)
+    SetTranslation(0, 0) -- set translations for buttons
+
+    -- create pause buttons
+    button_resume = NewButton("button", 0, 0, 192, 80, function() pause = false end, lang.print("play"), {241, 196, 15}, {shape = "sharp", easing = "bounce", font = menuFont})
+    button_menu = NewButton("button", 0, 96, 192, 80, function() gamestate.switch(menu) end, lang.print("menu"), {203, 67, 53}, {shape = "sharp", easing = "bounce", font = menuFont})
 end
 
 function game:resize(w, h)
@@ -302,58 +340,20 @@ function game:keypressed(key, scancode, isrepeat)
         end
     elseif key == config.controls.use and not pause then
         local x, y = cam:worldCoords(mx, my)
-
-        -- interact with crates
-        for id, chest in pairs(entities.chests) do
-            if chest.bod:isActive() then
-                if love.physics.getDistance(chest.fixture, ply.fixture) <= 250 then
-                    local isInside = chest.fixture:testPoint(x, y)
-                    if isInside then
-                        local cratex, cratey = chest.bod:getPosition()
-                        local crateAngle = chest.bod:getAngle()
-                        items.drop(cratex, cratey, crateAngle, loots.chest[math.random(1, #loots.chest)])
-                        -- destroy crate
-                        chest.bod:setActive(false)
-                        chest.shadow:Remove()
-
-                        sounds.crate:play()
-
-                        timer.after(chest.time, function()
-                            print("GAME INFO: Respawning chest")
-                            chest.bod:setActive(true)
-                            chest.shadow = Body:new(lightWorld):InitFromPhysics(chest.bod)
-                            
-                            chest.light:SetColor(155, 155, 0, 155)
-                        end)
-                        return
-                    end
-                end
-            end
-        end
-
-        for id, door in pairs(entities.doors) do
-            if love.physics.getDistance(door.fixture, ply.fixture) <= 250 then
-                local isInside = door.fixture:testPoint(x, y)
-                if isInside then
-                    local dx, dy = door.bod:getPosition()
-                    local a = math.atan2(py - dy, px - dx)
-                    local speed = love.physics.getMeter() * -25
-                    door.bod:applyForce(math.cos(a) * speed, math.sin(a) * speed, cmx, cmy)
-                    sounds.door:play()
-                    return
-                end
-            end
-        end
-
         items.interact(ply, x, y, px, py)
+
+        chest.interact(x, y)
+        doors.interact(x, y)
     elseif key == config.controls.drop and not pause then
         ply:drop(ply.selectedSlot)
     elseif key == "escape" then
-        gamestate.switch(menu)
         if not pause and skillTreeIsOpen then
             skillTreeIsOpen = false
-        elseif not pause then
-            pause = true
+        else
+            pause = not pause
+            if not pause then
+                SetTranslation(0, 0)
+            end
         end
     elseif key == "f3" then
         config.debug = not config.debug
@@ -379,11 +379,21 @@ function game:wheelmoved(x, y)
 end
 
 function game:mousepressed(x, y, button, isTouch)
-    if skillTreeIsOpen then tree.mousepressed(x, y, button) end
+    if skillTreeIsOpen then
+        tree.mousepressed(x, y, button)
+    elseif pause then
+        button_resume:mousepressed(x, y, button)
+        button_menu:mousepressed(x, y, button)
+    end
 end
 
 function game:mousereleased(x, y, button, isTouch)
-    if skillTreeIsOpen then tree.mousereleased(x, y, button) end
+    if skillTreeIsOpen then
+        tree.mousereleased(x, y, button)
+    elseif pause then
+        button_resume:mousereleased(x, y, button)
+        button_menu:mousereleased(x, y, button)
+    end
 end
 
 function controls(dt)
@@ -420,9 +430,9 @@ function controls(dt)
         ply.bod:applyForce(speed * math.cos(pa + (math.pi / 2)), speed * math.sin(pa + (math.pi / 2)))
     end
 
-    if key(config.controls.dodge) and cooldown.dodge == 0 and cooldown.sprint < ply.skills.stamina then
+    if key(config.controls.dash) and cooldown.dash == 0 and cooldown.sprint < ply.skills.stamina then
         ply.bod:applyLinearImpulse(math.cos(pa) * 200, math.sin(pa) * 200)
-        cooldown.dodge = 1
+        cooldown.dash = 1
         cooldown.sprint = cooldown.sprint + dt * 10
     end
 
@@ -458,13 +468,13 @@ function game:update(dt)
         player_animation.currentTime = player_animation.currentTime - player_animation.duration
     end
 
-    warmup = math.max(warmup - dt, 0)
+    if not pause then warmup = math.max(warmup - dt, 0) end
 
     ply = entities.entities[playerUUID]
     px, py = ply.bod:getPosition()
     pcx, pcy = cam:cameraCoords(px, py)
 
-    maxAIs = 2 + (round(ply.kills / 2, 0) - 1)
+    maxAIs = 2 + removeDecimal(ply.kills / 5)
 
     if ply.inventory == nil or ply.inventory == {} or #ply.inventory == 0 then
         error("Inventory is empty!")
@@ -480,7 +490,7 @@ function game:update(dt)
     items.update(dt)
 
     map:update(dt)
-    --particles.update(dt)
+    particles.update(dt)
     timer.update(dt)
     world:update(dt)
 
@@ -532,6 +542,9 @@ function game:update(dt)
     if ply:getHealth() <= 0 then
         pause = true
         deathscreen.update(dt)
+    elseif pause then
+        button_resume:update(dt)
+        button_menu:update(dt)
     end
 end
 
@@ -550,12 +563,26 @@ function game:draw()
         map:box2d_draw(-tx, -ty, cam.scale, cam.scale) -- draw debug map if enabled
     end
 
-	love.graphics.origin()
     if config.shader then lightWorld:Draw() end -- draw light world if enabled
 
     draw_hud()
 
-    if ply:getHealth() <= 0 then deathscreen.draw() end -- draw death screen
+    -- skill tree (if opened)
+    if skillTreeIsOpen then
+        tree.draw()
+        love.graphics.setLineWidth(1)
+    end
+
+    if ply:getHealth() <= 0 then
+        deathscreen.draw() -- draw death screen
+    elseif pause then
+        local pause_button_x, pause_button_y = basicCamera(96, 88, function()
+            button_resume:draw()
+            button_menu:draw()
+        end)
+
+        SetTranslation(pause_button_x, pause_button_y)
+    end
 
     -- draw cursor
     love.graphics.setColor(1, 1, 1)
@@ -576,6 +603,7 @@ function game:leave()
     lightWorld = nil
     world = nil
     spawns = {}
+    teleporters = {}
 end
 
 function game:quit()
@@ -592,9 +620,10 @@ function beginContact(a, b, coll)
         if a:getUserData()[1] == "Bullet" or a:isSensor() then return end
 
         local wep = b:getUserData().weapon
+        local bx, by = b:getBody():getPosition()
 
         if a:getUserData()[1] == "Player" then
-            bulletDamage(wep, a:getUserData().id, b:getBody():getAngle(), b:getUserData().owner_id)
+            bulletDamage(wep, a:getUserData().id, b:getBody():getAngle(), b:getUserData().owner_id, bx, by)
         end
 
         removeBullet(b:getBody(), wep.bullet.type)

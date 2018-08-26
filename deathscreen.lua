@@ -11,7 +11,6 @@ function deathscreen.update(dt)
     alpha = math.min(alpha + dt / duration, 1)
 
     if alpha == 1 and love.mouse.isDown(1) then
-        ply:save()
         gamestate.switch(menu)
     end
 end
@@ -33,5 +32,4 @@ function deathscreen.draw()
 
     love.graphics.setFont(hudFont)
     love.graphics.print(text, x, y)
-
 end

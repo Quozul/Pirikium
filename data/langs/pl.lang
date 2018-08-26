@@ -32,6 +32,9 @@ update=update
 mods=mods
 progress=progress
 loading=loading...
+movements=movements
+other=other
+fullscreen=fullscreen
 
 # updates
 
@@ -52,6 +55,7 @@ skill_tree=drzewo umiejetnosci
 sprint=sprint
 sneak=sneak
 dash=dash
+burst=burst mode
 
 # messages
 
@@ -85,7 +89,6 @@ stamina=energia
 strength=sila
 accuracy=celnosc
 recoil=odrzut
-use=uzycie
 health=zdrowie
 regen=regeneration
 
@@ -103,3 +106,8 @@ soldier=soldier
 en=english
 fr=french
 pl=polish
+
+# maps
+
+brick_arena=brick playground
+brick_arena_2=brick battleground

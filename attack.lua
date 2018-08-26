@@ -1,6 +1,12 @@
 bullets = {}
 local maxSpeed = love.physics.getMeter() * 8
 
+local function bloodParticles(amount, x, y, a)
+    for i=1, math.random( amount/4, amount ) do
+        particles.emit(x, y, {min = a - .75, max = a + .75}, 100, 1.1, 8, 12, 8, {r = .75, g = 0, b = 0}, true)
+    end
+end
+
 local function damageAmount(weapon, dist) -- this function decide the damage the weapon will deal
     local d = rf(weapon.damage.min, weapon.damage.max, 1)
     if dist ~= nil then
@@ -28,11 +34,11 @@ function attack(attacker, attacker_id)
     local wep = attacker:getWeapon()
 
     if wep.firetype == "auto" and wep.type == "firearm" and attacker.enable_burst and attacker.burst < wep.bullet.burst then
-        attacker.cooldown.attack = wep.cooldown / 4
+        attacker.cooldown.attack = math.max(wep.cooldown / 4, 0.05) -- limit to 50 bullet on burst mode
         attacker.burst = attacker.burst + 1
     else
         attacker.cooldown.attack = (attacker.enable_burst and wep.firetype == "auto" and wep.type == "firearm" and wep.cooldown * 1.5) or wep.cooldown
-        attacker.burst = 0
+        attacker.burst = 1
     end
     
     local ax, ay = attacker.bod:getPosition()
@@ -42,8 +48,8 @@ function attack(attacker, attacker_id)
 
     -- melee attack
     if wep.type == "melee" then
-        sounds.missed:stop()
-        sounds.missed:play()
+        sounds.sword_swing:stop()
+        sounds.sword_swing:play()
 
         for id, victim in pairs(entities.entities) do
             if victim:getHealth() > 0 and id ~= attacker_id then -- check if the players is not dead and if it's not the same
@@ -61,8 +67,9 @@ function attack(attacker, attacker_id)
                     victim.bod:applyLinearImpulse(math.cos(angleTo) * wep.knockback.victim * 10, math.sin(angleTo) * wep.knockback.victim * 10)
 
                     victim.lastAttacker = attacker_id
+                    bloodParticles(damage * 2, vx, vy, angleTo)
 
-                    sounds.hit:play()
+                    sounds.sword_hit:play()
                 end
             end
         end
@@ -95,6 +102,12 @@ function attack(attacker, attacker_id)
                 math.sin(aa + (spready)) * speed
             )
 
+            for i=2, math.random( 2, 5 ) do
+                -- shoot particles
+                particles.emit(ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - .3, max = aa + .3}, 20, 1, 7, 2, 5, {r = 1, g = .5, b = .15}, true) -- orange
+                particles.emit(ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - .3, max = aa + .3}, 20, 1, 15, 2, 6, {r = .75, g = .75, b = .75, a = .25}) -- white
+            end
+
             b.age = wep.bullet.life
 
             table.insert(bullets, b)
@@ -106,17 +119,21 @@ function attack(attacker, attacker_id)
     return true
 end
 
-function bulletDamage(weapon, victim_id, angle, owner_id)
+function bulletDamage(weapon, victim_id, angle, owner_id, bx, by)
     local victim = entities.entities[victim_id]
-    
     if victim == nil then return end
 
-    print("Bullet touched an ennemy")
     if victim:getHealth() > 0 and owner_id ~= victim_id then
+        print("Bullet touched an ennemy")
+        local vx, vy = victim.bod:getPosition()
+        local angleToVictim = math.atan2(vy - by, vx - bx)
+        
         local damage, wasCritic = damageAmount(weapon, dist)
 
         victim:addHealth(math.min(-damage, 0))
         victim.bod:applyLinearImpulse(math.cos(angle) * weapon.knockback.victim * 10, math.sin(angle) * weapon.knockback.victim * 10)
+
+        bloodParticles(damage * 2, vx, vy, angleToVictim)
         
         print("Attacker dealt " .. damage .. " damage to victim")
 

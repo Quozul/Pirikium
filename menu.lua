@@ -151,8 +151,29 @@ function menu:init()
 
     -- key inputs for controls
     local position = 1
+    settings["movements"] = gspot:text(lang.print("movements"), {unit*32, unit*(position+1), unit*6, unit*1}, settings.group)
+    position = position + 1
+
+    local blacklist = {"fire", "special", "dash", "use", "sprint", "drop", "skill_tree", "sneak", "burst"}
     for control, key in pairs(config.controls) do
-        if control ~= "fire" and control ~= "special" then
+        if not table.find(blacklist, control) then
+            settings[control] = gspot:input(lang.print(control), {unit*35, unit*(position+1), unit*3, unit*1}, settings.group, key)
+            settings[control].keyinput = true
+            settings[control].done = function(this)
+                print("MENU INFO: Control saved")
+                config.controls[control] = this.value
+            end
+            position = position + 1
+        end
+    end
+    position = position + 1
+
+    settings["other"] = gspot:text(lang.print("other"), {unit*32, unit*(position+1), unit*6, unit*1}, settings.group)
+    position = position + 1
+
+    local blacklist = {"fire", "special", "foward", "left", "backward", "right"}
+    for control, key in pairs(config.controls) do
+        if not table.find(blacklist, control) then
             settings[control] = gspot:input(lang.print(control), {unit*35, unit*(position+1), unit*3, unit*1}, settings.group, key)
             settings[control].keyinput = true
             settings[control].done = function(this)
@@ -193,12 +214,15 @@ function menu:init()
 
     local maps = love.filesystem.getDirectoryItems("data/maps")
     selection.maps = {}
+    local position = 1
     for index, name in pairs(maps) do
-        if not string.match(name, ".tmx") then
-            selection.maps[index] = gspot:button(lang.print(string.gsub(name, ".lua", "")), {unit*14, unit * index * 2 + unit, unit*10, unit*2}, selection.group)
+        if string.match(name, ".lua") then
+            local mapName = string.gsub(name, ".lua", "")
+            selection.maps[index] = gspot:button(lang.print(mapName), {unit*14, unit * position * 2 + unit, unit*10, unit*2}, selection.group)
             selection.maps[index].click = function(this)
                 selectedMap = name
             end
+            position = position + 1
         end
     end
 
@@ -353,8 +377,12 @@ function menu:mousereleased(x, y, button)
     gspot:mouserelease(x, y, button)
 end
 
-function menu:textinput(key) gspot:textinput(key) end
+function menu:textinput(key)
+    gspot:textinput(key)
+end
 
-function menu:wheelmoved(x, y) gspot:mousewheel(x, y) end
+function menu:wheelmoved(x, y)
+    gspot:mousewheel(x, y)
+end
 
 return M
