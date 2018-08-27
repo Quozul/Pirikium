@@ -348,36 +348,6 @@
         "weight": 0.25,
         "cooldown": 2
     },
-    "test": {
-        "type": "firearm",
-        "firetype": "auto",
-        "damage": {
-            "min": 10,
-            "max": 10
-        },
-        "knockback": {
-            "self": 0,
-            "victim": 0
-        },
-        "critic": {
-            "chance": 0,
-            "mult": {
-                "min": 0,
-                "max": 0
-            }
-        },
-        "spread": 0,
-        "bullet": {
-            "speed": 5,
-            "radius": 3,
-            "amount": 1,
-            "life": 1,
-            "type": "explosive",
-            "explode_radius": 96
-        },
-        "weight": 0.25,
-        "cooldown": 0.1
-    },
     "flamethrower": {
         "type": "melee",
         "firetype": "auto",
