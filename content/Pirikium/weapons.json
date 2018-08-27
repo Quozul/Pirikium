@@ -313,7 +313,8 @@
             "radius": 4,
             "amount": 1,
             "life": 1,
-            "type": "explosive"
+            "type": "explosive",
+            "explode_radius": 96
         },
         "weight": 0.2,
         "cooldown": 1.75
@@ -341,16 +342,64 @@
             "radius": 3,
             "amount": 1,
             "life": 1,
-            "type": "explosive"
+            "type": "explosive",
+            "explode_radius": 128
         },
         "weight": 0.25,
         "cooldown": 2
     },
-    "flamethrower": {
+    "test": {
         "type": "firearm",
-        "_comment": "This weapon is experimental and doesn't work currently",
+        "firetype": "auto",
+        "damage": {
+            "min": 10,
+            "max": 10
+        },
+        "knockback": {
+            "self": 0,
+            "victim": 0
+        },
+        "critic": {
+            "chance": 0,
+            "mult": {
+                "min": 0,
+                "max": 0
+            }
+        },
+        "spread": 0,
         "bullet": {
-            "type": "fire"
-        }
+            "speed": 5,
+            "radius": 3,
+            "amount": 1,
+            "life": 1,
+            "type": "explosive",
+            "explode_radius": 96
+        },
+        "weight": 0.25,
+        "cooldown": 0.1
+    },
+    "flamethrower": {
+        "type": "melee",
+        "firetype": "auto",
+        "fire": true,
+        "damage": {
+            "min": 0,
+            "max": 1
+        },
+        "knockback": {
+            "self": 0,
+            "victim": 0
+        },
+        "critic": {
+            "chance": 1,
+            "mult": {
+                "min": 1,
+                "max": 2
+            }
+        },
+        "range": 150,
+        "radius": 0.1,
+        "weight": 0.25,
+        "cooldown": 0.01
     }
 }

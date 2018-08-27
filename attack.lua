@@ -1,9 +1,10 @@
 bullets = {}
 local maxSpeed = love.physics.getMeter() * 8
 
-local function bloodParticles(amount, x, y, a)
+local function bloodParticles(amount, x, y, a, v)
+    if not v then v = 100 end
     for i=1, math.random( amount/4, amount ) do
-        particles.emit(x, y, {min = a - .75, max = a + .75}, 100, 1.1, 8, 12, 8, {r = .75, g = 0, b = 0}, true)
+        particles.emit(x, y, {min = a - .75, max = a + .75}, 100 * v, 1.1, 8, 12, 8, {r = .75, g = 0, b = 0}, true)
     end
 end
 
@@ -48,8 +49,17 @@ function attack(attacker, attacker_id)
 
     -- melee attack
     if wep.type == "melee" then
-        sounds.sword_swing:stop()
-        sounds.sword_swing:play()
+        if wep.fire then
+            -- particles.emit(x, y, r, speed, damping, size, life, vertices, color, fade_out)
+            particles.emit(ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - rf(0, .2, 2), max = aa + rf(0, .2, 2)}, 50, 1, 5, 2, 3, {r = .85, g = .15, b = 0}) -- red
+            particles.emit(ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - rf(0, .1, 2), max = aa + rf(0, .1, 2)}, 100, 1, 5, 2, 3, {r = 1, g = .75, b = 0}, true) -- yellow
+            particles.emit(ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - rf(0, .1, 2), max = aa + rf(0, .1, 2)}, 100, 1, 10, 2, 5, {r = 1, g = .5, b = .15}) -- orange
+            particles.emit(ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - rf(0, .3, 2), max = aa + rf(0, .3, 2)}, 25, 1, 12, 1, 7, {r = .25, g = .25, b = .25, a = .75}, true) -- black
+            sounds.flame:play()
+        else
+            sounds.sword_swing:stop()
+            sounds.sword_swing:play()
+        end
 
         for id, victim in pairs(entities.entities) do
             if victim:getHealth() > 0 and id ~= attacker_id then -- check if the players is not dead and if it's not the same
@@ -85,7 +95,6 @@ function attack(attacker, attacker_id)
             b.bod = love.physics.newBody(world, ax + math.cos(aa) * 20, ay + math.sin(aa) * 20, "dynamic")
             b.bod:setBullet(true)
             b.bod:setAngle(aa)
-            b.bod:setLinearDamping(1)
 
             local radius = wep.bullet.radius
             b.shape = love.physics.newCircleShape(radius)
@@ -143,12 +152,37 @@ function bulletDamage(weapon, victim_id, angle, owner_id, bx, by)
     end
 end
 
-function removeBullet(body, type)
+function removeBullet(body, wep, owner_id)
     local x, y = body:getPosition()
+    local type = wep.bullet.type
 
     if type == "explosive" then
-        particles.add(10, x, y, {1, 0, 0}, 6)
+        local explode_radius = wep.bullet.explode_radius
+
+        for i=1, math.random( 25, 35 ) do
+            -- explosive particles
+            particles.emit(x, y, {min = 0, max = 2 * math.pi}, 100, 1, 7, 1.5, 3, {r = .85, g = .15, b = 0}) -- red
+            particles.emit(x, y, {min = 0, max = 2 * math.pi}, 100, 1, 7, 1.5, 5, {r = 1, g = .5, b = .15}) -- orange
+            particles.emit(x, y, {min = 0, max = 2 * math.pi}, math.random( 45, 55 ), 1, 20, 3, 7, {r = .75, g = .75, b = .75, a = .25}, true) -- white
+            particles.emit(x, y, {min = 0, max = 2 * math.pi}, math.random( 55, 65 ), 1, 20, 3, 7, {r = .75, g = .75, b = .75, a = .25}, true) -- white
+            particles.emit(x, y, {min = 0, max = 2 * math.pi}, math.random( 65, 75 ), 1, 15, 3, 5, {r = .25, g = .25, b = .25, a = .75}) -- black
+        end
+
+        sounds.explosion:stop()
         sounds.explosion:play()
+
+        for id, ent in pairs(entities.entities) do
+            local ex, ey = ent.bod:getPosition()
+            local dist = sl(ex, ey, x, y)
+            if dist <= explode_radius then
+                local damage, wasCritic = damageAmount(wep)
+                ent:addHealth(math.min(-damage, 0))
+                local angle = math.atan2(ey - y, ex - x)
+                ent.bod:applyLinearImpulse(math.cos(angle) * wep.knockback.victim * 10, math.sin(angle) * wep.knockback.victim * 10)
+                bloodParticles(damage * 4, ex, ey, angle, wep.knockback.victim * 10)
+                ent.lastAttacker = owner_id
+            end
+        end
     else
         sounds.hit:play()
     end

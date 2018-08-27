@@ -130,12 +130,17 @@ function menu:init()
         this.value = not this.value
         config.shader = this.value
     end
-    settings.dev_updates = gspot:checkbox(lang.print("dev version"), {unit, unit*4}, settings.group, config.dev_version)
+    settings.particles = gspot:checkbox(lang.print("enable particles"), {unit, unit*4}, settings.group, config.particles)
+    settings.particles.click = function(this)
+        this.value = not this.value
+        config.particles = this.value
+    end
+    settings.dev_updates = gspot:checkbox(lang.print("dev version"), {unit, unit*6}, settings.group, config.dev_version)
     settings.dev_updates.click = function(this)
         this.value = not this.value
         config.dev_version = this.value
     end
-    settings.fullscreen = gspot:checkbox(lang.print("fullscreen"), {unit, unit*6}, settings.group, config.fullscreen)
+    settings.fullscreen = gspot:checkbox(lang.print("fullscreen"), {unit, unit*8}, settings.group, config.fullscreen)
     settings.fullscreen.click = function(this)
         this.value = not this.value
         config.fullscreen = this.value
@@ -143,7 +148,7 @@ function menu:init()
         window_width, window_height = love.window.getMode()
     end
 
-    settings.reset = gspot:button(lang.print("reset"), {unit, unit*8, unit*8, unit*2}, settings.group)
+    settings.reset = gspot:button(lang.print("reset"), {unit, unit*10, unit*8, unit*2}, settings.group)
     settings.reset.click = function()
         print("MENU INFO: Resetting config")
         createConfig()
@@ -171,7 +176,7 @@ function menu:init()
     settings["other"] = gspot:text(lang.print("other"), {unit*32, unit*(position+1), unit*6, unit*1}, settings.group)
     position = position + 1
 
-    local blacklist = {"fire", "special", "foward", "left", "backward", "right"}
+    local blacklist = {"fire", "special", "forward", "left", "backward", "right"}
     for control, key in pairs(config.controls) do
         if not table.find(blacklist, control) then
             settings[control] = gspot:input(lang.print(control), {unit*35, unit*(position+1), unit*3, unit*1}, settings.group, key)

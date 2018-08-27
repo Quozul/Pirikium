@@ -66,6 +66,8 @@ exp=expérience: %g
 skill level=niveau actuel: %g
 skill cost=coût du prochain niveau: %g
 death=Quel dommage!
+inventory full=Ton inventaire est plein
+too far=Tu es trop loin
 
 # items
 

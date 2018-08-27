@@ -16,6 +16,7 @@ function game:enter()
     loading.draw()
     love.graphics.present()
 
+    particles.enable(config.particles)
     love.mouse.setVisible(false)
     if not config.debug then love.mouse.setGrabbed(true) end
 
@@ -52,6 +53,7 @@ function game:enter()
     print("World created")
 
     window_width, window_height = love.window.getMode()
+    particles.window(window_width, window_height)
     scalex, scaley = window_height / 480, window_width / 853
     
     lightWorld = LightWorld:new()
@@ -79,10 +81,10 @@ function game:enter()
             if t ~= nil and t.id ~= 0 then
                 if t.id == 2 then -- friendly spawn
                     table.insert(spawns, {y, x})
-                elseif t.id == 3 then -- teleporter
+                --[[elseif t.id == 3 then -- teleporter
                     table.insert(teleporters, {y, x})
                     lights[id] = Light:new(lightWorld, 300)
-                    lights[id]:SetColor(155, 0, 155)
+                    lights[id]:SetColor(155, 0, 155)]]
                 --elseif t.id == 4 then print("One way")
                 --elseif t.id == 5 then print("Hinge")
                 elseif t.id == 6 then -- door
@@ -127,7 +129,7 @@ function game:enter()
     lights.player:SetColor(155, 155, 155)
     print("GAME INFO: Added player light")
 
-    function addEnnemy()
+    function addEnemy()
         local x, y = unpack( spawns[math.random(1, #spawns)] )
         local dist = sl(x, y, px / 64, py / 64)
         if dist <= 10.5 then return end -- prevent the enemies from spawning to close
@@ -144,7 +146,7 @@ function game:enter()
 
     maxAIs = 2 -- maximum amount of ai at start
     function entities:update(dt)
-        if table.length(entities.entities) <= maxAIs and warmup == 0 then addEnnemy() end
+        if table.length(entities.entities) <= maxAIs and warmup <= 0 then addEnemy() end
 
         -- update entities
         for id, ent in pairs(self.entities) do
@@ -189,7 +191,7 @@ function game:enter()
         end
 
         -- update teleporters
-        for id, pos in pairs(teleporters) do
+        --[[for id, pos in pairs(teleporters) do
             local x, y = (pos[1] - 1) * 64, (pos[2] - 1) * 64
             local x, y = math.random(x, x + 64), math.random(y, y + 64)
             particles.emit(x, y, {min = 0, max = 2 * math.pi}, 2, 1, 7, 1, 3, {r = 1, g = 0, b = 1}, true)
@@ -206,7 +208,7 @@ function game:enter()
                     ent.bod:setPosition((x + 32) + math.cos(ea) * 48, (y + 32) + math.sin(ea) * 48)
                 end
             end
-        end
+        end]]
 
         -- update bullets
         for id, bullet in pairs(bullets) do
@@ -245,22 +247,21 @@ function game:enter()
         end
 
         -- draw teleporters
-        for id, pos in pairs(teleporters) do
+        --[[for id, pos in pairs(teleporters) do
             love.graphics.setColor(.25, 0, .25)
             love.graphics.rectangle("fill", (pos[1] - 1) * 64 + 8, (pos[2] - 1) * 64 + 8, 48, 48, 5)
             love.graphics.setColor(0, 0, 0)
             love.graphics.setLineWidth(4)
             love.graphics.rectangle("line", (pos[1] - 1) * 64 + 8, (pos[2] - 1) * 64 + 8, 48, 48, 5)
             love.graphics.setLineWidth(1)
-        end
+        end]]
 
         doors.draw(self)
         chest.draw(self)
         orb.draw(self)
 
-        -- draw items
+        -- draw items & particles
         items.draw()
-        -- draw particles
         particles.draw()
 
         -- draw entities
@@ -328,6 +329,7 @@ function game:resize(w, h)
     print("GAME INFO: Window got resized")
 	map:resize(w, h)
     lightWorld:Resize(w, h)
+    particles.window(w, h)
     scalex = h / 480
     scalex = w / 853
 end
@@ -340,7 +342,8 @@ function game:keypressed(key, scancode, isrepeat)
         end
     elseif key == config.controls.use and not pause then
         local x, y = cam:worldCoords(mx, my)
-        items.interact(ply, x, y, px, py)
+        local error = items.interact(ply, x, y, px, py)
+        if error then set_notif({error}) end
 
         chest.interact(x, y)
         doors.interact(x, y)
@@ -468,13 +471,20 @@ function game:update(dt)
         player_animation.currentTime = player_animation.currentTime - player_animation.duration
     end
 
-    if not pause then warmup = math.max(warmup - dt, 0) end
+    if not pause and warmup ~= -1 then
+        warmup = math.max(warmup - dt, 0)
+        set_notif({"warmup", { string.format("%.1f", tostring(round(warmup, 1))) }}, false)
+        if warmup == 0 then
+            set_notif({"warmup", { string.format("%.1f", tostring(round(warmup, 1))) }})
+            warmup = -1
+        end
+    end
 
     ply = entities.entities[playerUUID]
     px, py = ply.bod:getPosition()
     pcx, pcy = cam:cameraCoords(px, py)
 
-    maxAIs = 2 + removeDecimal(ply.kills / 5)
+    maxAIs = math.max(removeDecimal(ply.kills / 5), 2)
 
     if ply.inventory == nil or ply.inventory == {} or #ply.inventory == 0 then
         error("Inventory is empty!")
@@ -493,6 +503,7 @@ function game:update(dt)
     particles.update(dt)
     timer.update(dt)
     world:update(dt)
+    update_hud(dt)
 
     local pa = math.atan2(cmy - py, cmx - px) -- angle of the player
     ply.bod:setAngle( pa )
@@ -501,6 +512,7 @@ function game:update(dt)
     cam:zoomTo(scalex)
 
     tx, ty = -(cx / cam.scale), -(cy / cam.scale)
+    particles.translation(tx, ty)
 
     if config.shader then
         lights.player:SetPosition((-cx + pcx) / cam.scale, (-cy + pcy) / cam.scale, 1)
@@ -513,7 +525,10 @@ function game:update(dt)
         -- remove bullets using age
         if not bullet.bod:isDestroyed() then
             bullet.age = math.max(bullet.age - dt, 0)
-            if bullet.age == 0 then  removeBullet(bullet.bod, bullet.fixture:getUserData().weapon.bullet.type) end
+            if bullet.age == 0 then
+                local userData = bullet.fixture:getUserData()
+                removeBullet(bullet.bod, userData.weapon, userData.owner_id)
+            end
         end
     end
 
@@ -604,6 +619,8 @@ function game:leave()
     world = nil
     spawns = {}
     teleporters = {}
+
+    particles.clear()
 end
 
 function game:quit()
@@ -622,11 +639,11 @@ function beginContact(a, b, coll)
         local wep = b:getUserData().weapon
         local bx, by = b:getBody():getPosition()
 
-        if a:getUserData()[1] == "Player" then
+        if a:getUserData()[1] == "Player" and wep.bullet.type ~= "explosive" then
             bulletDamage(wep, a:getUserData().id, b:getBody():getAngle(), b:getUserData().owner_id, bx, by)
         end
 
-        removeBullet(b:getBody(), wep.bullet.type)
+        removeBullet(b:getBody(), wep, b:getUserData().owner_id)
     end
 end
 

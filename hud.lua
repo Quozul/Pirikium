@@ -1,4 +1,21 @@
 local lg = love.graphics
+local hud_notif = ""
+local hud_notif_fade_out = true
+local hud_notif_alpha = 2
+
+function set_notif(str, fade_out)
+    if str == nil then error("Notification can't be nil") end
+    hud_notif = str
+
+    hud_notif_fade_out = fade_out or true
+    if hud_notif_fade_out then hud_notif_alpha = 2 end
+end
+
+function update_hud(dt)
+    if hud_notif_fade_out then
+        hud_notif_alpha = math.max(hud_notif_alpha - dt, 0)
+    end
+end
 
 function draw_hud()
     lg.setFont(hudFont)
@@ -116,14 +133,12 @@ function draw_hud()
     lg.draw(images.level, 64, 64)
     lg.print(round(ply:getLevel(), 1), 96, 68)
 
-    -- warmup message
-    if warmup ~= 0 then
-        text = lang.print( "warmup", {
-            string.format("%.1f", tostring(round(warmup, 1)))
-        })
+    -- notification message
+    if hud_notif ~= "" then
+        text = lang.print(unpack(hud_notif))
 
         lg.setFont(menuFont)
-        lg.setColor(1, 1, 1, warmup / 5)
+        lg.setColor(1, 1, 1, hud_notif_alpha)
         lg.print(text, window_width / 2 - round(menuFont:getWidth(text) / 2, 0), window_height / 2 + window_height / 4, 0)
     end
 end
