@@ -29,9 +29,12 @@ function I.interact(ent, x, y, px, py)
         local dist = sl(px, py, item.x, item.y)
         if inSquare(x, y, item.x, item.y, itemHitBox, itemHitBox) and dist <= pickupDist then
             local remove = ent:addItem(item.item)
-            if remove then table.remove(items, index) end
+            if remove then table.remove(items, index)
+                return false
+            else return "inventory full" end
         elseif dist > pickupDist then
             print("You're too far away")
+            return "too far"
         end
     end
 end

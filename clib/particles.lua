@@ -1,8 +1,17 @@
 local P = {}
 local PARTS = {}
-function rf(min, max, decimals) return math.random(min * 10^decimals, max * 10^decimals) / 10^decimals end
+local ENABLED = true
+local WW, WH = 800, 600
+local TX, TY = 0, 0
+
+function P.enable(value) ENABLED = value end
+
+function P.window(w, h) WW, WH = w, h end
+function P.translation(x, y) TX, TY = x, y end
 
 function P.emit(x, y, r, speed, damping, size, life, vertices, color, fade_out)
+    if not ENABLED then return end
+    
     local part = {}
 
     part.r = rf(r.min, r.max, 2)
@@ -16,9 +25,9 @@ function P.emit(x, y, r, speed, damping, size, life, vertices, color, fade_out)
     part.max_life, part.life = life, life
 
     part.color = {
-        r = rf(color.r - .1, color.r + .1, 2),
-        g = rf(color.g - .1, color.g + .1, 2),
-        b = rf(color.b - .1, color.b + .1, 2)
+        r = rf(color.r - .05, color.r + .05, 2),
+        g = rf(color.g - .05, color.g + .05, 2),
+        b = rf(color.b - .05, color.b + .05, 2)
     }
 
     if color.a then part.color.a = rf(color.a - .1, color.a + .1, 2)
@@ -36,6 +45,8 @@ function P.emit(x, y, r, speed, damping, size, life, vertices, color, fade_out)
 end
 
 function P.update(dt)
+    if not ENABLED then return end
+
     for index, part in pairs(PARTS) do
         part.x, part.y = part.x + part.x_speed * dt, part.y + part.y_speed * dt
         part.x_speed, part.y_speed = part.x_speed / part.damping, part.y_speed / part.damping
@@ -48,18 +59,26 @@ function P.update(dt)
 end
 
 function P.draw()
+    if not ENABLED then return end
+
     for index, part in pairs(PARTS) do
-        love.graphics.push()
+        if inSquare(part.x, part.y, TX, TY, WW, WH) then
+            love.graphics.push()
 
-        love.graphics.translate(part.x, part.y)
-        love.graphics.rotate(part.r)
-        love.graphics.translate(-part.size / 2, -part.size / 2)
-        love.graphics.scale(math.min(part.life, 1))
+            love.graphics.translate(part.x, part.y)
+            love.graphics.rotate(part.r)
+            love.graphics.translate(-part.size / 2, -part.size / 2)
+            love.graphics.scale(math.min(part.life, 1))
 
-        love.graphics.setColor(part.color.r, part.color.g, part.color.b, part.color.a)
-        love.graphics.polygon("fill", unpack(part.shape))
-        love.graphics.pop()
+            love.graphics.setColor(part.color.r, part.color.g, part.color.b, part.color.a)
+            love.graphics.polygon("fill", unpack(part.shape))
+            love.graphics.pop()
+        end
     end
+end
+
+function P.clear()
+    PARTS = {}
 end
 
 return P

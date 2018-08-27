@@ -93,18 +93,19 @@ local default_config = {
     fullscreen = false, -- toggle fullscreen mode
     content = {
         Pirikium = "folder", -- load the default content
-    }
+    },
+    particles = true, -- toggle particles
 }
 
 function createConfig()
     config = default_config
 
     love.filesystem.write(configFile, json:encode_pretty( config )) -- create a config file
-    print("MAIN: Config file not found, creating it")
 end
 
 if not love.filesystem.getInfo( configFile ) then
     createConfig()
+    print("MAIN: Config file not found, creating it")
 else
     config = json:decode( love.filesystem.read( configFile ) ) -- loads the existing config file
     local integrity = verifyTable(default_config, config)
@@ -221,7 +222,8 @@ function love.load()
     loader.newImage(images.player, "walk", "data/player/bald/walking.png")
 
     -- game sounds
-    loader.newSource( sounds, "explosion", "data/sounds/explosion.mp3", "static")
+    loader.newSource( sounds, "explosion", "data/sounds/qubodup_explosion.mp3", "static")
+    loader.newSource( sounds, "flame", "data/sounds/fire.mp3", "static")
     loader.newSource( sounds, "hit", "data/sounds/hit_ennemy.mp3", "static")
     loader.newSource( sounds, "exp", "data/sounds/pickup_exp.mp3", "static")
     loader.newSource( sounds, "pickup", "data/sounds/pickup.mp3", "static")

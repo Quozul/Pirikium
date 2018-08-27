@@ -1,14 +1,6 @@
 {
     "chest": [
-        "sword",
-        "gun",
-        "shotgun",
-        "sniper",
-        "bow",
-        "assault_riffle",
-        "smg",
-        "dagger",
-        "crossbow"
+        "test"
     ],
     "black_list": [
         "fists"
