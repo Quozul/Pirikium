@@ -65,7 +65,7 @@ function newPlayer(x, y, id, class, level) -- creates a new player
 
         print("PLAYER INFO: High score for this player is " .. l.highScore)
     else
-        p.name = namegen.generate("human male")
+        p.name = ""
     end
 
     print("PLAYER INFO: Skill values:")

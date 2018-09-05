@@ -111,6 +111,7 @@ function chest.add(x, y)
 end
 
 function chest.update(self, dt)
+    if pause then return end
     for id, chest in pairs(self.chests) do
         if not chest.bod:isActive() then
             local r, g, b, a = chest.light:GetColor()
@@ -148,30 +149,29 @@ end
 function chest.interact(x, y)
     for id, chest in pairs(entities.chests) do
         if chest.bod:isActive() then
-            if love.physics.getDistance(chest.fixture, ply.fixture) <= 250 then
-                local isInside = chest.fixture:testPoint(x, y)
-                if isInside then
-                    local cratex, cratey = chest.bod:getPosition()
-                    local crateAngle = chest.bod:getAngle()
-                    items.drop(cratex, cratey, crateAngle, loots.chest[math.random(1, #loots.chest)])
-                    -- destroy crate
-                    chest.bod:setActive(false)
-                    chest.shadow:Remove()
+            local isInside = chest.fixture:testPoint(x, y)
+            local inRange = love.physics.getDistance(chest.fixture, ply.fixture) <= 250
+            if isInside and inRange then
+                local cratex, cratey = chest.bod:getPosition()
+                local crateAngle = chest.bod:getAngle()
+                items.drop(cratex, cratey, crateAngle, loots.chest[math.random(1, #loots.chest)])
+                -- destroy crate
+                chest.bod:setActive(false)
+                chest.shadow:Remove()
 
-                    sounds.crate:play()
-                    for i=1, math.random( 4, 8 ) do
-                        particles.emit(cratex, cratey, {min = 0, max = 2 * math.pi}, 200, 1.2, 15, 4, 5, {r = .6, g = .6, b = 0, a = .6})
-                    end
+                sounds.crate:play()
+                particles.emit(math.random( 4, 8 ), cratex, cratey, {min = 0, max = 2 * math.pi}, 200, 1.2, 15, 4, 5, {r = .6, g = .6, b = 0, a = .6})
 
-                    timer.after(chest.time, function()
-                        print("GAME INFO: Respawning chest")
-                        chest.bod:setActive(true)
-                        chest.shadow = Body:new(lightWorld):InitFromPhysics(chest.bod)
-                        
-                        chest.light:SetColor(155, 155, 0, 155)
-                    end)
-                    return
-                end
+                timer.after(chest.time, function()
+                    print("GAME INFO: Respawning chest")
+                    chest.bod:setActive(true)
+                    chest.shadow = Body:new(lightWorld):InitFromPhysics(chest.bod)
+                    
+                    chest.light:SetColor(155, 155, 0, 155)
+                end)
+                return
+            elseif not inRange and isInside then
+                set_notif({lang.print("too far")})
             end
         end
     end
@@ -212,27 +212,8 @@ function orb.add(x, y, r, type)
 end
 
 function orb.update(self, dt)
+    if pause then return end
     for id, orb in pairs(self.orbs) do
-        local isInside = orb.fixture:testPoint(cmx, cmy) and sl(cmx, cmy, px, py) <= 64
-        local speed = 1
-        if isInside then
-            if orb.type == "health" then
-                local health, maxHealth = ply:getHealth()
-                if health < maxHealth then
-                    ply:addHealth( rf(3, 6, 1) )
-
-                    orb.shape:setRadius(8)
-                    sounds.orb:play()
-                end
-            elseif orb.type == "skill" then
-                if key(config.controls.use) then
-                    ply:skillBoost(orb.skill, orb.amount)
-                    orb.shape:setRadius(8)
-                    sounds.orb:play()
-                end
-            end
-        end
-
         orb.shape:setRadius( math.max(orb.shape:getRadius() - dt, 8) )
 
         if orb.shape:getRadius() <= 8 then
@@ -266,5 +247,33 @@ function orb.draw(self)
         end
 
         love.graphics.pop()
+    end
+end
+
+function orb.interact(x, y)
+    for id, orb in pairs(entities.orbs) do
+        local inRange = sl(cmx, cmy, px, py) <= 64
+        local isInside = orb.fixture:testPoint(cmx, cmy)
+        if inRange and isInside then
+            if orb.type == "health" then
+                local health, maxHealth = ply:getHealth()
+                if health < maxHealth then
+                    ply:addHealth( rf(3, 6, 1) )
+
+                    orb.shape:setRadius(8)
+                    sounds.orb:play()
+                else
+                    set_notif({lang.print("full health")})
+                end
+            elseif orb.type == "skill" then
+                if key(config.controls.use) then
+                    ply:skillBoost(orb.skill, orb.amount)
+                    orb.shape:setRadius(8)
+                    sounds.orb:play()
+                end
+            end
+        elseif not inRange and isInside then
+            set_notif({lang.print("too far")})
+        end
     end
 end

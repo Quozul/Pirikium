@@ -194,8 +194,8 @@ function game:enter()
         --[[for id, pos in pairs(teleporters) do
             local x, y = (pos[1] - 1) * 64, (pos[2] - 1) * 64
             local x, y = math.random(x, x + 64), math.random(y, y + 64)
-            particles.emit(x, y, {min = 0, max = 2 * math.pi}, 2, 1, 7, 1, 3, {r = 1, g = 0, b = 1}, true)
-            particles.emit(x, y, {min = 0, max = 2 * math.pi}, 2, 1, 7, 1, 3, {r = 1, g = 0, b = .5}, true)
+            particles.emit(1, x, y, {min = 0, max = 2 * math.pi}, 2, 1, 7, 1, 3, {r = 1, g = 0, b = 1}, true)
+            particles.emit(1, x, y, {min = 0, max = 2 * math.pi}, 2, 1, 7, 1, 3, {r = 1, g = 0, b = .5}, true)
 
             local x, y = (pos[1] - 1) * 64, (pos[2] - 1) * 64
             for id, ent in pairs(self.entities) do
@@ -216,7 +216,7 @@ function game:enter()
                 table.remove(bullets, id)
             else
                 local bx, by = bullet.bod:getPosition()
-                particles.emit(bx, by, {min = 0, max = 2 * math.pi}, 5, 1.1, 7, 1, 3, {r = .75, g = .75, b = .75}, true)
+                particles.emit(1, bx, by, {min = 0, max = 2 * math.pi}, 5, 1.1, 7, 1, 3, {r = .75, g = .75, b = .75}, true)
             end
         end
 
@@ -275,7 +275,12 @@ function game:enter()
             love.graphics.translate(x, y)
             if id ~= playerUUID then
                 love.graphics.setColor(1, 1, 1, (255 - sl(cmx, cmy, x, y)) / 255)
-                local tag = ent.name .. " - " .. removeDecimal(ent:getLevel())
+                local tag = ""
+                if ent.name ~= "" then
+                    tag = ent.name .. " - " .. removeDecimal(ent:getLevel())
+                else
+                    tag = lang.print("level", {removeDecimal(ent:getLevel())})
+                end
                 love.graphics.print(tag, -hudFont:getWidth(tag) / 2, -25)
             end
 
@@ -347,6 +352,7 @@ function game:keypressed(key, scancode, isrepeat)
 
         chest.interact(x, y)
         doors.interact(x, y)
+        orb.interact(x, y)
     elseif key == config.controls.drop and not pause then
         ply:drop(ply.selectedSlot)
     elseif key == "escape" then
@@ -354,9 +360,6 @@ function game:keypressed(key, scancode, isrepeat)
             skillTreeIsOpen = false
         else
             pause = not pause
-            if not pause then
-                SetTranslation(0, 0)
-            end
         end
     elseif key == "f3" then
         config.debug = not config.debug
@@ -450,6 +453,9 @@ function controls(dt)
         end
     elseif not love.mouse.isDown(1) then
         attackIsDown = false
+        if sounds.flame:isPlaying() then
+            sounds.flame:stop()
+        end
     end
 end
 
@@ -496,12 +502,14 @@ function game:update(dt)
         error("Weapon cannot be found!")
     end
 
-    if not pause then controls(dt) end
-    items.update(dt)
+    if not pause then
+        controls(dt)
+        particles.update(dt)
+        timer.update(dt)
+        items.update(dt)
+    end
 
     map:update(dt)
-    particles.update(dt)
-    timer.update(dt)
     world:update(dt)
     update_hud(dt)
 
@@ -552,7 +560,10 @@ function game:update(dt)
         skillTreeIsOpen = false -- close skill tree if pause mode is activated
     end
 
-    if skillTreeIsOpen then tree.update(dt) end
+    if skillTreeIsOpen then
+        tree.update(dt)
+        SetTranslation(0, 0)
+    end
     
     if ply:getHealth() <= 0 then
         pause = true
@@ -568,15 +579,10 @@ function game:draw()
     love.graphics.setColor(1, 1, 1)
 
     dotCursor = false -- reset cursor mode
+
     map:draw(-tx, -ty, cam.scale, cam.scale) -- draw map
 
     --cam:draw(function() end) -- unused
-
-    -- draw collision map (debug)
-    if config.debug then
-        love.graphics.setColor(1, 0, 0)
-        map:box2d_draw(-tx, -ty, cam.scale, cam.scale) -- draw debug map if enabled
-    end
 
     if config.shader then lightWorld:Draw() end -- draw light world if enabled
 
@@ -597,6 +603,22 @@ function game:draw()
         end)
 
         SetTranslation(pause_button_x, pause_button_y)
+    end
+
+    if config.debug then
+        love.graphics.setColor(1, 0, 0)
+        -- draw collision map (debug)
+        map:box2d_draw(-tx, -ty, cam.scale, cam.scale) -- draw debug map if enabled
+
+        local stats = love.graphics.getStats()
+
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.setFont(hudFont)
+        local position = 1
+        for index, value in pairs(stats) do
+            love.graphics.print(index .. ": " .. value, 5, position * 12 + 100)
+            position = position + 1
+        end
     end
 
     -- draw cursor
@@ -621,6 +643,7 @@ function game:leave()
     teleporters = {}
 
     particles.clear()
+    love.audio.stop()
 end
 
 function game:quit()

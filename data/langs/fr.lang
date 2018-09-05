@@ -35,6 +35,14 @@ loading=chargement...
 movements=mouvements
 other=autre
 fullscreen=plein écran
+singleplayer=solo
+adress=adresse
+host=héberger une partie
+join=rejoindre une partie
+connecting=connexion à %s:%s...
+cancel=annuler
+failed=echec...
+connected=connecté!
 
 # updates
 
@@ -65,9 +73,10 @@ warmup=les ennemis apparaîssent dans %s secondes
 exp=expérience: %g
 skill level=niveau actuel: %g
 skill cost=coût du prochain niveau: %g
-death=Quel dommage!
-inventory full=Ton inventaire est plein
-too far=Tu es trop loin
+death=quel dommage!
+inventory full=ton inventaire est plein
+too far=tu es trop loin
+full health=tu es en bonne santé
 
 # items
 

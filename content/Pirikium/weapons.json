@@ -297,17 +297,17 @@
             "max": 8
         },
         "knockback": {
-            "self": 15,
-            "victim": 10
+            "self": 8,
+            "victim": 6
         },
         "critic": {
-            "chance": 2,
+            "chance": 3,
             "mult": {
                 "min": 2,
                 "max": 4
             }
         },
-        "spread": 0.02,
+        "spread": 0.03,
         "bullet": {
             "speed": 2,
             "radius": 4,
@@ -326,8 +326,8 @@
             "max": 8
         },
         "knockback": {
-            "self": 15,
-            "victim": 10
+            "self": 10,
+            "victim": 8
         },
         "critic": {
             "chance": 2,
@@ -338,7 +338,7 @@
         },
         "spread": 0.02,
         "bullet": {
-            "speed": 5,
+            "speed": 3.5,
             "radius": 3,
             "amount": 1,
             "life": 1,
@@ -368,7 +368,7 @@
             }
         },
         "range": 150,
-        "radius": 0.1,
+        "radius": 0.2,
         "weight": 0.25,
         "cooldown": 0.01
     }

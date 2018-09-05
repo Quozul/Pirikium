@@ -57,10 +57,10 @@ function ai.update(ent, target, ent_id) -- => attacker, victim
 
     if ent:getWeapon().type == "melee" then
         inAttackRange = distToTarget + ent:getWeapon().range / 10 < ent:getWeapon().range
-        inAttackRadius = between(angleToVictim, currentAngle - ent:getWeapon().radius, currentAngle + ent:getWeapon().radius)
+        inAttackRadius = isBetween(angleToVictim, currentAngle - ent:getWeapon().radius, currentAngle + ent:getWeapon().radius)
     else
         inAttackRange = distToTarget < 250 -- 250 should be replaced using the spread to get the accuracy
-        inAttackRadius = between(angleToVictim, currentAngle - ent:getWeapon().spread, currentAngle + ent:getWeapon().spread)
+        inAttackRadius = isBetween(angleToVictim, currentAngle - ent:getWeapon().spread, currentAngle + ent:getWeapon().spread)
     end
 
     if path:getLength() > 10 then

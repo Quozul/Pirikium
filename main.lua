@@ -4,6 +4,8 @@ loading = require "loading_screen"
 
 window_width, window_height = love.window.getMode()
 
+math.randomseed(os.time())
+
 love.graphics.clear()
 love.graphics.setBackgroundColor(29 / 255, 29 / 255, 29 / 255)
 
@@ -13,19 +15,20 @@ love.graphics.present()
 
 require "errorhandler"
 
+pathfinder = require "modules/jumper.pathfinder"
 gamestate = require "modules/hump.gamestate"
 loader = require "modules/love-loader"
 camera = require "modules/hump.camera"
 timer = require "modules/hump.timer"
+grid = require "modules/jumper.grid"
 bitser = require "modules/bitser"
 gspot = require "modules/gspot"
 uuid = require "modules/uuid"
 json = require "modules/json"
+sock = require "modules/sock"
 ser = require "modules/ser"
-namegen = require "namegen.namegen"
 sti = require "modules/sti"
-grid = require "modules/jumper.grid"
-pathfinder = require "modules/jumper.pathfinder"
+--namegen = require "namegen.namegen"
 
 Shadows = require("shadows")
 LightWorld = require("shadows.LightWorld")
@@ -41,6 +44,7 @@ particles = require "clib/particles"
 items = require "items"
 require "menu"
 require "game"
+require "multiplayer"
 require "entities"
 require "hud"
 require "attack"
@@ -49,9 +53,11 @@ ai = require "ai"
 lang = require "clib/lang"
 require "clib/transition"
 require "deathscreen"
-local update_checking_code = love.filesystem.read("update_check.lua")
-update_checking_thread = love.thread.newThread(update_checking_code)
+
+update_checking_thread = love.thread.newThread( love.filesystem.read("update_check.lua") )
 update_channel = love.thread.newChannel()
+
+server = love.thread.newThread(love.filesystem.read("server.lua"))
 
 lang.decrypt("data/langs/en.lang")
 
@@ -59,8 +65,6 @@ images = {}
 images.weapons = {}
 images.weapons.side = {}
 images.weapons.hold = {}
-
-math.randomseed( os.time() )
 
 -- create config
 local configFile = "config.json"
@@ -95,6 +99,9 @@ local default_config = {
         Pirikium = "folder", -- load the default content
     },
     particles = true, -- toggle particles
+    multiplayer = {
+        adress = "localhost:22122",
+    },
 }
 
 function createConfig()
@@ -250,6 +257,8 @@ function love.load()
         music_on = love.graphics.newQuad( 0, 0, 24, 24, images.music:getDimensions() )
         music_off = love.graphics.newQuad( 24, 0, 24, 24, images.music:getDimensions() )
 
+        sounds.flame:setLooping(true)
+
         SetSounds(sounds.hover, sounds.click) -- set the sounds for the buttons
 
         print("MAIN: Game loaded in " .. round(loadTime, 1) .. " seconds")
@@ -270,11 +279,10 @@ function love.quit()
 end
 
 function love.update(dt)
-    loading.update(dt)
-
     if not finishedLoading then
         loadTime = loadTime + dt
         loader.update()
+        loading.update(dt)
     end
 end
 
