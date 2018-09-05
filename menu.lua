@@ -1,4 +1,5 @@
 menu = {}
+connecting = {}
 
 local buttons = {
     none = {},
@@ -12,6 +13,17 @@ selection = {}
 load = {}
 new = {}
 local unit = gspot.style.unit
+
+local function getAdress(adress)
+    if adress == "" or not adress then
+        return "localhost", 22122
+    elseif not adress:match(":") then
+        return adress, 22122
+    end
+
+    local adress = adress:split(":")
+    return adress[1], adress[2]
+end
 
 local function updatePlayerList()
     if not love.filesystem.getInfo("saves") then error("Save directory not found! Try restarting the game.") end
@@ -28,12 +40,7 @@ local function updatePlayerList()
 
             load[index].player = gspot:button(index .. ". " .. name, {unit, unit * index * 2 + unit, unit*8, unit*2}, selection.group)
             load[index].player.click = function(this)
-                if not selectedMap then
-                    gspot:feedback("Please select a map")
-                    return
-                end
                 playerUUID = name
-                gamestate.switch(game)
             end
             load[index].rem = gspot:button("-", {unit*9, unit * index * 2 + unit, unit*2, unit*2}, selection.group)
             load[index].rem.tip = lang.print("remove", {name})
@@ -231,6 +238,41 @@ function menu:init()
         end
     end
 
+    selection.solo = gspot:button(lang.print("singleplayer"), {unit*26, unit*3, unit*10, unit*2}, selection.group)
+    selection.solo.click = function(this)
+        if not selectedMap or not playerUUID then
+            gspot:feedback("Please select a map and a player")
+            return
+        end
+
+        gamestate.switch(game)
+    end
+
+    selection.adress = gspot:input(lang.print("adress"), {unit*30, unit*7, unit*6, unit*2}, selection.group, config.multiplayer.adress)
+    selection.adress.done = function(this)
+        config.multiplayer.adress = this.value
+        print(this.value)
+    end
+
+    selection.host = gspot:button(lang.print("host"), {unit*26, unit*9, unit*10, unit*2}, selection.group)
+    selection.host.click = function(this)
+        local adress, port = getAdress(config.multiplayer.adress)
+        gspot:feedback(("Server openned on port %d"):format(port))
+
+        server:start(adress, port)
+    end
+
+    selection.multi = gspot:button(lang.print("join"), {unit*26, unit*11, unit*10, unit*2}, selection.group)
+    selection.multi.click = function(this)
+        local adress, port = getAdress(config.multiplayer.adress)
+        gspot:feedback(("Connecting to server with IP %s:%d"):format(adress, port))
+
+        client = sock.newClient(adress, port)
+        client:connect()
+        
+        gamestate.switch(connecting)
+    end
+
     selection.group:hide()
 
     -- character creation group
@@ -282,6 +324,8 @@ function menu:enter()
     print("MENU INFO: Entered menu")
     selectedMap = nil
     buttons.main.update:setText(lang.print("update"))
+
+    client = nil
 
     if config.music then sounds.menu_theme:play() end
 end
@@ -364,9 +408,9 @@ function menu:mousepressed(x, y, button, isTouch)
 
     -- quit button
     if button == 1 then
-        if between(x, window_width - 36, window_width - 4) and between(y, 4, 36) then
+        if isBetween(x, window_width - 36, window_width - 4) and isBetween(y, 4, 36) then
             love.event.quit()
-        elseif between(x, window_width - 36, window_width - 4) and between(y, window_height - 36, window_height - 4) then
+        elseif isBetween(x, window_width - 36, window_width - 4) and isBetween(y, window_height - 36, window_height - 4) then
             config.music = not config.music
             if config.music then sounds.menu_theme:play()
             else sounds.menu_theme:stop()
@@ -390,4 +434,51 @@ function menu:wheelmoved(x, y)
     gspot:mousewheel(x, y)
 end
 
-return M
+function connecting:init()
+    cancel_connecting = NewButton(
+        "button", 0, 0, unit*10, unit*4,
+        function()
+            gamestate.switch(menu)
+        end,
+        lang.print("cancel"), {175, 96, 26}, {shape = "sharp", easing = "bounce", font = menuFont}
+    )
+end
+
+function connecting:enter()
+    local adress, port = getAdress(config.multiplayer.adress)
+    loading.setText( lang.print( "connecting", {adress, port} ) )
+end
+
+function connecting:update(dt)
+    loading.update(dt)
+
+    local state = client:getState()
+    if state == "disconnected" then
+        loading.setText( lang.print( "failed" ) )
+        love.window.requestAttention()
+    elseif state == "connected" then
+        loading.setText( lang.print( "connected" ) )
+        love.window.requestAttention()
+        gamestate.switch(multiplayer_game)
+    end
+    
+    client:update()
+    cancel_connecting:update(dt)
+end
+
+function connecting:mousepressed(x, y, button)
+    cancel_connecting:mousepressed(x, y, button)
+end
+
+function connecting:mousereleased(x, y, button)
+    cancel_connecting:mousereleased(x, y, button)
+end
+
+function connecting:draw()
+    loading.draw()
+
+    local cx, cy = basicCamera(unit*5, unit*(-6), function()
+        cancel_connecting:draw()
+    end)
+    SetTranslation(cx, cy)
+end

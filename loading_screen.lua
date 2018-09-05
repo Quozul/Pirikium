@@ -3,14 +3,14 @@ local L = {}
 local function rf(min, max, decimals) return math.random(min * 10^decimals, max * 10^decimals) / 10^decimals end
 local function round(num, decimals) return math.floor(num * 10^(decimals or 0) + 0.5) / 10^(decimals or 0) end
 
-colors = {}
+bars = {}
 for i = 1, 5 do
-    colors[i] = {}
-    colors[i].r = rf(0, 1, 2)
-    colors[i].g = rf(0, 1, 2)
-    colors[i].b = rf(0, 1, 2)
-    colors[i].s = i / 5 * 16
-    colors[i].d = false
+    bars[i] = {}
+    bars[i].colors = {rf(0, 1, 2), rf(0, 1, 2), rf(0, 1, 2)}
+    bars[i].s = i / 5 * 16
+    bars[i].direction = false
+    bars[i].changing = math.random(1, 3)
+    bars[i].changing_direction = false
 end
 
 font = love.graphics.newFont(18)
@@ -19,15 +19,32 @@ function L.update(dt)
     for i = 1, 5 do
         local previous = i - 1
         if previous == 0 then previous = 5 end
-        if colors[i].d then
-            colors[i].s = math.min(colors[i].s + dt * 100, 32)
-            if colors[previous].s >= 32 then
-                colors[i].d = false
+        if bars[i].direction then
+            bars[i].s = math.min(bars[i].s + dt * 100, 32)
+            if bars[previous].s >= 32 then
+                bars[i].direction = false
             end
         else
-            colors[i].s = math.max(colors[i].s - dt * 100, 0)
-            if colors[previous].s <= 0 then
-                colors[i].d = true
+            bars[i].s = math.max(bars[i].s - dt * 100, 0)
+            if bars[previous].s <= 0 then
+                bars[i].direction = true
+            end
+        end
+
+        local color = bars[i].colors[bars[i].changing]
+        local color_dir = bars[i].changing_direction
+
+        if color_dir then
+            bars[i].colors[bars[i].changing] = color + rf(0, dt, 6)
+            if color >= 0.8 then
+                bars[i].changing_direction = not color_dir
+                bars[i].changing = math.random(1, 3)
+            end
+        else
+            bars[i].colors[bars[i].changing] = color - rf(0, dt, 6)
+            if bars[i].colors[bars[i].changing] <= 0.2 then
+                bars[i].changing_direction = not color_dir
+                bars[i].changing = math.random(1, 3)
             end
         end
     end
@@ -39,8 +56,8 @@ end
 
 function L.draw()
     for i = 1, 5 do
-        love.graphics.setColor(colors[i].r, colors[i].g, colors[i].b)
-        love.graphics.rectangle("fill", (window_width / 2 + (5 * 24) / 2) - i * 24, window_height / 2 - (16 + colors[i].s) / 2, 16, 16 + colors[i].s)
+        love.graphics.setColor(unpack(bars[i].colors))
+        love.graphics.rectangle("fill", (window_width / 2 + (5 * 24) / 2) - i * 24, window_height / 2 - (16 + bars[i].s) / 2, 16, 16 + bars[i].s)
     end
 
     love.graphics.setFont(font)

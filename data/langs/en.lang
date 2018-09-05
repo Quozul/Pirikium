@@ -35,6 +35,14 @@ loading=loading...
 movements=movements
 other=other
 fullscreen=fullscreen
+singleplayer=singleplayer
+adress=adress
+host=host server
+join=join server
+connecting=connecting to %s:%s...
+cancel=cancel
+failed=failed...
+connected=connected!
 
 # updates
 
@@ -65,9 +73,10 @@ warmup=enemies spawn in %s seconds
 exp=Experience: %g
 skill level=current level: %g
 skill cost=cost for next level: %g
-death=What a pity!
-inventory full=Your inventory is full
-too far=You're too far away
+death=what a pity!
+inventory full=your inventory is full
+too far=you're too far away
+full health=you are healthy
 
 # items
 

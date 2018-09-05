@@ -35,6 +35,14 @@ loading=loading...
 movements=movements
 other=other
 fullscreen=fullscreen
+singleplayer=singleplayer
+adress=adress
+host=host server
+join=join server
+connecting=connecting to %s:%s...
+cancel=cancel
+failed=failed...
+connected=connected!
 
 # updates
 
@@ -65,6 +73,10 @@ warmup=rozgrzewka: %s
 exp=doswiadczenie: %g
 skill level=obecny poziom: %g
 skill cost=koszt do nastepnego poziomu: %g
+death=what a pity!
+inventory full=your inventory is full
+too far=you're too far away
+full health=you are healthy
 
 # items
 

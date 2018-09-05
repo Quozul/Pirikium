@@ -43,7 +43,7 @@ function SetTranslation(x, y)
 end
 
 function button:isIn()
-    return between(love.mouse.getX() - translation_x, self.x, self.x + self.w) and between(love.mouse.getY() - translation_y, self.y, self.y + self.h)
+    return isBetween(love.mouse.getX() - translation_x, self.x, self.x + self.w) and isBetween(love.mouse.getY() - translation_y, self.y, self.y + self.h)
 end
 
 function button:update(dt)

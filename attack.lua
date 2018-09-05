@@ -3,9 +3,7 @@ local maxSpeed = love.physics.getMeter() * 8
 
 local function bloodParticles(amount, x, y, a, v)
     if not v then v = 100 end
-    for i=1, math.random( amount/4, amount ) do
-        particles.emit(x, y, {min = a - .75, max = a + .75}, 100 * v, 1.1, 8, 12, 8, {r = .75, g = 0, b = 0}, true)
-    end
+    particles.emit(math.random( amount/4, amount ), x, y, {min = a - .75, max = a + .75}, 100 * v, 1.1, 8, 12, 8, {r = .75, g = 0, b = 0}, true)
 end
 
 local function damageAmount(weapon, dist) -- this function decide the damage the weapon will deal
@@ -50,11 +48,11 @@ function attack(attacker, attacker_id)
     -- melee attack
     if wep.type == "melee" then
         if wep.fire then
-            -- particles.emit(x, y, r, speed, damping, size, life, vertices, color, fade_out)
-            particles.emit(ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - rf(0, .2, 2), max = aa + rf(0, .2, 2)}, 50, 1, 5, 2, 3, {r = .85, g = .15, b = 0}) -- red
-            particles.emit(ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - rf(0, .1, 2), max = aa + rf(0, .1, 2)}, 100, 1, 5, 2, 3, {r = 1, g = .75, b = 0}, true) -- yellow
-            particles.emit(ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - rf(0, .1, 2), max = aa + rf(0, .1, 2)}, 100, 1, 10, 2, 5, {r = 1, g = .5, b = .15}) -- orange
-            particles.emit(ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - rf(0, .3, 2), max = aa + rf(0, .3, 2)}, 25, 1, 12, 1, 7, {r = .25, g = .25, b = .25, a = .75}, true) -- black
+            -- particles.emit(amount, x, y, r, speed, damping, size, life, vertices, color, fade_out)
+            particles.emit(1, ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - rf(0, .2, 2), max = aa + rf(0, .2, 2)}, 125, 1, 10, 0.5, 3, {r = .85, g = .15, b = 0}) -- red
+            particles.emit(1, ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - rf(0, .1, 2), max = aa + rf(0, .1, 2)}, 350, 1, 10, 0.5, 3, {r = 1, g = .75, b = 0}, true) -- yellow
+            particles.emit(1, ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - rf(0, .1, 2), max = aa + rf(0, .1, 2)}, 350, 1, 20, 0.5, 5, {r = 1, g = .5, b = .15}) -- orange
+            particles.emit(1, ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - rf(0, .3, 2), max = aa + rf(0, .3, 2)}, 75, 1, 24, 0.25, 7, {r = .25, g = .25, b = .25, a = .75}, true) -- black
             sounds.flame:play()
         else
             sounds.sword_swing:stop()
@@ -65,10 +63,10 @@ function attack(attacker, attacker_id)
             if victim:getHealth() > 0 and id ~= attacker_id then -- check if the players is not dead and if it's not the same
                 local vx, vy = victim.bod:getPosition() -- victim pos
                 local angleTo = math.atan2(vy - ay, vx - ax)
-                local dist = sl(ax, ay, vx, vy) -- dist between victim and attacker
+                local dist = sl(ax, ay, vx, vy) -- dist isBetween victim and attacker
 
                 if dist <= wep.range and -- if player is in range to be attacked
-                between(angleTo, aa - wep.radius, aa + wep.radius) then
+                isBetween(angleTo, aa - wep.radius, aa + wep.radius) then
                     local damage, wasCritic = damageAmount(wep, dist - attacker.skills.accuracy)
                     damage = damage + attacker.skills.strength
                     print("Attacker dealt " .. damage .. " damage to victim")
@@ -111,11 +109,9 @@ function attack(attacker, attacker_id)
                 math.sin(aa + (spready)) * speed
             )
 
-            for i=2, math.random( 2, 5 ) do
-                -- shoot particles
-                particles.emit(ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - .3, max = aa + .3}, 20, 1, 7, 2, 5, {r = 1, g = .5, b = .15}, true) -- orange
-                particles.emit(ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - .3, max = aa + .3}, 20, 1, 15, 2, 6, {r = .75, g = .75, b = .75, a = .25}) -- white
-            end
+            -- shoot particles
+            particles.emit(math.random( 2, 5 ), ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - .3, max = aa + .3}, 20, 1, 7, 2, 5, {r = 1, g = .5, b = .15}, true) -- orange
+            particles.emit(math.random( 2, 5 ), ax + math.cos(aa) * 5, ay + math.sin(aa) * 5, {min = aa - .3, max = aa + .3}, 20, 1, 15, 2, 6, {r = .75, g = .75, b = .75, a = .25}) -- white
 
             b.age = wep.bullet.life
 
@@ -159,14 +155,12 @@ function removeBullet(body, wep, owner_id)
     if type == "explosive" then
         local explode_radius = wep.bullet.explode_radius
 
-        for i=1, math.random( 25, 35 ) do
-            -- explosive particles
-            particles.emit(x, y, {min = 0, max = 2 * math.pi}, 100, 1, 7, 1.5, 3, {r = .85, g = .15, b = 0}) -- red
-            particles.emit(x, y, {min = 0, max = 2 * math.pi}, 100, 1, 7, 1.5, 5, {r = 1, g = .5, b = .15}) -- orange
-            particles.emit(x, y, {min = 0, max = 2 * math.pi}, math.random( 45, 55 ), 1, 20, 3, 7, {r = .75, g = .75, b = .75, a = .25}, true) -- white
-            particles.emit(x, y, {min = 0, max = 2 * math.pi}, math.random( 55, 65 ), 1, 20, 3, 7, {r = .75, g = .75, b = .75, a = .25}, true) -- white
-            particles.emit(x, y, {min = 0, max = 2 * math.pi}, math.random( 65, 75 ), 1, 15, 3, 5, {r = .25, g = .25, b = .25, a = .75}) -- black
-        end
+        -- explosive particles
+        particles.emit(math.random( 25, 35 ), x, y, {min = 0, max = 2 * math.pi}, 100, 1, 7, 1.5, 3, {r = .85, g = .15, b = 0}) -- red
+        particles.emit(math.random( 25, 35 ), x, y, {min = 0, max = 2 * math.pi}, 100, 1, 7, 1.5, 5, {r = 1, g = .5, b = .15}) -- orange
+        particles.emit(math.random( 25, 35 ), x, y, {min = 0, max = 2 * math.pi}, math.random( 45, 55 ), 1, 20, 3, 7, {r = .75, g = .75, b = .75, a = .25}, true) -- white
+        particles.emit(math.random( 25, 35 ), x, y, {min = 0, max = 2 * math.pi}, math.random( 55, 65 ), 1, 20, 3, 7, {r = .75, g = .75, b = .75, a = .25}, true) -- white
+        particles.emit(math.random( 25, 35 ), x, y, {min = 0, max = 2 * math.pi}, math.random( 65, 75 ), 1, 15, 3, 5, {r = .25, g = .25, b = .25, a = .75}) -- black
 
         sounds.explosion:stop()
         sounds.explosion:play()

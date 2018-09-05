@@ -1,4 +1,5 @@
-function between(value, min, max) return value >= min and value <= max end
+function isBetween(value, min, max) return value >= min and value <= max end
+function makeBetween(value, min, max) return math.max(math.min(value, max), min) end
 function signe(num) if num >= 0 then return 1 elseif num < 0 then return 0 end end
 function sl(x1, y1, x2, y2) return math.sqrt( (x2 - x1)^2 + (y2 - y1)^2 ) end -- segment lengh
 function round(num, decimals) return math.floor(num * 10^(decimals or 0) + 0.5) / 10^(decimals or 0) end
@@ -19,6 +20,13 @@ function mergeTables(t1, t2)
         t1[k] = v
     end
     return t1, overwritten
+end
+function mergeTables_noOverride(t1, t2)
+    local lenght = #t1
+    for index, value in pairs(t2) do
+        t1[lenght + index] = value
+    end
+    return t1
 end
 function string:split(sep)
     local sep, fields = sep or ":", {}
@@ -81,4 +89,20 @@ function verifyTable(base, verify)
     end
     print("TABLE VERIFICATION: Nothing is missing")
     return true
+end
+
+function queryPoint(world, x, y, blacklist)
+    local bodies = world:getBodies()
+
+    for id, body in pairs(bodies) do
+        if body:isAwake() then
+            local fixtures = body:getFixtures()
+            for id, fixture in pairs(fixtures) do
+                if not fixture:isSensor() and (blacklist ~= nil and not isIn(fixture:getUserData()[1], blacklist)) then
+                    local isInside = fixture:testPoint(x, y)
+                    if isInside then return true end
+                end
+            end
+        end
+    end
 end
