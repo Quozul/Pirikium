@@ -7,13 +7,11 @@ function love.errhand(error_message)
     local email = "quozul@outlook.com"
     local edition = love.system.getOS()
 
-    local dialog_message = [[
-        %s crashed with the following error message:
+    local dialog_message = [[%s crashed with the following error message:
 
-        %s
+%s
 
-        Would you like to report this crash so that it can be fixed?
-    ]]
+Would you like to report this crash so that it can be fixed?]]
     
     local titles = {"Oh no", "The game has ran into an error", "Bad news", "An error occured", "Something went wrong", "What have you done"}
     local title = titles[love.math.random(#titles)]
@@ -34,17 +32,15 @@ function love.errhand(error_message)
         return text
     end
 
-    local issuebody = [[
-        %s crashed with the following error message:
+    local issuebody = [[%s crashed with the following error message:
 
-        %s
+%s
 
-        [If you can, describe what you've been doing when the error occurred]
+[If you can, describe what you've been doing when the error occurred]
 
-        ---
-        Version: %s
-        System: %s
-    ]]
+---
+Version: %s
+System: %s]]
 
     if pressedbutton == 2 then
         -- Surround traceback in ``` to get a Markdown code block
