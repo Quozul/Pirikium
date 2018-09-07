@@ -31,12 +31,14 @@ function I.interact(ent, x, y, px, py)
             local remove = ent:addItem(item.item)
             if remove then
                 table.remove(items, index)
+                console.print("Item " .. item .. " picked up")
                 return false
             else
+                console.print("Your inventory is full")
                 return "inventory full"
             end
         elseif dist > pickupDist then
-            print("You're too far away")
+            console.print("You're too far away")
             return "too far"
         end
     end
@@ -93,7 +95,7 @@ end
 function I.clear()
     for index, item in pairs(items) do
         table.remove(items, index)
-        print("Cleared item " .. index)
+        console.print("Cleared item " .. index)
     end
 end
 

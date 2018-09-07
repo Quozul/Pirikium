@@ -15,7 +15,7 @@ function L.decrypt(file)
         end
     end
 
-    print(("LANG: %d messages loaded"):format(#msgs))
+    console.print(("%d messages loaded"):format(#msgs))
 
     for index, msg in pairs( msgs ) do
         local word = msg:split("=")

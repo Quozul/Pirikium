@@ -28,7 +28,7 @@ end
 local function updatePlayerList()
     if not love.filesystem.getInfo("saves") then error("Save directory not found! Try restarting the game.") end
     players = love.filesystem.getDirectoryItems("saves")
-    print("MENU INFO: Updating save list... " .. #players .. " saves found")
+    console.print("Updating save list... " .. #players .. " saves found")
 
     if players ~= nil then
         for index, name in pairs(players) do
@@ -45,7 +45,7 @@ local function updatePlayerList()
             load[index].rem = gspot:button("-", {unit*9, unit * index * 2 + unit, unit*2, unit*2}, selection.group)
             load[index].rem.tip = lang.print("remove", {name})
             load[index].rem.click = function(this)
-                print("MENU INFO: Removing " .. name .. "'s save")
+                console.print("Removing " .. name .. "'s save")
                 local succes = love.filesystem.remove("saves/" .. name)
                 gspot:rem(load[index].player) -- remove this save buttons
                 gspot:rem(load[index].rem)
@@ -69,7 +69,7 @@ end
 local function createPlayer(name)
     if not love.filesystem.getInfo("saves") then error("Save directory not found! Try restarting the game.") end
 
-    print("MENU INFO: Name of new player: " .. name)
+    console.print("Name of new player: " .. name)
     local s = {}
     s.defaultWeapon = classes[class.value].weapon
     s.kills = 0
@@ -107,7 +107,7 @@ function menu:init()
     buttons.main.update = NewButton(
         "button", 0, unit*6, unit*18, unit*2,
         function()
-            print("Checking for updates...")
+            console.print("Checking for updates...")
             buttons.main.update:setText(lang.print("update checking"))
             update_checking_thread:start(config.dev_version)
         end,
@@ -157,7 +157,7 @@ function menu:init()
 
     settings.reset = gspot:button(lang.print("reset"), {unit, unit*10, unit*8, unit*2}, settings.group)
     settings.reset.click = function()
-        print("MENU INFO: Resetting config")
+        console.print("Resetting config")
         createConfig()
     end
 
@@ -172,7 +172,7 @@ function menu:init()
             settings[control] = gspot:input(lang.print(control), {unit*35, unit*(position+1), unit*3, unit*1}, settings.group, key)
             settings[control].keyinput = true
             settings[control].done = function(this)
-                print("MENU INFO: Control saved")
+                console.print("Control saved")
                 config.controls[control] = this.value
             end
             position = position + 1
@@ -189,7 +189,7 @@ function menu:init()
             settings[control] = gspot:input(lang.print(control), {unit*35, unit*(position+1), unit*3, unit*1}, settings.group, key)
             settings[control].keyinput = true
             settings[control].done = function(this)
-                print("MENU INFO: Control saved")
+                console.print("Control saved")
                 config.controls[control] = this.value
             end
             position = position + 1
@@ -203,7 +203,7 @@ function menu:init()
         name = string.gsub(name, ".lang", "")
         languages[index] = gspot:button(lang.print(name), {unit*20, unit*(position * 2), unit*5, unit*2}, settings.group)
         languages[index].click = function(this)
-            print("MENU INFO: Changing language to " .. name)
+            console.print("Changing language to " .. name)
             config.lang = name
             love.event.quit("restart")
         end
@@ -248,10 +248,11 @@ function menu:init()
         gamestate.switch(game)
     end
 
+    -- multiplayer & server
     selection.adress = gspot:input(lang.print("adress"), {unit*30, unit*7, unit*6, unit*2}, selection.group, config.multiplayer.adress)
     selection.adress.done = function(this)
         config.multiplayer.adress = this.value
-        print(this.value)
+        console.print(this.value)
     end
 
     selection.host = gspot:button(lang.print("host"), {unit*26, unit*9, unit*10, unit*2}, selection.group)
@@ -262,7 +263,15 @@ function menu:init()
         server:start(adress, port)
     end
 
-    selection.multi = gspot:button(lang.print("join"), {unit*26, unit*11, unit*10, unit*2}, selection.group)
+    selection.close_host = gspot:button(lang.print("close host"), {unit*26, unit*11, unit*10, unit*1}, selection.group)
+    selection.close_host.click = function(this)
+        local adress, port = getAdress(config.multiplayer.adress)
+        gspot:feedback("Server closed")
+
+        love.thread.getChannel("server_channel"):push("stop")
+    end
+
+    selection.multi = gspot:button(lang.print("join"), {unit*26, unit*13, unit*10, unit*2}, selection.group)
     selection.multi.click = function(this)
         local adress, port = getAdress(config.multiplayer.adress)
         gspot:feedback(("Connecting to server with IP %s:%d"):format(adress, port))
@@ -321,7 +330,7 @@ end
 function menu:enter()
     love.mouse.setVisible(true)
     love.mouse.setGrabbed(false)
-    print("MENU INFO: Entered menu")
+    console.print("Entered menu")
     selectedMap = nil
     buttons.main.update:setText(lang.print("update"))
 
@@ -347,10 +356,10 @@ function menu:update(dt)
             return
         end
 
-        print(("MENU INFO: Online version:  %s.\nCurrent version: %s."):format(version.online_ver, version.current_ver))
+        console.print(("Online version:  %s.\nCurrent version: %s."):format(version.online_ver, version.current_ver))
 
         if version.online_ver > version.current_ver then
-            print("MENU INFO: New version available!")
+            console.print("New version available!")
 
             buttons.main.update:setText(lang.print("update found"))
             local window_buttons = { "Yes", "No" }
@@ -375,6 +384,7 @@ local center = {unit*19, unit*4}
 function menu:draw()
     local paddingy = titleFont:getHeight(title)
     local cx, cy = basicCamera(center[1], center[2], function()
+        love.graphics.setColor(0, 0, 0, 1)
         love.graphics.setFont(titleFont)
         love.graphics.print(title, unit*19 - titleFont:getWidth(title) / 2, -paddingy * 2)
         for index, element in pairs(buttons[menuState]) do
@@ -388,15 +398,13 @@ function menu:draw()
     love.graphics.draw(images.exit, window_width - 36, 4)
     if config.music then love.graphics.draw(images.music, music_on, window_width - 36, window_height - 36)
     else love.graphics.draw(images.music, music_off, window_width - 36, window_height - 36) end
+
+    console.draw()
 end
 
 function menu:keypressed(key, code, isrepeat)
 	if gspot.focus then
 		gspot:keypress(key) -- only sending input to the gui if we're not using it for something else
-	else
-		if key == "return" then -- binding enter key to input focus
-			input:focus()
-		end
 	end
 end
 

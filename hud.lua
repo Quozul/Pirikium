@@ -3,12 +3,12 @@ local hud_notif = ""
 local hud_notif_fade_out = true
 local hud_notif_alpha = 2
 
-function set_notif(str, fade_out)
+function set_notif(str)
     if str == nil then error("Notification can't be nil") end
     hud_notif = str
+    hud_notif_alpha = 2
 
-    hud_notif_fade_out = fade_out or true
-    if hud_notif_fade_out then hud_notif_alpha = 2 end
+    return true
 end
 
 function update_hud(dt)
@@ -133,6 +133,10 @@ function draw_hud()
     lg.draw(images.level, 64, 64)
     lg.print(round(ply:getLevel(), 1), 96, 68)
 
+    console.draw()
+end
+
+function notif_hud()
     -- notification message
     if hud_notif ~= "" then
         text = lang.print(unpack(hud_notif))

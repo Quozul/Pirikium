@@ -6,7 +6,7 @@ local centerX, centerY = window_width / 2, window_height / 2
 local height = centerY * 1.5
 
 function T.init()
-    print("Skill tree: " .. #skills.list .. " skills loaded")
+    console.print(#skills.list .. " skills loaded")
 
     for index, name in pairs(skills.list) do
         skills_buttons[index] = NewButton(
@@ -14,7 +14,7 @@ function T.init()
             lang.print(name), {math.random(55, 255), math.random(55, 255), math.random(55, 255)},
             {shape = "sharp", easing = "inOut"}, index
         )
-        print("Added button for " .. name)
+        console.print("Added button for " .. name)
     end
 end
 

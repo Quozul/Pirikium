@@ -18,7 +18,7 @@ System | Processor | Memory | Graphic card
 
 ### Credits
 * Some of the sounds used are from [Freesound.org](https://freesound.org/)
-* [Iceland Font](https://fonts.google.com/specimen/Iceland) is from Google Fonts
+* [Iceland Font](https://fonts.google.com/specimen/Iceland) and [Cutive Mono Font](https://fonts.google.com/specimen/Cutive+Mono) are from Google Fonts
 
 ---
 

@@ -69,7 +69,7 @@ function attack(attacker, attacker_id)
                 isBetween(angleTo, aa - wep.radius, aa + wep.radius) then
                     local damage, wasCritic = damageAmount(wep, dist - attacker.skills.accuracy)
                     damage = damage + attacker.skills.strength
-                    print("Attacker dealt " .. damage .. " damage to victim")
+                    console.print("Attacker dealt " .. damage .. " damage to victim")
 
                     victim:addHealth(math.min(-damage, 0)) -- remove health from the victim
                     victim.bod:applyLinearImpulse(math.cos(angleTo) * wep.knockback.victim * 10, math.sin(angleTo) * wep.knockback.victim * 10)
@@ -118,7 +118,7 @@ function attack(attacker, attacker_id)
             table.insert(bullets, b)
         end
 
-        print(#bullets .. " bullets in the world")
+        console.print(#bullets .. " bullets in the world")
     end
 
     return true
@@ -129,7 +129,7 @@ function bulletDamage(weapon, victim_id, angle, owner_id, bx, by)
     if victim == nil then return end
 
     if victim:getHealth() > 0 and owner_id ~= victim_id then
-        print("Bullet touched an ennemy")
+        console.print("Bullet touched an ennemy")
         local vx, vy = victim.bod:getPosition()
         local angleToVictim = math.atan2(vy - by, vx - bx)
         
@@ -140,7 +140,7 @@ function bulletDamage(weapon, victim_id, angle, owner_id, bx, by)
 
         bloodParticles(damage * 2, vx, vy, angleToVictim)
         
-        print("Attacker dealt " .. damage .. " damage to victim")
+        console.print("Attacker dealt " .. damage .. " damage to victim")
 
         victim.lastAttacker = owner_id
 
@@ -177,6 +177,8 @@ function removeBullet(body, wep, owner_id)
                 ent.lastAttacker = owner_id
             end
         end
+
+        console.print("Bullet exploded")
     else
         sounds.hit:play()
     end

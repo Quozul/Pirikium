@@ -10,7 +10,12 @@ function isIn(value, table) for index, element in pairs(table) do if value == el
 function table.length(table) count = 0 for _ in pairs(table) do count = count + 1 end return count end
 function inSquare(x1, y1, x2, y2, w2, h2) return x1 >= x2 and x1 <= x2 + w2 and y1 >= y2 and y1 <= y2 + h2 end
 function upper(str) return str:gsub("^%l", string.upper) end
-function printTable(table) for index, value in pairs(table) do print(index, value) end end
+function printTable(table) for index, value in pairs(table) do console.print(index, value) end console.print("Done") end
+function string:insert(pos, char) return self:sub(1, pos) .. char .. self:sub(pos + 1, self:len()) end
+function string:remove(pos, dir)
+    if not dir then return self:sub(1, pos - 1) .. self:sub(pos + 1, self:len())
+    else return self:sub(1, pos) .. self:sub(pos + 2, self:len()) end
+end
 function mergeTables(t1, t2)
     local overwritten = 0
     for k, v in pairs(t2) do
@@ -58,7 +63,7 @@ function updateWatching(name, value) -- to remove a value, juste send nil as a v
     if not watchings[name] then
         watchings[name] = value
     elseif value ~= watchings[name] then
-        --print(("VARIABLE WATCHING: Value %q as changed to %g"):format(name, value))
+        --console.print(("VARIABLE WATCHING: Value %q as changed to %g"):format(name, value))
         watchings[name] = value
         return true
     else
@@ -83,11 +88,11 @@ end
 function verifyTable(base, verify)
     for value in pairs(base) do
         if verify[value] == nil then
-            print("TABLE VERIFICATION: " .. value .. " is missing from table to verify")
+            console.print(value .. " is missing from table to verify")
             return false
         end
     end
-    print("TABLE VERIFICATION: Nothing is missing")
+    console.print("Nothing is missing")
     return true
 end
 
@@ -105,4 +110,21 @@ function queryPoint(world, x, y, blacklist)
             end
         end
     end
+end
+
+function getFormattedTime()
+    local time = love.timer.getTime()
+
+    local days = math.floor(time / 86400)
+    local hours = math.floor( math.mod(time, 86400) / 3600 )
+    local minutes = math.floor( math.mod(time, 3600) / 60 )
+    local seconds = math.floor( math.mod(time, 60) )
+
+    local millis = tostring(time):split(".")
+    seconds = string.format("%02d", seconds) .. "." .. millis[2]
+
+    return {
+        string.format("%d:%02d:%02d:%.2f", days, hours, minutes, seconds),
+        string.format("%02d%.2f", minutes, seconds),
+    }
 end
