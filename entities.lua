@@ -28,7 +28,7 @@ function doors.add(x, y, r)
 
     d.joint = love.physics.newRevoluteJoint( d.bod, d.hinge,  x * 64 - 32 + math.cos(r) * 28, y * 64 - 32 + math.sin(r) * 26 )
 
-    print("Added one door")
+    console.print("Added one door")
 
     table.insert(entities.doors, d)
 end
@@ -105,7 +105,7 @@ function chest.add(x, y)
     c.light = Light:new(lightWorld, 150)
     c.light:SetColor(155, 155, 0, 155)
 
-    print("GAME INFO: Added one chest")
+    console.print("Added one chest")
 
     table.insert(entities.chests, c)
 end
@@ -163,7 +163,7 @@ function chest.interact(x, y)
                 particles.emit(math.random( 4, 8 ), cratex, cratey, {min = 0, max = 2 * math.pi}, 200, 1.2, 15, 4, 5, {r = .6, g = .6, b = 0, a = .6})
 
                 timer.after(chest.time, function()
-                    print("GAME INFO: Respawning chest")
+                    console.print("Respawning chest")
                     chest.bod:setActive(true)
                     chest.shadow = Body:new(lightWorld):InitFromPhysics(chest.bod)
                     
@@ -206,7 +206,7 @@ function orb.add(x, y, r, type)
 
     o.age = 2
 
-    print("GAME INFO: Added one " .. type .. " orb")
+    console.print("Added one " .. type .. " orb")
 
     table.insert(entities.orbs, o)
 end

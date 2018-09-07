@@ -15,6 +15,10 @@ love.graphics.present()
 
 require "errorhandler"
 
+require "clib/utility"
+console_channel = love.thread.newChannel()
+require "clib/console"
+
 pathfinder = require "modules/jumper.pathfinder"
 gamestate = require "modules/hump.gamestate"
 loader = require "modules/love-loader"
@@ -34,10 +38,9 @@ Shadows = require("shadows")
 LightWorld = require("shadows.LightWorld")
 Light = require("shadows.Light")
 Body = require("shadows.Body")
-print("MAIN: Loaded modules")
+console.print("Loaded modules")
 
 require "clib/buttons"
-require "clib/utility"
 require "players"
 require "clib/animation"
 particles = require "clib/particles"
@@ -58,6 +61,7 @@ update_checking_thread = love.thread.newThread( love.filesystem.read("update_che
 update_channel = love.thread.newChannel()
 
 server = love.thread.newThread(love.filesystem.read("server.lua"))
+server_channel = love.thread.newChannel()
 
 lang.decrypt("data/langs/en.lang")
 
@@ -112,15 +116,15 @@ end
 
 if not love.filesystem.getInfo( configFile ) then
     createConfig()
-    print("MAIN: Config file not found, creating it")
+    console.print("Config file not found, creating it")
 else
     config = json:decode( love.filesystem.read( configFile ) ) -- loads the existing config file
     local integrity = verifyTable(default_config, config)
     if not integrity then
-        print("MAIN: Recreating config file")
+        console.print("Recreating config file")
         createConfig()
     end
-    print("MAIN: Config file loaded")
+    console.print("Config file loaded")
 end
 
 loading.setText("Loading content...")
@@ -131,7 +135,7 @@ weapons, loots, classes = {}, {}, {}
 skills = json:decode( love.filesystem.read( "data/skills.json" ) ) -- skills can't be customized by players
 
 for name, type in pairs(config.content) do
-    print("MAIN: Loading " .. name .. " content pack...")
+    console.print("Loading " .. name .. " content pack...")
 
     if type == "folder" then
         local file = "content/" .. name .. "/loots.json"
@@ -140,7 +144,7 @@ for name, type in pairs(config.content) do
                 loots,
                 json:decode( love.filesystem.read(file) )
             )
-            print(("MAIN: Overwritten %d loots"):format(overwritten))
+            console.print(("Overwritten %d loots"):format(overwritten))
         end
 
         local file = "content/" .. name .. "/classes.json"
@@ -149,7 +153,7 @@ for name, type in pairs(config.content) do
                 classes,
                 json:decode( love.filesystem.read(file) )
             )
-            print(("MAIN: Overwritten %d classes"):format(overwritten))
+            console.print(("Overwritten %d classes"):format(overwritten))
         end
 
         local file = "content/" .. name .. "/weapons.json"
@@ -158,15 +162,15 @@ for name, type in pairs(config.content) do
                 weapons,
                 json:decode( love.filesystem.read(file) )
             )
-            print(("MAIN: Overwritten %d weapons"):format(overwritten))
+            console.print(("Overwritten %d weapons"):format(overwritten))
         end
     end
 end
 
-print("MAIN: " .. #weapons .. " weapons loaded")
+console.print(#weapons .. " weapons loaded")
 for name, wep in pairs(weapons) do
     if wep.texture ~= nil then
-        print("MAIN: Loaded image for weapon " .. name)
+        console.print("Loaded image for weapon " .. name)
         if wep.texture.side ~= nil then
             loader.newImage(images.weapons.side, name, wep.texture.side)
         end
@@ -180,7 +184,7 @@ end
 local save_folder = love.filesystem.getInfo("saves")
 if not save_folder or save_folder.type ~= "directory" then
     love.filesystem.createDirectory("saves")
-    print("MAIN: Save directory created")
+    console.print("Save directory created")
 end
 
 function updateScreenSize() -- the screen size scaling must be reworked
@@ -191,7 +195,7 @@ if config.ratio ~= 1 then updateScreenSize() end
 
 -- load language
 languages_list = love.filesystem.getDirectoryItems( "data/langs" )
-print("MAIN: " .. #languages_list .. " available")
+console.print(#languages_list .. " available")
 
 local selectedLanguage = string.gsub(config.lang, ".lang", "")
 lang.decrypt( ("data/langs/%s.lang"):format(selectedLanguage) )
@@ -202,10 +206,11 @@ function love.load()
     local logical_processors = love.system.getProcessorCount()
     if logical_processors < 2 then love.window.showMessageBox("Processors count too low", "You don't have enough logical processors in your computer, the game may struggle sometimes.", "warning") end
 
-    hudFont = love.graphics.newFont("data/font/Iceland.ttf", 16)
-    menuFont = love.graphics.newFont("data/font/Iceland.ttf", 32)
-    titleFont = love.graphics.newFont("data/font/Iceland.ttf", 48)
-    print("MAIN: Loaded font")
+    hudFont = love.graphics.newFont("data/fonts/Iceland.ttf", 16)
+    menuFont = love.graphics.newFont("data/fonts/Iceland.ttf", 32)
+    titleFont = love.graphics.newFont("data/fonts/Iceland.ttf", 48)
+    consoleFont = love.graphics.newFont("data/fonts/Cutive.ttf", 16)
+    console.print("Loaded fonts")
 
     --love.graphics.setDefaultFilter("nearest", "nearest")
 
@@ -261,7 +266,7 @@ function love.load()
 
         SetSounds(sounds.hover, sounds.click) -- set the sounds for the buttons
 
-        print("MAIN: Game loaded in " .. round(loadTime, 1) .. " seconds")
+        console.print("Game loaded in " .. round(loadTime, 1) .. " seconds")
         love.window.requestAttention()
 
         gamestate.registerEvents()
@@ -284,6 +289,16 @@ function love.update(dt)
         loader.update()
         loading.update(dt)
     end
+
+    console.update(dt)
+end
+
+function love.textinput(text)
+    console.text(text)
+end
+
+function love.keypressed(key)
+    console.keypressed(key)
 end
 
 function love.resize(w, h)

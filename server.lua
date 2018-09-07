@@ -1,23 +1,24 @@
-print("SERVER INFO: Server started!")
+require "clib/utility"
+require "clib/console"
 
 require "love"
 require "love.physics"
 require "love.system"
 require "love.thread"
 require "love.timer"
-print("SERVER INFO: Love loaded")
+console.print("Love loaded")
 
 sock = require "modules/sock"
 bitser = require "modules/bitser"
-print("SERVER INFO: Modules loaded") 
+console.print("Modules loaded") 
 
 ip, port = ...
 server = sock.newServer("*", port)
 server:setSerialization(bitser.dumps, bitser.loads)
-print(("SERVER INFO: Server openned on port %d"):format(port))
+console.print(("Server openned on port %d"):format(port))
 
 server:on("connect", function(data, client)
-    print("SERVER INFO: New client connected!")
+    console.print("New client connected!")
 end)
 
 local current_time = love.timer.getTime()
@@ -40,6 +41,12 @@ while true do
     if tick >= tickRate then
         tick = 0
     end
+
+    local cmd = love.thread.getChannel("server_channel"):pop()
+    if cmd == "stop" then
+        break
+    end
 end
 
-print("SERVER INFO: Server stopped!")
+server = nil
+console.print("Server stopped!")

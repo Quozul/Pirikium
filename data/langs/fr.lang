@@ -43,6 +43,7 @@ connecting=connexion à %s:%s...
 cancel=annuler
 failed=echec...
 connected=connecté!
+close host=fermer le serveur
 
 # updates
 

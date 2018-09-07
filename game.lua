@@ -24,7 +24,7 @@ function game:enter()
 
     -- Load a map exported to Lua from Tiled
     map = sti("data/maps/" .. selectedMap, { "box2d" })
-    print("GAME INFO: " .. #map.layers["Map Entities"].data .. " tiles")
+    console.print(#map.layers["Map Entities"].data .. " tiles")
 
     if config.debug then map.layers["Map Entities"].visible = true end
 
@@ -50,7 +50,7 @@ function game:enter()
     world = love.physics.newWorld()
     world:setCallbacks(beginContact, endContact, preSolve, postSolve)
     map:box2d_init(world)
-    print("World created")
+    console.print("World created")
 
     window_width, window_height = love.window.getMode()
     particles.window(window_width, window_height)
@@ -59,10 +59,10 @@ function game:enter()
     lightWorld = LightWorld:new()
     lightWorld:SetColor(50, 50, 50, 255)
     lightWorld:Resize(window_width, window_height)
-    print("Created light world")
+    console.print("Created light world")
     
     lightWorld:InitFromPhysics(world)
-    print("Initialized light world")
+    console.print("Initialized light world")
 
     map:addCustomLayer("Entities Layer", 3)
     map.layers["Entities Layer"].entities = {}
@@ -115,8 +115,8 @@ function game:enter()
         end
     end
 
-    print("GAME INFO: " .. #teleporters .. " teleporters found")
-    print("GAME INFO: " .. #spawns .. " spawns found")
+    console.print(#teleporters .. " teleporters found")
+    console.print(#spawns .. " spawns found")
     local x, y = unpack( spawns[math.random(1, #spawns)] )
 
     entities.entities[playerUUID] = newPlayer(x, y, playerUUID)
@@ -127,7 +127,7 @@ function game:enter()
 
     lights.player = Light:new(lightWorld, 200)
     lights.player:SetColor(155, 155, 155)
-    print("GAME INFO: Added player light")
+    console.print("Added player light")
 
     function addEnemy()
         local x, y = unpack( spawns[math.random(1, #spawns)] )
@@ -136,12 +136,12 @@ function game:enter()
 
         local uid = uuid() -- choose a random unique id for the enemy
         local level = rf(0, ply:getLevel() / 100, 2)
-        print("GAME INFO: Ennemy level is " .. level)
+        console.print("Ennemy level is " .. level)
         local class = classes.list[math.random(1, #classes.list)]
         entities.entities[uid] = newPlayer(x, y, uid, classes[class], level)
         ai.set(entities.entities[uid], uid)
 
-        print("GAME INFO: Added one ennemy")
+        console.print("Added one ennemy")
     end
 
     maxAIs = 2 -- maximum amount of ai at start
@@ -168,7 +168,7 @@ function game:enter()
                 if not config.ai.disable then ai.update(ent, self.entities[playerUUID], id) end
 
                 if ent:getHealth() <= 0 then
-                    print("GAME INFO: " .. ent.lastAttacker .. " killed " .. id)
+                    console.print(ent.lastAttacker .. " killed " .. id)
 
                     local ex, ey = ent.bod:getPosition() -- get the position of the current entity
                     local ea = ent.bod:getAngle()
@@ -202,7 +202,7 @@ function game:enter()
                 local ex, ey = ent.bod:getPosition()
                 if inSquare(ex, ey, x + 8, y + 8, 48, 48) then
                     local randomTp = teleporters[math.random(1, #teleporters)]
-                    print("GAME INFO: Teleporting entity")
+                    console.print("Teleporting entity")
                     local x, y = (randomTp[1] - 1) * 64, (randomTp[2] - 1) * 64
                     local ea = ent.bod:getAngle()
                     ent.bod:setPosition((x + 32) + math.cos(ea) * 48, (y + 32) + math.sin(ea) * 48)
@@ -331,7 +331,7 @@ function game:enter()
 end
 
 function game:resize(w, h)
-    print("GAME INFO: Window got resized")
+    console.print("Window got resized")
 	map:resize(w, h)
     lightWorld:Resize(w, h)
     particles.window(w, h)
@@ -340,6 +340,14 @@ function game:resize(w, h)
 end
 
 function game:keypressed(key, scancode, isrepeat)
+    if key == "f3" then
+        config.debug = not config.debug
+        love.mouse.setGrabbed(not love.mouse.isGrabbed())
+        map.layers["Map Entities"].visible = not map.layers["Map Entities"].visible
+    end
+    
+    if console.hasFocus() then return end
+
     if isIn(key, {"1", "2", "3", "4", "5", "6", "7", "8", "9"}) and not pause then
         local slot = tonumber(key)
         if slot <= #ply.inventory then
@@ -361,19 +369,17 @@ function game:keypressed(key, scancode, isrepeat)
         else
             pause = not pause
         end
-    elseif key == "f3" then
-        config.debug = not config.debug
-        love.mouse.setGrabbed(not love.mouse.isGrabbed())
-        map.layers["Map Entities"].visible = not map.layers["Map Entities"].visible
     elseif key == config.controls.skill_tree and not pause then
         skillTreeIsOpen = not skillTreeIsOpen
     elseif key == config.controls.burst then
         ply.enable_burst = not ply.enable_burst -- toggle burst mode
-        print("GAME INFO: Toggled burst mode for automatic weapons")
+        console.print("Toggled burst mode for automatic weapons")
     end
 end
 
 function game:wheelmoved(x, y)
+    if console.hasFocus() then return end
+    
     if pause then return end
 
     local ply = entities.entities[playerUUID]
@@ -385,6 +391,8 @@ function game:wheelmoved(x, y)
 end
 
 function game:mousepressed(x, y, button, isTouch)
+    if console.hasFocus() then return end
+    
     if skillTreeIsOpen then
         tree.mousepressed(x, y, button)
     elseif pause then
@@ -394,6 +402,8 @@ function game:mousepressed(x, y, button, isTouch)
 end
 
 function game:mousereleased(x, y, button, isTouch)
+    if console.hasFocus() then return end
+    
     if skillTreeIsOpen then
         tree.mousereleased(x, y, button)
     elseif pause then
@@ -403,6 +413,8 @@ function game:mousereleased(x, y, button, isTouch)
 end
 
 function controls(dt)
+    if console.hasFocus() then return end
+    
     local ply = entities.entities[playerUUID]
     local cooldown = ply.cooldown
     local pa = ply.bod:getAngle()
@@ -548,7 +560,7 @@ function game:update(dt)
             local speed = math.abs(vx + vy)
             local minSpeed = bullet.fixture:getUserData().weapon.bullet.speed / mass
 
-            print(mass, speed, minSpeed / 2)
+            console.print(mass, speed, minSpeed / 2)
 
             if speed <= minSpeed / 2 then
                 bullet.bod:destroy()
@@ -587,6 +599,7 @@ function game:draw()
     if config.shader then lightWorld:Draw() end -- draw light world if enabled
 
     draw_hud()
+    notif_hud()
 
     -- skill tree (if opened)
     if skillTreeIsOpen then
