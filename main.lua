@@ -301,6 +301,10 @@ function love.keypressed(key)
     console.keypressed(key)
 end
 
+function love.wheelmoved(x, y)
+    console.mousewheel(y)
+end
+
 function love.resize(w, h)
     window_width, window_height = w, h
 end
