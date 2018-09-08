@@ -449,9 +449,12 @@ function controls(dt)
     end
 
     if key(config.controls.dash) and cooldown.dash == 0 and cooldown.sprint < ply.skills.stamina then
-        ply.bod:applyLinearImpulse(math.cos(pa) * 200, math.sin(pa) * 200)
-        cooldown.dash = 1
-        cooldown.sprint = cooldown.sprint + dt * 10
+        local newSprintCooldown = cooldown.sprint + dt * ply.skills.recoil * 100
+        if newSprintCooldown >= 0 then
+            ply.bod:applyLinearImpulse(math.cos(pa) * 150, math.sin(pa) * 150)
+            cooldown.dash = 1
+            cooldown.sprint = newSprintCooldown
+        end
     end
 
     if love.mouse.isDown(1) and not skillTreeIsOpen and warmup <= 9 and not preventAttack then

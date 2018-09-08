@@ -11,6 +11,7 @@ function table.length(table) count = 0 for _ in pairs(table) do count = count + 
 function inSquare(x1, y1, x2, y2, w2, h2) return x1 >= x2 and x1 <= x2 + w2 and y1 >= y2 and y1 <= y2 + h2 end
 function upper(str) return str:gsub("^%l", string.upper) end
 function printTable(table) for index, value in pairs(table) do console.print(index, value) end console.print("Done") end
+function completeValue(value, table) for index, name in pairs(table) do if name:sub(1, value:len()) == value then return name end end return false end -- choose the closest value in the table
 function string:insert(pos, char) return self:sub(1, pos) .. char .. self:sub(pos + 1, self:len()) end
 function string:remove(pos, dir)
     if not dir then return self:sub(1, pos - 1) .. self:sub(pos + 1, self:len())
@@ -63,7 +64,7 @@ function updateWatching(name, value) -- to remove a value, juste send nil as a v
     if not watchings[name] then
         watchings[name] = value
     elseif value ~= watchings[name] then
-        --console.print(("VARIABLE WATCHING: Value %q as changed to %g"):format(name, value))
+        console.print(("VARIABLE WATCHING: Value %q as changed to %g"):format(name, value))
         watchings[name] = value
         return true
     else

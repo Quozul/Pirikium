@@ -31,7 +31,7 @@ function I.interact(ent, x, y, px, py)
             local remove = ent:addItem(item.item)
             if remove then
                 table.remove(items, index)
-                console.print("Item " .. item .. " picked up")
+                console.print("Item " .. item.item .. " picked up")
                 return false
             else
                 console.print("Your inventory is full")
