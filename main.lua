@@ -1,4 +1,5 @@
 loadTime = 0
+default = love.graphics.getFont()
 
 loading = require "loading_screen"
 
@@ -13,11 +14,12 @@ loading.setText("Loading modules...")
 loading.draw()
 love.graphics.present()
 
-require "errorhandler"
+--require "errorhandler"
 
 require "clib/utility"
 console_channel = love.thread.newChannel()
-require "clib/console"
+love.graphics.setFont(default)
+console = require "console"
 
 pathfinder = require "modules/jumper.pathfinder"
 gamestate = require "modules/hump.gamestate"
@@ -218,8 +220,12 @@ function love.load()
     images.player = {}
     sounds = {}
 
-    loader.newImage(images, "cursor", "data/ui/cursor.png")
-    loader.newImage(images, "dot", "data/ui/cursor_small.png")
+    -- cursors
+    crosshair = love.mouse.newCursor( love.image.newImageData("data/ui/cursor.png"), 16, 16 )
+    dot_crosshair = love.mouse.newCursor( love.image.newImageData("data/ui/cursor_small.png"), 16, 16 )
+    arrow = love.mouse.newCursor( love.image.newImageData("data/console/arrow.png"), 0, 0 )
+    love.mouse.setCursor(arrow)
+
     loader.newImage(images, "skull", "data/ui/death_icon.png")
     loader.newImage(images, "level", "data/ui/level_icon.png")
     loader.newImage(images, "exit", "data/ui/exit_icon.png")
@@ -302,11 +308,24 @@ function love.keypressed(key)
 end
 
 function love.wheelmoved(x, y)
-    console.mousewheel(y)
+    console.mousewheel(x, y)
+end
+
+function love.mousemoved(x, y, dx, dy)
+    console.mousemoved(x, y, dx, dy)
+end
+
+function love.mousepressed(x, y, button)
+    console.mousepressed(x, y, button)
+end
+
+function love.mousereleased(x, y, button)
+    console.mousereleased()
 end
 
 function love.resize(w, h)
     window_width, window_height = w, h
+    console.resize(w, h)
 end
 
 function love.draw()

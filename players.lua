@@ -70,7 +70,7 @@ function newPlayer(x, y, id, class, level) -- creates a new player
 
     console.print("Skill values:")
     for name, value in pairs(p.skills) do
-        console.print(name, value)
+        console.print(name .. ": " .. value)
     end
 
     p.health = p.skills.health
