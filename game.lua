@@ -17,7 +17,6 @@ function game:enter()
     love.graphics.present()
 
     particles.enable(config.particles)
-    love.mouse.setVisible(false)
     if not config.debug then love.mouse.setGrabbed(true) end
 
     love.physics.setMeter(64)
@@ -346,7 +345,7 @@ function game:keypressed(key, scancode, isrepeat)
         map.layers["Map Entities"].visible = not map.layers["Map Entities"].visible
     end
     
-    if console.hasFocus() then return end
+    if console.hasfocus() then return end
 
     if isIn(key, {"1", "2", "3", "4", "5", "6", "7", "8", "9"}) and not pause then
         local slot = tonumber(key)
@@ -378,7 +377,7 @@ function game:keypressed(key, scancode, isrepeat)
 end
 
 function game:wheelmoved(x, y)
-    if console.hasFocus() then return end
+    if console.hasfocus() then return end
     
     if pause then return end
 
@@ -391,7 +390,7 @@ function game:wheelmoved(x, y)
 end
 
 function game:mousepressed(x, y, button, isTouch)
-    if console.hasFocus() then return end
+    if console.hasfocus() then return end
     
     if skillTreeIsOpen then
         tree.mousepressed(x, y, button)
@@ -402,7 +401,7 @@ function game:mousepressed(x, y, button, isTouch)
 end
 
 function game:mousereleased(x, y, button, isTouch)
-    if console.hasFocus() then return end
+    if console.hasfocus() then return end
     
     if skillTreeIsOpen then
         tree.mousereleased(x, y, button)
@@ -413,7 +412,7 @@ function game:mousereleased(x, y, button, isTouch)
 end
 
 function controls(dt)
-    if console.hasFocus() then return end
+    if console.hasfocus() then return end
     
     local ply = entities.entities[playerUUID]
     local cooldown = ply.cooldown
@@ -637,13 +636,11 @@ function game:draw()
         end
     end
 
-    -- draw cursor
-    love.graphics.setColor(1, 1, 1)
-    if dotCursor then
-        love.graphics.draw(images.dot, mx - 16, my - 16)
-    else
-        love.graphics.draw(images.cursor, mx - 16, my - 16)
-    end
+    -- set cursor
+    if dotCursor then love.mouse.setCursor(dot_crosshair)
+    else love.mouse.setCursor(crosshair) end
+
+    console.draw()
 end
 
 function game:leave()

@@ -399,6 +399,7 @@ function menu:draw()
     if config.music then love.graphics.draw(images.music, music_on, window_width - 36, window_height - 36)
     else love.graphics.draw(images.music, music_off, window_width - 36, window_height - 36) end
 
+    love.graphics.setFont(default)
     console.draw()
 end
 

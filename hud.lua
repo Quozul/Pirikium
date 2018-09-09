@@ -132,8 +132,6 @@ function draw_hud()
     lg.print(ply.kills, 32, 68)
     lg.draw(images.level, 64, 64)
     lg.print(round(ply:getLevel(), 1), 96, 68)
-
-    console.draw()
 end
 
 function notif_hud()
