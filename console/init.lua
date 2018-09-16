@@ -104,6 +104,7 @@ function console.print(str, type)
         from = from_file,
         event = str,
         type = type,
+        letter = letter,
     }
 
     if console_loglimit and #logs > console_loglimit then
@@ -113,7 +114,7 @@ function console.print(str, type)
     wraplogs()
 end
 
-function console.getlogs() return tableToString(logs, "\n") end
+function console.getlogs() return logToString(logs) end
 
 function console.update(dt)
     local thread_log = love.thread.getChannel("console_channel"):pop()

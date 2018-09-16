@@ -14,7 +14,7 @@ loading.setText("Loading modules...")
 loading.draw()
 love.graphics.present()
 
---require "errorhandler"
+require "errorhandler"
 
 require "clib/utility"
 console_channel = love.thread.newChannel()

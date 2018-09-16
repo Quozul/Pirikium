@@ -23,8 +23,8 @@ Would you like to report this crash so that it can be fixed?]]
     love.filesystem.write(
         string.format("logs/crash_%s.txt", removeDecimal(love.timer.getTime())),
         string.format(
-            "%s Here are the logs:\n---\n%s\n---\n[CRASH %.1f] Crash with the following error:\n\n---\n%s\n\n---\nVersion: %s\nSystem: %s\n",
-            title, console.getlogs(), getFormattedTime()[2], full_error, version, edition
+            "%s Here are the logs:\n---\n%s\n---\n[CRASH %s] Crash with the following error:\n\n---\n%s\n\n---\nVersion: %s\nSystem: %s\n",
+            title, console.getlogs(), os.date("%H:%M:%S"), full_error, version, edition
         )
     )
 
