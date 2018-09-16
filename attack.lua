@@ -81,6 +81,8 @@ function attack(attacker, attacker_id)
                 end
             end
         end
+
+        chest.melee(ax, ay, wep.range, aa, wep.radius)
     elseif wep.type == "firearm" then
         local fire = (ply:getWeapon().firetype ~= "burst" and wep.bullet.amount) or 1
 
@@ -179,6 +181,8 @@ function removeBullet(body, wep, owner_id)
         end
 
         console.print("Bullet exploded")
+
+        chest.destroyarea(x - explode_radius, y - explode_radius, explode_radius * 2, explode_radius * 2)
     else
         sounds.hit:play()
     end

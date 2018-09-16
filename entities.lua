@@ -86,10 +86,12 @@ end
 
 
 
-function chest.add(x, y)
+local destreoyingwish = {}
+function chest.add(id, x, y)
     local c = {}
 
     c.time = math.random(10, 25)
+    c.id = id
 
     c.bod = love.physics.newBody( world, x * 64 - 32, y * 64 - 32, "dynamic" )
     c.bod:setLinearDamping(16)
@@ -98,7 +100,7 @@ function chest.add(x, y)
     c.shape = love.physics.newRectangleShape(48, 48)
     c.fixture = love.physics.newFixture(c.bod, c.shape)
     c.fixture:setRestitution(.1)
-    c.fixture:setUserData({"Chest"})
+    c.fixture:setUserData({"Chest", id = id})
 
     c.shadow = Body:new(lightWorld):InitFromPhysics(c.bod)
 
@@ -107,7 +109,29 @@ function chest.add(x, y)
 
     console.print("Added one chest")
 
-    table.insert(entities.chests, c)
+    return c
+end
+
+function chest.destroy(id)
+    local crate = entities.chests[id]
+    if not crate.bod:isActive() then return end
+    local cratex, cratey = crate.bod:getPosition()
+    local crateAngle = crate.bod:getAngle()
+    items.drop(cratex, cratey, crateAngle, loots.chest[math.random(1, #loots.chest)])
+    -- destroy crate
+    crate.bod:setActive(false)
+    crate.shadow:Remove()
+
+    sounds.crate:play()
+    particles.emit(math.random( 4, 8 ), cratex, cratey, {min = 0, max = 2 * math.pi}, 200, 1.2, 15, 4, 5, {r = .6, g = .6, b = 0, a = .6})
+
+    timer.after(crate.time, function()
+        console.print("Respawning chest")
+        crate.bod:setActive(true)
+        crate.shadow = Body:new(lightWorld):InitFromPhysics(crate.bod)
+
+        crate.light:SetColor(155, 155, 0, 155)
+    end)
 end
 
 function chest.update(self, dt)
@@ -118,6 +142,11 @@ function chest.update(self, dt)
             a = math.max(a - dt * 155, 0)
             chest.light:SetColor(r, g, b, a)
         end
+    end
+
+    for index, id in pairs(destreoyingwish) do
+        chest.destroy(id)
+        table.remove(destreoyingwish, index)
     end
 end
 
@@ -146,29 +175,39 @@ function chest.draw(self)
     end
 end
 
+function chest.wishtodestroy(id)
+    table.insert(destreoyingwish, id)
+end
+
+function chest.destroyarea(x, y, w, h)
+    for id, crate in pairs(entities.chests) do
+        local cratex, cratey = crate.bod:getPosition()
+        if inSquare(cratex, cratey, x, y, w, h) then
+            chest.wishtodestroy(id)
+        end
+    end
+end
+
+function chest.melee(x, y, range, angle, radius)
+    for id, crate in pairs(entities.chests) do
+        local cratex, cratey = crate.bod:getPosition()
+        local dist = sl(cratex, cratey, x, y)
+        local angleTo = math.atan2(cratey - y, cratex - x)
+
+        if dist <= range and
+        isBetween(angleTo, angle - radius, angle + radius) then
+            chest.wishtodestroy(id)
+        end
+    end
+end
+
 function chest.interact(x, y)
-    for id, chest in pairs(entities.chests) do
-        if chest.bod:isActive() then
-            local isInside = chest.fixture:testPoint(x, y)
-            local inRange = love.physics.getDistance(chest.fixture, ply.fixture) <= 250
+    for id, crate in pairs(entities.chests) do
+        if crate.bod:isActive() then
+            local isInside = crate.fixture:testPoint(x, y)
+            local inRange = love.physics.getDistance(crate.fixture, ply.fixture) <= 250
             if isInside and inRange then
-                local cratex, cratey = chest.bod:getPosition()
-                local crateAngle = chest.bod:getAngle()
-                items.drop(cratex, cratey, crateAngle, loots.chest[math.random(1, #loots.chest)])
-                -- destroy crate
-                chest.bod:setActive(false)
-                chest.shadow:Remove()
-
-                sounds.crate:play()
-                particles.emit(math.random( 4, 8 ), cratex, cratey, {min = 0, max = 2 * math.pi}, 200, 1.2, 15, 4, 5, {r = .6, g = .6, b = 0, a = .6})
-
-                timer.after(chest.time, function()
-                    console.print("Respawning chest")
-                    chest.bod:setActive(true)
-                    chest.shadow = Body:new(lightWorld):InitFromPhysics(chest.bod)
-                    
-                    chest.light:SetColor(155, 155, 0, 155)
-                end)
+                chest.wishtodestroy(id)
                 return
             elseif not inRange and isInside then
                 set_notif({lang.print("too far")})

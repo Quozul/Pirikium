@@ -1,5 +1,5 @@
 require "clib/utility"
-require "clib/console"
+local console = require "console.thread"
 
 require "love"
 require "love.physics"
