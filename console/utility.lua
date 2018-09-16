@@ -72,3 +72,10 @@ function inElastic(t, b, c, d, a, p)
     t = t - 1
     return -(a * math.pow(2, 10 * t) * math.sin((t * d - s) * (2 * math.pi) / p)) + b
 end
+function logToString(logs)
+    local str = ""
+    for _, log in pairs(logs) do
+        str = str .. ("%s %s [%s]: %s\n"):format(log.time, log.from, log.letter, log.event)
+    end
+    return str
+end
