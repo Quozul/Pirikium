@@ -32,7 +32,7 @@ return {
         memory = true,
         execution = function(command, args, originalcommand, memory) -- "originalcommand" can be usefull in this case
             if command:match("loop") then -- loop add test 1 loop
-                console.print("Error: You can't repeat this command") -- prevent some cheat
+                console.print("Error: You can't repeat this command", 2) -- prevent some cheat
                 return false
             end
 
@@ -55,7 +55,7 @@ return {
                 if args[2] == nil or args[2] == "" then
                     return true
                 elseif not memory[args[2]] then
-                    console.print("The command " .. args[2] .. " doesn't exists")
+                    console.print("The command " .. args[2] .. " doesn't exists", 2)
                 else
                     console.print("Command " .. args[2] .. " removed")
                     console.remfrommemory("loop", name)
@@ -92,7 +92,11 @@ return {
     give = {
         requiredarguments = 0,
         execution = function(command)
-            ply:addItem(command)
+            if weapons[command] then
+                ply:addItem(command)
+            else
+                console.print("Item " .. command .. " doesn't exists", 2)
+            end
         end,
         usage = "give [item name]",
         description = "Give the specified item to the player"

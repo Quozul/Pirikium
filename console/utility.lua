@@ -1,11 +1,19 @@
 function inSquare(x1, y1, x2, y2, w2, h2)
     return x1 >= x2 and x1 <= x2 + w2 and y1 >= y2 and y1 <= y2 + h2
 end
-function makeBetween(value, min, max)
+function math.between(value, min, max)
     return math.max(math.min(value, max), min)
+end
+function isBetween(value, min, max)
+    return value >= min and value <= max
 end
 function round(num, decimals)
     return math.floor(num * 10^(decimals or 0) + 0.5) / 10^(decimals or 0)
+end
+function trunc(num)
+    num = tostring(num):split(".")
+    local dec = tonumber(tostring("0." .. (num[2] or 0)))
+    return tonumber(num[1]), dec
 end
 function string:insert(pos, char)
     return self:sub(1, pos) .. char .. self:sub(pos + 1, self:len())

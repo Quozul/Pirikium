@@ -46,7 +46,7 @@ function game:enter()
     local grid = grid( map2d )
     finder = pathfinder(grid, "JPS", 0)
 
-    world = love.physics.newWorld()
+    world = love.physics.newWorld(0, 0, true)
     world:setCallbacks(beginContact, endContact, preSolve, postSolve)
     map:box2d_init(world)
     console.print("World created")
@@ -90,7 +90,8 @@ function game:enter()
                     if (t.sx and t.sy) == -1 then r = math.pi else r = t.r end -- fix a bug
                     doors.add(y, x, r)
                 elseif t.id == 7 then -- chest/weapon spawn
-                    chest.add(y, x)
+                    local uid = uuid()
+                    entities.chests[uid] = chest.add(uid, y, x)
                 elseif t.id == 8 then -- lights
                     lights[id] = Light:new(lightWorld, 300)
                     lights[id]:SetColor(0, 0, 155)
@@ -421,6 +422,15 @@ function controls(dt)
 
     local speed = love.physics.getMeter() * (4 + ply.skills.speed)
 
+    if key(config.controls.dash) and cooldown.sprint < ply.skills.stamina then
+        local newSprintCooldown = cooldown.sprint + dt * ply.skills.recoil * 50
+        if newSprintCooldown <= ply.skills.stamina then
+            ply.bod:applyLinearImpulse(math.cos(pa) * speed / 4, math.sin(pa) * speed / 4)
+            cooldown.dash = 1
+            cooldown.sprint = newSprintCooldown
+        end
+    end
+
     if key(config.controls.sprint) and not key(config.controls.sneak) and cooldown.sprint ~= ply.skills.stamina and math.abs(vx + vy) > 1 then
         speed = speed * 2
         ply.sprinting = true
@@ -445,15 +455,6 @@ function controls(dt)
         ply.bod:applyForce(-speed * math.cos(pa + (math.pi / 2)), -speed * math.sin(pa + (math.pi / 2)))
     elseif key(config.controls.right) then
         ply.bod:applyForce(speed * math.cos(pa + (math.pi / 2)), speed * math.sin(pa + (math.pi / 2)))
-    end
-
-    if key(config.controls.dash) and cooldown.dash == 0 and cooldown.sprint < ply.skills.stamina then
-        local newSprintCooldown = cooldown.sprint + dt * ply.skills.recoil * 100
-        if newSprintCooldown >= 0 then
-            ply.bod:applyLinearImpulse(math.cos(pa) * 150, math.sin(pa) * 150)
-            cooldown.dash = 1
-            cooldown.sprint = newSprintCooldown
-        end
     end
 
     if love.mouse.isDown(1) and not skillTreeIsOpen and warmup <= 9 and not preventAttack then
@@ -674,6 +675,10 @@ function beginContact(a, b, coll)
 
         local wep = b:getUserData().weapon
         local bx, by = b:getBody():getPosition()
+
+        if a:getUserData()[1] == "Chest" then
+            chest.wishtodestroy(a:getUserData().id)
+        end
 
         if a:getUserData()[1] == "Player" and wep.bullet.type ~= "explosive" then
             bulletDamage(wep, a:getUserData().id, b:getBody():getAngle(), b:getUserData().owner_id, bx, by)
