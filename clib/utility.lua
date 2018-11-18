@@ -64,9 +64,9 @@ function updateWatching(name, value) -- to remove a value, juste send nil as a v
     if not watchings[name] then
         watchings[name] = value
     elseif value ~= watchings[name] then
-        console.print(("VARIABLE WATCHING: Value %q as changed to %g"):format(name, value))
+        local old_value = watchings[name]
         watchings[name] = value
-        return true
+        return true, value, old_value
     else
         watchings[name] = value
     end
@@ -86,7 +86,7 @@ function sharpRectangle(mode, x, y, width, height, maxWidth)
     )
 end
 
-function verifyTable(base, verify)
+function verifyTable(base, verify) -- verify 1D tables
     for value in pairs(base) do
         if verify[value] == nil then
             console.print(value .. " is missing from table to verify")

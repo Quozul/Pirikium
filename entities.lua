@@ -35,35 +35,37 @@ end
 
 function doors.draw(self)
     for index, door in pairs(self.doors) do
-        local isInside = door.fixture:testPoint(cmx, cmy)
-        if isInside then dotCursor = true end
-
-        love.graphics.push("transform")
-
         local x, y = door.bod:getPosition()
-        local a = door.bod:getAngle()
 
-        love.graphics.setColor(1, 1, 1, 1)
+        if inSquare(x, y, czx - 32, czy - 32, window_width + 32, window_height + 32) then
+            local isInside = door.fixture:testPoint(cmx, cmy)
+            if isInside then dotCursor = true end
 
-        love.graphics.translate(x, y)
-        love.graphics.rotate(a)
-        love.graphics.rectangle("fill", -64/2, -8/2, 64, 8)
-
-        love.graphics.pop()
-
-        if config.debug then -- draw door's hinge
             love.graphics.push("transform")
+            local a = door.bod:getAngle()
 
-            local x, y = door.hinge:getPosition()
-            local a = door.hinge:getAngle()
-
-            love.graphics.setColor(1, 0, 0, .5)
+            love.graphics.setColor(96 / 255, 84 / 255, 70 / 255, 1)
 
             love.graphics.translate(x, y)
             love.graphics.rotate(a)
-            love.graphics.rectangle("fill", -8/2, -8/2, 8, 8)
+            love.graphics.rectangle("fill", -64/2, -8/2, 64, 8)
 
             love.graphics.pop()
+
+            if config.debug then -- draw door's hinge
+                love.graphics.push("transform")
+
+                local x, y = door.hinge:getPosition()
+                local a = door.hinge:getAngle()
+
+                love.graphics.setColor(1, 0, 0, .5)
+
+                love.graphics.translate(x, y)
+                love.graphics.rotate(a)
+                love.graphics.rectangle("fill", -8/2, -8/2, 8, 8)
+
+                love.graphics.pop()
+            end
         end
     end
 end
@@ -152,25 +154,27 @@ end
 
 function chest.draw(self)
     for index, chest in pairs(self.chests) do
+        local x, y = chest.bod:getPosition()
         if chest.bod:isActive() then
-            local isInside = chest.fixture:testPoint(cmx, cmy)
-            if isInside then dotCursor = true end
+            if inSquare(x, y, czx - 10, czy - 10, window_width + 10, window_height + 10) then
+                local isInside = chest.fixture:testPoint(cmx, cmy)
+                if isInside then dotCursor = true end
 
-            local x, y = chest.bod:getPosition()
-            local a = chest.bod:getAngle()
+                local a = chest.bod:getAngle()
 
-            chest.light:SetPosition(x, y)
-            love.graphics.setColor(1, 1, 1, 1)
+                chest.light:SetPosition(x, y)
+                love.graphics.setColor(1, 1, 1, 1)
 
-            love.graphics.push("transform")
+                love.graphics.push("transform")
 
-            love.graphics.translate(x, y)
-            love.graphics.rotate(a)
+                love.graphics.translate(x, y)
+                love.graphics.rotate(a)
 
-            local spriteNum = math.floor(crate_animation.currentTime / crate_animation.duration * #crate_animation.quads) + 1
-            love.graphics.draw(crate_animation.spriteSheet, crate_animation.quads[spriteNum], -24, -24)
+                local spriteNum = math.floor(crate_animation.currentTime / crate_animation.duration * #crate_animation.quads) + 1
+                love.graphics.draw(crate_animation.spriteSheet, crate_animation.quads[spriteNum], -24, -24)
 
-            love.graphics.pop()
+                love.graphics.pop()
+            end
         end
     end
 end
@@ -264,28 +268,32 @@ end
 
 function orb.draw(self)
     for id, orb in pairs(self.orbs) do
-        if orb.bod:isDestroyed() then return end
+        if not orb.bod:isDestroyed() then
+            local x, y = orb.bod:getPosition()
 
-        local isInside = orb.fixture:testPoint(cmx, cmy)
-        if isInside then dotCursor = true end
+            if inSquare(x, y, czx - 10, czy - 10, window_width + 10, window_height + 10) then
 
-        local x, y = orb.bod:getPosition()
-        local a = orb.bod:getAngle()
+                local isInside = orb.fixture:testPoint(cmx, cmy)
+                if isInside then dotCursor = true end
 
-        love.graphics.push("transform")
-        
-        love.graphics.translate(x, y)
-        love.graphics.rotate(a)
+                local a = orb.bod:getAngle()
 
-        if orb.type == "health" then
-            love.graphics.draw(images.orbs.health, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 32)
-        elseif orb.type == "skill" then
-            love.graphics.draw(images.orbs.skill, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 32)
-        elseif orb.type == "exp" then
-            love.graphics.draw(images.orbs.exp, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 24)
+                love.graphics.push("transform")
+                
+                love.graphics.translate(x, y)
+                love.graphics.rotate(a)
+
+                if orb.type == "health" then
+                    love.graphics.draw(images.orbs.health, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 32)
+                elseif orb.type == "skill" then
+                    love.graphics.draw(images.orbs.skill, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 32)
+                elseif orb.type == "exp" then
+                    love.graphics.draw(images.orbs.exp, -orb.shape:getRadius(), -orb.shape:getRadius(), 0, orb.shape:getRadius() / 24)
+                end
+
+                love.graphics.pop()
+            end
         end
-
-        love.graphics.pop()
     end
 end
 

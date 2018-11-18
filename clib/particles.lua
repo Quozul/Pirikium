@@ -68,12 +68,15 @@ function P.update(dt)
         part.life = part.life - dt
         if part.fade_out then part.color.a = part.life / part.max_life end
         if check >= 1 / 30 then
-            if part.life <= 0 or queryPoint(world, part.x, part.y, {"Player", "Bullet", "Chest"}) or makeBetween(part.life / part.max_life, 0, 1) then
+            if part.life <= 0 then
+                PARTS[index] = nil
+            elseif queryPoint(world, part.x, part.y, {"Player", "Bullet", "Chest"}) then
                 PARTS[index] = nil
             end
-            check = 0
         end
     end
+
+    if check >= 1 / 30 then check = 0 end
 end
 
 function P.draw()

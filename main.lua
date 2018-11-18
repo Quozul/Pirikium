@@ -1,7 +1,8 @@
 loadTime = 0
 default = love.graphics.getFont()
 
-loading = require "loading_screen"
+loading = require "clib/loading_screen"
+loading.init()
 
 window_width, window_height = love.window.getMode()
 
@@ -10,7 +11,7 @@ math.randomseed(os.time())
 love.graphics.clear()
 love.graphics.setBackgroundColor(29 / 255, 29 / 255, 29 / 255)
 
-loading.setText("Loading modules...")
+loading.setvalue("Loading modules...")
 loading.draw()
 love.graphics.present()
 
@@ -129,7 +130,7 @@ else
     console.print("Config file loaded")
 end
 
-loading.setText("Loading content...")
+loading.setvalue("Loading content...")
 loading.draw()
 love.graphics.present()
 
@@ -276,6 +277,7 @@ function love.load()
         love.window.requestAttention()
 
         gamestate.registerEvents()
+        console.registercallbacks()
         gamestate.switch(menu)
     end)
 
@@ -295,37 +297,10 @@ function love.update(dt)
         loader.update()
         loading.update(dt)
     end
-
-    console.update(dt)
-end
-
-function love.textinput(text)
-    console.text(text)
-end
-
-function love.keypressed(key)
-    console.keypressed(key)
-end
-
-function love.wheelmoved(x, y)
-    console.mousewheel(x, y)
-end
-
-function love.mousemoved(x, y, dx, dy)
-    console.mousemoved(x, y, dx, dy)
-end
-
-function love.mousepressed(x, y, button)
-    console.mousepressed(x, y, button)
-end
-
-function love.mousereleased(x, y, button)
-    console.mousereleased()
 end
 
 function love.resize(w, h)
     window_width, window_height = w, h
-    console.resize(w, h)
 end
 
 function love.draw()
@@ -334,7 +309,7 @@ function love.draw()
         local percent = 0
         if loader.resourceCount ~= 0 then
             percent = loader.loadedCount / loader.resourceCount
-            loading.setText(lang.print("loading") .. " " .. round(percent * 100, 0) .. "%")
+            loading.setvalue(lang.print("loading") .. " " .. round(percent * 100, 0) .. "%", percent * 100)
         end
     end
 end

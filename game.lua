@@ -12,7 +12,7 @@ local cooldown = {
 function game:enter()
     love.graphics.clear()
 
-    loading.setText(lang.print("loading"))
+    loading.setvalue(lang.print("loading"))
     loading.draw()
     love.graphics.present()
 
@@ -232,16 +232,19 @@ function game:enter()
         -- draw bullets
         for id, bullet in pairs(bullets) do
             if not bullet.bod:isDestroyed() then
-                local wep = bullet.fixture:getUserData().weapon
                 local bx, by = bullet.bod:getPosition()
-                local ba = bullet.bod:getAngle()
-                local radius = wep.bullet.radius
-                local type = wep.bullet.type
 
-                if type == "arrow" then
-                    love.graphics.line(bx, by, bx + math.cos(ba) * radius, by + math.sin(ba) * radius)
-                else
-                    love.graphics.circle("fill", bx, by, radius)
+                if inSquare(bx, by, czx - 10, czy - 10, window_width + 10, window_height + 10) then
+                    local wep = bullet.fixture:getUserData().weapon
+                    local ba = bullet.bod:getAngle()
+                    local radius = wep.bullet.radius
+                    local type = wep.bullet.type
+
+                    if type == "arrow" then
+                        love.graphics.line(bx, by, bx + math.cos(ba) * radius, by + math.sin(ba) * radius)
+                    else
+                        love.graphics.circle("fill", bx, by, radius)
+                    end
                 end
             end
         end
@@ -266,47 +269,50 @@ function game:enter()
 
         -- draw entities
         for id, ent in pairs(self.entities) do
-            love.graphics.push("transform")
-
             local x, y = ent.bod:getPosition()
-            local vx, vy = ent.bod:getLinearVelocity()
-            local a = ent.bod:getAngle()
 
-            love.graphics.translate(x, y)
-            if id ~= playerUUID then
-                love.graphics.setColor(1, 1, 1, (255 - sl(cmx, cmy, x, y)) / 255)
-                local tag = ""
-                if ent.name ~= "" then
-                    tag = ent.name .. " - " .. removeDecimal(ent:getLevel())
-                else
-                    tag = lang.print("level", {removeDecimal(ent:getLevel())})
+            if inSquare(x, y, czx - 10, czy - 10, window_width + 10, window_height + 10) then
+                love.graphics.push("transform")
+
+                local vx, vy = ent.bod:getLinearVelocity()
+                local a = ent.bod:getAngle()
+
+                love.graphics.translate(x, y)
+                if id ~= playerUUID then
+                    love.graphics.setColor(1, 1, 1, (255 - sl(cmx, cmy, x, y)) / 255)
+                    local tag = ""
+                    if ent.name ~= "" then
+                        tag = ent.name .. " - " .. removeDecimal(ent:getLevel())
+                    else
+                        tag = lang.print("level", {removeDecimal(ent:getLevel())})
+                    end
+                    love.graphics.print(tag, -hudFont:getWidth(tag) / 2, -25)
                 end
-                love.graphics.print(tag, -hudFont:getWidth(tag) / 2, -25)
-            end
 
-            love.graphics.setColor(1, 1, 1, 1)
+                love.graphics.setColor(1, 1, 1, 1)
 
-            love.graphics.rotate(a + math.pi / 2)
-            love.graphics.scale(1.5, 1.5)
+                love.graphics.rotate(a + math.pi / 2)
+                love.graphics.scale(1.5, 1.5)
 
-            if math.abs(vx + vy) > 1 then
-                local spriteNum = math.floor(player_animation.currentTime / player_animation.duration * #player_animation.quads) + 1
-                love.graphics.draw(player_animation.spriteSheet, player_animation.quads[spriteNum], -12, -12)
-            else
-                love.graphics.draw(images.player.stand, -12, -12)
-            end
+                if math.abs(vx + vy) > 1 then
+                    local spriteNum = math.floor(player_animation.currentTime / player_animation.duration * #player_animation.quads) + 1
+                    love.graphics.draw(player_animation.spriteSheet, player_animation.quads[spriteNum], -12, -12)
+                else
+                    love.graphics.draw(images.player.stand, -12, -12)
+                end
 
-            local img = images.weapons.hold[ent:getWeapon(true)] -- true make the function return only the name of the weapon
-            if img ~= nil then
-                --love.graphics.rotate(math.pi/2)
-                love.graphics.translate(0, -32)
-                love.graphics.draw(img, -16, -6)
-            end
+                local img = images.weapons.hold[ent:getWeapon(true)] -- true make the function return only the name of the weapon
+                if img ~= nil then
+                    --love.graphics.rotate(math.pi/2)
+                    love.graphics.translate(0, -32)
+                    love.graphics.draw(img, -16, -6)
+                end
 
-            love.graphics.pop()
+                love.graphics.pop()
 
-            if config.ai.debug and id ~= playerUUID then
-                ai.draw(ent, self.entities[playerUUID]) -- show the brain of the ai (debug)
+                if config.ai.debug and id ~= playerUUID then
+                    ai.draw(ent, self.entities[playerUUID]) -- show the brain of the ai (debug)
+                end
             end
         end
     end
@@ -432,7 +438,7 @@ function controls(dt)
     end
 
     if key(config.controls.sprint) and not key(config.controls.sneak) and cooldown.sprint ~= ply.skills.stamina and math.abs(vx + vy) > 1 then
-        speed = speed * 2
+        speed = speed * 1.5
         ply.sprinting = true
     elseif not key(config.controls.sprint) or math.abs(vx + vy) <= 1 then
         ply.sprinting = false
@@ -479,6 +485,7 @@ function game:update(dt)
     cx, cy = cam:cameraCoords(0, 0)
     cpx, cpy = cam:position()
     cmx, cmy = cam:mousePosition() -- pos of the mouse in the world
+    czx, czy = cam:worldCoords(0, 0)
 
     mx, my = love.mouse.getPosition()
 
