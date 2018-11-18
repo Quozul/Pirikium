@@ -33,4 +33,4 @@ Serialisation | [Ser](https://github.com/gvx/Ser) & [Bitser](https://github.com/
 GUI | [Gspöt](https://github.com/pgimeno/Gspot) | Random names | [lua-namegen](https://github.com/LukeMS/lua-namegen)
 Physics | [Box2D](https://love2d.org/wiki/love.physics) (*included in Löve2D*) | Threaded ressource loading | [love-loader](https://github.com/kikito/love-loader)
 Unique IDs generator | [UUID](https://github.com/Tieske/uuid) | HTTPS requests | [LuaJIT-Request](https://github.com/LPGhatguy/luajit-request)
-Lighting & shadows | [Shädows](https://github.com/matiasah/shadows)
+Lighting & shadows | [Shädows](https://github.com/matiasah/shadows) | [In-game Console](https://github.com/Quozul/lovcon)

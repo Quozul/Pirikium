@@ -2,7 +2,7 @@ bullets = {}
 local maxSpeed = love.physics.getMeter() * 8
 
 local function bloodParticles(amount, x, y, a, v)
-    if not v then v = 100 end
+    if not v then v = 1 end
     particles.emit(math.random( amount/4, amount ), x, y, {min = a - .75, max = a + .75}, 100 * v, 1.1, 8, 12, 8, {r = .75, g = 0, b = 0}, true)
 end
 
@@ -120,7 +120,7 @@ function attack(attacker, attacker_id)
             table.insert(bullets, b)
         end
 
-        console.print(#bullets .. " bullets in the world")
+        --console.print(#bullets .. " bullets in the world")
     end
 
     return true

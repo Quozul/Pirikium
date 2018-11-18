@@ -249,7 +249,7 @@ function menu:init()
     end
 
     -- multiplayer & server
-    selection.adress = gspot:input(lang.print("adress"), {unit*30, unit*7, unit*6, unit*2}, selection.group, config.multiplayer.adress)
+    --[[ selection.adress = gspot:input(lang.print("adress"), {unit*30, unit*7, unit*6, unit*2}, selection.group, config.multiplayer.adress)
     selection.adress.done = function(this)
         config.multiplayer.adress = this.value
         console.print(this.value)
@@ -280,7 +280,7 @@ function menu:init()
         client:connect()
         
         gamestate.switch(connecting)
-    end
+    end ]]
 
     selection.group:hide()
 
@@ -455,7 +455,7 @@ end
 
 function connecting:enter()
     local adress, port = getAdress(config.multiplayer.adress)
-    loading.setText( lang.print( "connecting", {adress, port} ) )
+    loading.setvalue( lang.print( "connecting", {adress, port} ) )
 end
 
 function connecting:update(dt)
@@ -463,10 +463,10 @@ function connecting:update(dt)
 
     local state = client:getState()
     if state == "disconnected" then
-        loading.setText( lang.print( "failed" ) )
+        loading.setvalue( lang.print( "failed" ) )
         love.window.requestAttention()
     elseif state == "connected" then
-        loading.setText( lang.print( "connected" ) )
+        loading.setvalue( lang.print( "connected" ) )
         love.window.requestAttention()
         gamestate.switch(multiplayer_game)
     end
