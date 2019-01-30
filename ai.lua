@@ -16,17 +16,8 @@ end
 
 local function nodeToMap(node) return (node - 1) * 64 end
 
-function ai.set(ent, ent_id) -- add a view fixture to the ent, usefull for ai as they can see if there is a wall or not
-    ent.view = {}
-    v = ent.view
-
-    v.bod = love.physics.newBody(world, 100, 100, "dynamic")
-
-    v.shape = love.physics.newEdgeShape(0, 0, 250, 0)
-
-    v.fixture = love.physics.newFixture(v.bod, v.shape)
-    v.fixture:setUserData({"View", id = ent_id})
-    v.fixture:setSensor(true)
+function ai.rotate(current_x, current_y, target_x, target_y)
+    
 end
 
 function ai.update(ent, target, ent_id) -- => attacker, victim
@@ -73,12 +64,20 @@ function ai.update(ent, target, ent_id) -- => attacker, victim
             local currentX, currentY = nodeToMap(node:getX()) + 32, nodeToMap(node:getY()) + 32
             
             local angleTo = math.atan2(currentY - ay, currentX - ax)
-            ent.bod:setAngle(angleTo)
+
+            local a = ( (angleTo - currentAngle) + math.pi) % (2*math.pi) - math.pi
+
+            -- ai's rotation
+            if a < 0 then
+                ent.bod:applyAngularImpulse(-16)
+            elseif a > 0 then
+                ent.bod:applyAngularImpulse(16)
+            end
 
             local speed = love.physics.getMeter() * (4 + ent.skills.speed)
 
-            ent.bod:applyForce(speed * math.cos(currentAngle), speed * math.sin(currentAngle))
-            
+            ent.bod:applyForce(speed * math.cos(currentAngle), speed * math.sin(currentAngle)) -- walking forward
+
             break
         elseif inAttackRange and math.abs(angleToVictim) <= math.pi then
             attack(ent, ent_id)

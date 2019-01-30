@@ -147,6 +147,9 @@ end
 
 function player:setSlot(slot)
     self.selectedSlot = slot
+    if self.cooldown.attack > self:getWeapon().cooldown then
+        self.cooldown.attack = self:getWeapon().cooldown
+    end
     --self:updateWeight()
 end
 
