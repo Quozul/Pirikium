@@ -139,7 +139,6 @@ function game:enter()
         console.print("Ennemy level is " .. level)
         local class = classes.list[math.random(1, #classes.list)]
         entities.entities[uid] = newPlayer(x, y, uid, classes[class], level)
-        ai.set(entities.entities[uid], uid)
 
         console.print("Added one ennemy")
     end

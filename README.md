@@ -10,7 +10,7 @@
 
 System | Processor | Memory | Graphic card
 ---|---|---|---
-64 bit | Dual-core @ 1GHz | 4 MB | Intel HD Graphics
+64 bit | Dual-core @ 1GHz | < 1GB - DDR3 | Intel HD Graphics
 
 ## Team
 * **Quôzul** <span title="Developer" width=50px>:computer:</span>
