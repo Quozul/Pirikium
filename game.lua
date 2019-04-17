@@ -365,7 +365,6 @@ function game:keypressed(key, scancode, isrepeat)
 
         chest.interact(x, y)
         doors.interact(x, y)
-        orb.interact(x, y)
     elseif key == config.controls.drop and not pause then
         ply:drop(ply.selectedSlot)
     elseif key == "escape" then
@@ -674,6 +673,13 @@ end
 function beginContact(a, b, coll)
     if a:getUserData()[1] == "Door" and b:getUserData()[1] == "Player" then
         sounds.door:play()
+    end
+
+    if a:getUserData()[1] == "Player" and b:getUserData()[1] == "Orb" then
+        local o = entities.orbs[b:getUserData()[2]]
+        orb.interact(o)
+        b:getBody():destroy()
+        entities.orbs[b:getUserData()[2]] = nil
     end
 
     if b:getUserData()[1] == "Bullet" then

@@ -224,15 +224,17 @@ end
 
 function orb.add(x, y, r, type)
     local o = {}
+    local orbid = uuid()
 
     o.bod = love.physics.newBody( world, x, y, "dynamic" )
-    o.bod:setLinearDamping(1)
-    o.bod:setAngularDamping(1)
+    o.bod:setLinearDamping(.1)
+    o.bod:setAngularDamping(.1)
     o.shape = love.physics.newCircleShape(16)
     o.fixture = love.physics.newFixture(o.bod, o.shape)
-    o.fixture:setRestitution(.8)
-    o.fixture:setUserData({"Orb"})
-    o.fixture:setSensor(true)
+    o.fixture:setRestitution(1)
+    o.fixture:setUserData({"Orb", orbid})
+    --o.fixture:setSensor(true)
+    o.bod:applyLinearImpulse(rf(-100, 100, 2), rf(-100, 100, 2))
 
     if type == "health" then
         o.type = "health"
@@ -251,7 +253,7 @@ function orb.add(x, y, r, type)
 
     console.print("Added one " .. type .. " orb")
 
-    table.insert(entities.orbs, o)
+    entities.orbs[orbid] = o
 end
 
 function orb.update(self, dt)
@@ -297,30 +299,22 @@ function orb.draw(self)
     end
 end
 
-function orb.interact(x, y)
-    for id, orb in pairs(entities.orbs) do
-        local inRange = sl(cmx, cmy, px, py) <= 64
-        local isInside = orb.fixture:testPoint(cmx, cmy)
-        if inRange and isInside then
-            if orb.type == "health" then
-                local health, maxHealth = ply:getHealth()
-                if health < maxHealth then
-                    ply:addHealth( rf(3, 6, 1) )
+function orb.interact(orb)
+    if orb.type == "health" then
+        local health, maxHealth = ply:getHealth()
+        if health < maxHealth then
+            ply:addHealth( rf(3, 6, 1) )
 
-                    orb.shape:setRadius(8)
-                    sounds.orb:play()
-                else
-                    set_notif({lang.print("full health")})
-                end
-            elseif orb.type == "skill" then
-                if key(config.controls.use) then
-                    ply:skillBoost(orb.skill, orb.amount)
-                    orb.shape:setRadius(8)
-                    sounds.orb:play()
-                end
-            end
-        elseif not inRange and isInside then
-            set_notif({lang.print("too far")})
+            orb.shape:setRadius(8)
+            sounds.orb:play()
+        else
+            set_notif({lang.print("full health")})
+        end
+    elseif orb.type == "skill" then
+        if key(config.controls.use) then
+            ply:skillBoost(orb.skill, orb.amount)
+            orb.shape:setRadius(8)
+            sounds.orb:play()
         end
     end
 end

@@ -191,7 +191,7 @@ if not save_folder or save_folder.type ~= "directory" then
 end
 
 function updateScreenSize() -- the screen size scaling must be reworked
-    love.window.setMode(1280*config.ratio, 720*config.ratio)
+    love.window.setMode(1280*config.ratio, 720*config.ratio, config.flags or {})
     window_width, window_height = 1280*config.ratio, 720*config.ratio
 end
 if config.ratio ~= 1 then updateScreenSize() end
